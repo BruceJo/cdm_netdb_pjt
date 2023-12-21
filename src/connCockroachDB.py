@@ -4,6 +4,7 @@ import base64
 import psycopg2
 import requests
 import time
+import urllib
 
 class Connect():
     def __init__(self, api=None, destination=None):
@@ -46,29 +47,27 @@ class Connect():
         except Exception as e:
             print(f"Database connection failure: {e}")
             return None
-
-    def get_list(self, api_url, sub_url):
+    
+    def get_list(self, api_url, sub_url, **params):
         timestamp = str(int(time.time() * 1000))
         method = "GET"
         api_url = (f"/{api_url}/{sub_url}"
-                   "?regionCode=KR"
-                   "&responseFormatType=json"
-        )
-        print('api_url', api_url)
-        response = self.send_request(method, api_url, timestamp)
+                "?regionCode=KR"
+                "&responseFormatType=json")
+        check_bool = lambda x: str(x).lower() if isinstance(x, bool) else str(x)
+        param_format = "".join([f"&{k}={urllib.parse.quote(check_bool(v))}" for k, v in params.items()])
+
+        response = self.send_request(method, api_url+param_format, timestamp)
         
         return response.text
-
-    def get_route_list(self, api_url, sub_url, vpc_no, route_table_no):
+    
+    def get_networkaclrule_list(self, api_url, sub_url, networkaclno):
         timestamp = str(int(time.time() * 1000))
         method = "GET"
-        api_url = (f"/{api_url}/v2/{sub_url}"
+        api_url = (f"/{api_url}/{sub_url}"
                 "?regionCode=KR"
-                "&responseFormatType=json" # json으로 받아오기
-                f"&vpcNo={vpc_no}"
-                f"&routeTableNo={route_table_no}"
-            # "&vpcStatusCode=RUN"
-                )
+                "&responseFormatType=json"
+                f"&networkAclNo={networkaclno}")
         response = self.send_request(method, api_url, timestamp)
         
         return response.text

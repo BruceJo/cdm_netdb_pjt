@@ -1,5 +1,6 @@
-def urlInfo():
+def url_info():
     return {
+        # 중권
         "RouteTable" : {
             "api_url" : "vpc/v2",
             "create" : "createRouteTable",
@@ -24,7 +25,7 @@ def urlInfo():
             "read" : "getLaunchConfigurationList",
             "delete" : "deleteLaunchConfiguration"
         },
-        "InAutoScalingGroupServerInstance" : {
+        "InAutoScalingGroupServerInstance" : {  #자원 개수에 따른 루프 확인 필요
             "api_url" : "vautoscaling/v2",
             "read" : "getAutoScalingGroupList"
         },
@@ -32,6 +33,7 @@ def urlInfo():
             "api_url" : "vautoscaling/v2",
             "read" : "getAdjustmentTypeList"
         },
+        # 현병
         "LoginKey" : {
             "api_url" : "vserver/v2",
             "read" : "getLoginKeyList"
@@ -48,8 +50,99 @@ def urlInfo():
         #     "api_url" : "vserver/v2",
         #     "read" : "getMemberServerImageInstanceList"
         # },
-        # "MemberServerImageInstanceList" : {
-        #     "api_url" : "vserver/v2",
-        #     "read" : "getMemberServerImageInstanceList"
-        # },
+        "MemberServerImageInstance" : {
+            "api_url" : "vserver/v2",
+            "read" : "getMemberServerImageInstanceList"
+        },
+        # 우동
+        "AutoScalingGroup" : {
+            "api_url" : "vautoscaling/v2",
+            "read" : "getAutoScalingGroupList"
+        },
+        "NatGatewayInstance" : {
+            "api_url" : "vpc/v2",
+            "read" : "getNatGatewayInstanceList"
+        },
+        "NetworkAcl" : {
+            "api_url" : "vpc/v2",
+            "read" : "getNetworkAclList"
+        },
+        "NetworkAclDenyAllowGroup" : {
+            "api_url" : "vpc/v2",
+            "read" : "getNetworkAclDenyAllowGroupList"
+        },
+        "Vpc" : {
+            "api_url" : "vpc/v2",
+            "read" : "getVpcList"
+        },
+        "Subnet" : {
+            "api_url" : "vpc/v2",
+            "read" : "getSubnetList"
+        },
+        "ActivityLog" : {
+            "api_url" : "vautoscaling/v2",
+            "read" : "getAutoScalingActivityLogList"
+        },
+        "NetworkAclRule" : {
+            "api_url" : "vpc/v2",
+            "read" : "getNetworkAclRuleList"
+        },
+        "ScalingPolicy" : {
+            "api_url" : "vautoscaling/v2",
+            "read" : "getAutoScalingPolicyList"
+        },
+        "ScheduledUpdateGroupAction" : {
+            "api_url" : "vautoscaling/v2",
+            "read" : "getScheduledActionList"
+        },
+    }
+
+def special_info():
+    return {
+        "route" : {
+            "table" : ["vpc v", "routetable r"],
+            "where" : ["v.id = r.vpcid"],
+            "value" : ["v.vpcno", "r.routetableno", "r.id"],
+            "stage" : "routeList",
+            "fetch" : {
+                "vpcNo" : "row['vpcno']",
+                "routeTableNo" : "row['routetableno']"
+            }
+        },
+        "activitylog" : {
+            "table" : ["autoscalinggroup"],
+            "where" : [],
+            "value" : ["autoscalinggroupno"],
+            "stage" : "activityLogList",
+            "fetch" : {
+                "autoScalingGroupNo" : "row['autoscalinggroupno']"
+            }
+        },
+        "networkaclrule" : {
+            "table" : ["networkacl"],
+            "where" : [],
+            "value" : ["networkaclno"],
+            "stage" : "networkAclRuleList",
+            "fetch" : {
+                "networkAclNo" : "row['networkaclno']"
+            }
+        },
+        "scalingpolicy" : {
+            "table" : ["autoscalinggroup"],
+            "where" : [],
+            "value" : ["autoscalinggroupno"],
+            "stage" : "scalingPolicyList",
+            "fetch" : {
+                "autoScalingGroupNo" : "row['autoscalinggroupno']"
+            }
+        },
+        "scheduledupdategroupaction" : {
+            "table" : ["autoscalinggroup"],
+            "where" : [],
+            "value" : ["autoscalinggroupno"],
+            "stage" : "scheduledUpdateGroupActionList",
+            "fetch" : {
+                "autoScalingGroupNo" : "row['autoscalinggroupno']"
+            }
+        }
     }
