@@ -42,14 +42,10 @@ def url_info():
             "api_url" : "vserver/v2",
             "read" : "getServerInstanceList"
         },
-        # "Product" : {   # {'error': {'errorCode': '300', 'message': 'Not Found Exception', 'details': 'URL not found.'}}
-        #     "api_url" : "billing/v1/product",
-        #     "read" : "getProductList"
-        # }
-        # "MemberServerImage" : {   # 뭔가 이상
-        #     "api_url" : "vserver/v2",
-        #     "read" : "getMemberServerImageInstanceList"
-        # },
+        "Product" : {
+            "api_url" : "billing/v1/product",
+            "read" : "getProductList"
+        },
         "MemberServerImageInstance" : {
             "api_url" : "vserver/v2",
             "read" : "getMemberServerImageInstanceList"
@@ -94,6 +90,39 @@ def url_info():
         "ScheduledUpdateGroupAction" : {
             "api_url" : "vautoscaling/v2",
             "read" : "getScheduledActionList"
+        },
+        "BlockStorageInstance" : {
+            "api_url" : "vserver/v2",
+            "read" : "getBlockStorageInstanceList"
+        },
+        "BlockStorageSnapshotInstance" : {
+            "api_url" : "vserver/v2",
+            "read" : "getBlockStorageSnapshotInstanceList"
+        },
+        "NetworkInterface" : {
+            "api_url" : "vserver/v2",
+            "read" : "getNetworkInterfaceList"
+        },
+        "PublicIpInstance" : {
+            "api_url" : "vserver/v2",
+            "read" : "getPublicIpInstanceList"
+        },
+        "VpcPeeringInstance" : {
+            "api_url" : "vpc/v2",
+            "read" : "getVpcPeeringInstanceList"
+        },
+        # 상우
+        "AccessControlGroup" : {
+            "api_url" : "vserver/v2",
+            "read" : "getAccessControlGroupList"
+        },
+        "AccessControlGroupRule" : {
+            "api_url" : "vserver/v2",
+            "read" : "getAccessControlGroupRuleList"
+        },
+        "InitScript" : {
+            "api_url" : "vserver/v2",
+            "read" : "getInitScriptList"
         },
     }
 
@@ -144,5 +173,78 @@ def special_info():
             "fetch" : {
                 "autoScalingGroupNo" : "row['autoscalinggroupno']"
             }
+        },
+        "accesscontrolgrouprule" : {
+            "table" : ["accesscontrolgroup"],
+            "where" : [],
+            "value" : ["accesscontrolgroupno"],
+            "stage" : "accessControlGroupRuleList",
+            "fetch" : {
+                "accessControlGroupNo" : "row['accesscontrolgroupno']"
+            }
+        }
+    }
+
+def code_candidate():
+    return dict(
+        RouteTable = ['supportedSubnetType', 'routeTableStatus'],
+        PlacementGroup = ['placementGroupType'],
+        LaunchConfiguration = ['launchConfigurationStatus'],
+        InAutoScalingGroupServerInstance = ['healthStatus', 'lifecycleState'],
+        ServerInstance = ['platformType', 'serverInstanceStatus', 'serverInstanceOperation', 'serverInstanceType', 'baseBlockStorageDiskType', 'baseBlockStorageDiskDetailType'],
+        MemberServerImage = ['memberServerImageInstanceStatus', 'memberServerImageInstanceOperation', 'shareStatus'],
+        AutoScalingGroup = ['autoScalingGroupStatus', 'healthCheckType'],
+        NatGatewayInstance = ['natGatewayInstanceStatus', 'natGatewayInstanceOperation', 'natGatewayType'],
+        NetworkAcl = ['networkAclStatus'],
+        NetworkAclDenyAllowGroup = ['networkAclDenyAllowGroupStatus'],
+        Vpc = ['vpcStatus'],
+        Subnet = ['subnetStatus', 'subnetType', 'usageType'],
+        BlockStorageInstance = ['blockStorageType', 'blockStorageInstanceStatus', 'blockStorageInstanceOperation', 'blockStorageDiskYype', 'blockStorageDiskDetailType', 'blockStorageDiskType'],
+        BlockStorageSnapshotInstance = ['blockStorageSnapshotInstanceStatus', 'blockStorageSnapshotInstanceOperation', 'snapshotType'],
+        NetworkInterface = ['networkInterfaceStatus', 'instanceType'],
+        PublicIpInstance = ['publicIpInstanceStatus', 'publicIpInstanceOperation'],
+        VpcPeeringInstance = ['vpcPeeringInstanceStatus', 'vpcPeeringInstanceOperation'],
+        AccessControlGroup = ['accessControlGroupStatus'],
+        InitScript = ['osType']
+    )
+
+def out_candidate():
+    return dict(
+        routetable = ['vpcNo', 'regionCode'],
+        launchconfiguration = ['regionCode', 'serverProductCode', 'loginKeyName'],
+        inautoscalinggroupserverinstance = ['regionCode', 'serverProductCode', 'loginKeyName'],
+        serverinstance = ['serverProductCode', 'hypervisorType', 'serverImageNo', 'serverSpecCode', 'zoneCode', 'regionCode', 'vpcNo', 'subnetNo'],
+        memberserverimageinstance = ['originalServerImageProductCode', 'originalServerInstanceNo', 'originalServerInstanceProductCode'],
+        autoscalinggroup = ['vpcNo', 'vpcName', 'zoneCode', 'subnetName', 'subnetNo'],
+        natgatewayinstance = ['vpcNo', 'vpcName', 'zoneCode', 'subnetName', 'subnetNo'],
+        vpc = ['regionCode'],
+        subnet = ['vpcNo', 'zoneCode'],
+        blockstorageinstance = ['blockStorageVolumeType', 'hypervisorType'],
+        blockstoragesnapshotinstance = ['originalBlockStorageInstanceNo', 'isBootable'],
+        networkinterface = ['enableFlowLog'],
+        product = ['productItemKind', 'productItemKindDetail', 'softwareType'],
+        vpcpeeringinstance = ['targetVpcName', 'sourceVpcIpv4CidrBlock', 'targetVpcIpv4CidrBlock', 'sourceVpcName', 'sourceVpcNo', 'targetVpcNo']
+    )
+
+def col_name_mapper():
+    return {
+        'common' : {
+            'regionCode' : 'regionid',
+            'vpcNo' : 'vpcid',
+            'loginKeyName' : 'loginkeyid',
+            'zoneCode' : 'zoneid',
+            'subnetNo' : 'subnetid',
+            'originalServerInstanceNo' : 'originalserverinstanceid',
+            'networkAclNo' : 'networkaclid',
+            'originalBlockStorageInstanceNo' : 'blockstorageinstanceid',
+            'productItemKind' : 'producttype',
+            'targetVpcNo' : 'targetvpcid',
+            'sourceVpcNo' : 'sourcevpcid'
+        },
+        'launchconfiguration' : {
+            'serverProductCode' : 'serverproductid'
+        },
+        'serverinstance' : {
+            'serverProductCode' : 'serverproductcodeid'
         }
     }

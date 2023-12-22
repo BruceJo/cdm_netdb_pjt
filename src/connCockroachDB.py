@@ -5,13 +5,15 @@ import psycopg2
 import requests
 import time
 import urllib
+import json
 
 class Connect():
     def __init__(self, api=None, destination=None):
         if api != None:
             self.secret_key = api['secretKey']
             self.access_key = api['accessKey']
-            self.base_url = api['baseUrl']
+            self.ncloudUrl = api['ncloudUrl']
+            self.billingApiUrl = api['billingApiUrl']
         if destination != None:
             self.db_name = destination['dbName']
             self.host = destination['host']
@@ -31,9 +33,13 @@ class Connect():
             'x-ncp-iam-access-key': self.access_key,
             'x-ncp-apigw-signature-v2': signature
         }
-        full_url = self.base_url + api_url
-        response = requests.get(full_url, headers=http_header)
-        return response
+        response = requests.get(self.ncloudUrl + api_url, headers=http_header)
+        result = json.loads(response.text)
+        if 'error' in result.keys() and result['error']['errorCode'] == '300':
+            response = requests.get(self.billingApiUrl + api_url, headers=http_header)
+            result = json.loads(response.text)
+
+        return result
 
     def connect_cockroachdb(self):
         try:
@@ -59,7 +65,7 @@ class Connect():
 
         response = self.send_request(method, api_url+param_format, timestamp)
         
-        return response.text
+        return response
     
     def get_networkaclrule_list(self, api_url, sub_url, networkaclno):
         timestamp = str(int(time.time() * 1000))
