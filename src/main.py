@@ -5,6 +5,7 @@ import json
 import getConfig as gcf
 import createDB
 import readVPC2InsertDB as rv2
+import createVPC
 
 #Flask init
 app = Flask(__name__)
@@ -47,6 +48,20 @@ def read2insert():
     return 'sucess'
 
 
+@app.route('/create_vpc', methods=['POST'])
+def create_vpc():
+    #req = request.get_json()
+    api = app_conf['API']
+    source = app_conf['SOURCE-NAVER-CLOUD']
+    target = app_conf['TARGET-NAVER-CLOUD']
+
+    # for k, v in req.items():
+    #     source[k] = v
+    
+    cv = createVPC.Create(api, source, target)
+    cv.run()
+
+    return 'sucess'
 
 #Server Run
 if __name__ == '__main__':

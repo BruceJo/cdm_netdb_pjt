@@ -1,10 +1,10 @@
-import connCockroachDB as ccdb
+import connDbnApi as cda
 import naverCloud as ncset
 
 class Read2Insert():
     def __init__(self, api, destination):
         self.destination = destination
-        self.cc = ccdb.Connect(api=api, destination=destination)
+        self.cc = cda.Connect(api=api, destination=destination)
         self.conn = self.cc.connect_cockroachdb()
         self.conn.autocommit = True
         self.cur = self.conn.cursor()
@@ -27,7 +27,7 @@ class Read2Insert():
             self.api_url, self.sub_url = self.nc[name]["api_url"], self.nc[name]["delete"]
 
     def read_db(self):
-        res = self.cc.get_list(self.api_url, self.sub_url)
+        res = self.cc.request_api(self.api_url, self.sub_url)
         # print('res','\n',res)
         return res
     
@@ -52,7 +52,7 @@ class Read2Insert():
 
         for row in condition_list:
             fetch_body = eval("{" + ", ".join([f"'{k}':{v}" for k, v in self.special_info[target]['fetch'].items()]) + "}")
-            res = self.cc.get_list(self.api_url, self.sub_url, **fetch_body)
+            res = self.cc.request_api(self.api_url, self.sub_url, **fetch_body)
             # print(res)
 
             # loop

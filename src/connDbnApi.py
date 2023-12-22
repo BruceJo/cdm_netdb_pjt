@@ -20,6 +20,7 @@ class Connect():
             self.port = destination['port']
             self.user = destination['user']
 
+    # conn api
     def create_signature(self, method, api_url, timestamp):
         secret_key_bytes = bytes(self.secret_key, 'UTF-8')
         message = bytes(f"{method} {api_url}\n{timestamp}\n{self.access_key}", 'UTF-8')
@@ -41,6 +42,20 @@ class Connect():
 
         return result
 
+    def request_api(self, api_url, sub_url, **params):
+        timestamp = str(int(time.time() * 1000))
+        method = "GET"
+        api_url = (f"/{api_url}/{sub_url}"
+                "?regionCode=KR"
+                "&responseFormatType=json")
+        check_bool = lambda x: str(x).lower() if isinstance(x, bool) else str(x)
+        param_format = "".join([f"&{k}={urllib.parse.quote(check_bool(v))}" for k, v in params.items()])
+
+        response = self.send_request(method, api_url+param_format, timestamp)
+
+        return response
+    
+    ## conn db
     def connect_cockroachdb(self):
         try:
             connection = psycopg2.connect(
@@ -53,31 +68,7 @@ class Connect():
         except Exception as e:
             print(f"Database connection failure: {e}")
             return None
-    
-    def get_list(self, api_url, sub_url, **params):
-        timestamp = str(int(time.time() * 1000))
-        method = "GET"
-        api_url = (f"/{api_url}/{sub_url}"
-                "?regionCode=KR"
-                "&responseFormatType=json")
-        check_bool = lambda x: str(x).lower() if isinstance(x, bool) else str(x)
-        param_format = "".join([f"&{k}={urllib.parse.quote(check_bool(v))}" for k, v in params.items()])
-
-        response = self.send_request(method, api_url+param_format, timestamp)
         
-        return response
-    
-    def get_networkaclrule_list(self, api_url, sub_url, networkaclno):
-        timestamp = str(int(time.time() * 1000))
-        method = "GET"
-        api_url = (f"/{api_url}/{sub_url}"
-                "?regionCode=KR"
-                "&responseFormatType=json"
-                f"&networkAclNo={networkaclno}")
-        response = self.send_request(method, api_url, timestamp)
-        
-        return response.text
-
     def query_db(self, q):
         conn = self.connect_cockroachdb()
         cur = conn.cursor()
