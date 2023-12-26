@@ -124,6 +124,23 @@ def url_info():
             "api_url" : "vserver/v2",
             "read" : "getInitScriptList"
         },
+        # 은미
+        "LoadBalancerInstance" : {
+            "api_url" : "vloadbalancer/v2",
+            "read" : "getLoadBalancerInstanceList"
+        },
+        "LoadBalancerListener" : {
+            "api_url" : "vloadbalancer/v2",
+            "read" : "getLoadBalancerListenerList"
+        },
+        "LoadBalancerRule" : {
+            "api_url" : "vloadbalancer/v2",
+            "read" : "getLoadBalancerRuleList"
+        },
+        "LoadBalancerRuleAction" : {
+            "api_url" : "vloadbalancer/v2",
+            "read" : "getLoadBalancerRuleList"
+        },
     }
 
 def special_info():
@@ -182,7 +199,34 @@ def special_info():
             "fetch" : {
                 "accessControlGroupNo" : "row['accesscontrolgroupno']"
             }
-        }
+        },
+        "loadbalancerlistener" : {
+            "table" : ["loadbalancerinstance"],
+            "where" : [],
+            "value" : ["loadbalancerinstanceno"],
+            "stage" : "loadBalancerListenerList",
+            "fetch" : {
+                "loadBalancerInstanceNo" : "row['loadbalancerinstanceno']"
+            }
+        },
+        "loadbalancerrule" : {
+            "table" : ["loadbalancerlistener"],
+            "where" : [],
+            "value" : ["loadbalancerlistenerno"],
+            "stage" : "loadBalancerRuleList",
+            "fetch" : {
+                "loadBalancerListenerNo" : "row['loadbalancerlistenerno']"
+            }
+        },
+        "loadbalancerruleaction" : {
+            "table" : ["loadbalancerlistener"],
+            "where" : [],
+            "value" : ["loadbalancerlistenerno"],
+            "stage" : "loadBalancerRuleList",
+            "fetch" : {
+                "loadBalancerListenerNo" : "row['loadbalancerlistenerno']"
+            }
+        },
     }
 
 def code_candidate():
@@ -205,7 +249,8 @@ def code_candidate():
         PublicIpInstance = ['publicIpInstanceStatus', 'publicIpInstanceOperation'],
         VpcPeeringInstance = ['vpcPeeringInstanceStatus', 'vpcPeeringInstanceOperation'],
         AccessControlGroup = ['accessControlGroupStatus'],
-        InitScript = ['osType']
+        InitScript = ['osType'],
+        LoadBalancerInstance = ['loadBalancerInstanceStatus', 'loadBalancerInstanceOperation', 'loadBalancerType', 'loadBalancerNetworkType', 'throughputType']
     )
 
 def out_candidate():
