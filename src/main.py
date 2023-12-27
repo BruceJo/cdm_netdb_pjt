@@ -16,13 +16,13 @@ def create_db():
     # request format
     # {
     #     "dbName" : "cdm_fix",
-    #     "schemaName" : "{some_resource_name}",
+    #     "schemaName" : "{your_schema_name}",
     #     "host" : "211.188.69.4",
     #     "port" : "26257",
     #     "user" : "root"
     # }
     req = request.get_json()
-    source = app_conf['SOURCE-NAVER-CLOUD']
+    source = app_conf['SOURCE-NAVER-CLOUD'].copy()
     
     for k, v in req.items():
         source[k] = v
@@ -35,12 +35,34 @@ def create_db():
 
 @app.route('/read2insert', methods=['POST'])
 def read2insert():
-    #req = request.get_json()
-    api = app_conf['API']
-    source = app_conf['SOURCE-NAVER-CLOUD']
+    # {
+    #     "api": {
+    #         "accessKey": "mYUP1ZqESUOpjyOokWC8",
+    #         "secretKey": "31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM",
+    #         "ncloudUrl": "https://ncloud.apigw.gov-ntruss.com",
+    #         "billingApiUrl": "https://billingapi.apigw.gov-ntruss.com"
+    #     },
+    #     "source": {
+    #         "dbName": "cdm_fix",
+    #         "schemaName": "test_schema",
+    #         "schemaPath": "../schema/naverCloudSchema.sql",
+    #         "host": "211.188.69.4",
+    #         "port": "26257",
+    #         "user": "root"
+    #     }
+    # }
+    req = request.get_json()
+    api = app_conf['API'].copy()
+    source = app_conf['SOURCE-NAVER-CLOUD'].copy()
     
-    # for k, v in req.items():
-    #     source[k] = v
+    # print({'api' : api, 'source' : source})
+
+    def change_default(obj, req_key):
+        if req_key in req.keys():
+            for k, v in req[req_key].items():
+                obj[k] = v
+    change_default(api, 'api')
+    change_default(source, 'source')
     
     ri = rv2.Read2Insert(api, source)
     ri.run()

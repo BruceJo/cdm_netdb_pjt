@@ -141,6 +141,14 @@ def url_info():
             "api_url" : "vloadbalancer/v2",
             "read" : "getLoadBalancerRuleList"
         },
+        "LoadBalancerRuleCondition" : {
+            "api_url" : "vloadbalancer/v2",
+            "read" : "getLoadBalancerRuleList"
+        },
+        "LoadBalancerSubnet" : {
+            "api_url" : "vloadbalancer/v2",
+            "read" : "getLoadBalancerInstanceList"
+        },
     }
 
 def special_info():
@@ -227,6 +235,15 @@ def special_info():
                 "loadBalancerListenerNo" : "row['loadbalancerlistenerno']"
             }
         },
+        "loadbalancerrulecondition" : {
+            "table" : ["loadbalancerlistener"],
+            "where" : [],
+            "value" : ["loadbalancerlistenerno"],
+            "stage" : "loadBalancerRuleList",
+            "fetch" : {
+                "loadBalancerListenerNo" : "row['loadbalancerlistenerno']"
+            }
+        },
     }
 
 def code_candidate():
@@ -268,7 +285,8 @@ def out_candidate():
         blockstoragesnapshotinstance = ['originalBlockStorageInstanceNo', 'isBootable'],
         networkinterface = ['enableFlowLog'],
         product = ['productItemKind', 'productItemKindDetail', 'softwareType'],
-        vpcpeeringinstance = ['targetVpcName', 'sourceVpcIpv4CidrBlock', 'targetVpcIpv4CidrBlock', 'sourceVpcName', 'sourceVpcNo', 'targetVpcNo']
+        vpcpeeringinstance = ['targetVpcName', 'sourceVpcIpv4CidrBlock', 'targetVpcIpv4CidrBlock', 'sourceVpcName', 'sourceVpcNo', 'targetVpcNo'],
+        LoadBalancerSubnet = ['publicIpInstanceNo']
     )
 
 def col_name_mapper():
@@ -284,7 +302,8 @@ def col_name_mapper():
             'originalBlockStorageInstanceNo' : 'blockstorageinstanceid',
             'productItemKind' : 'producttype',
             'targetVpcNo' : 'targetvpcid',
-            'sourceVpcNo' : 'sourcevpcid'
+            'sourceVpcNo' : 'sourcevpcid',
+            'publicIpInstanceNo' : 'publicipinstanceid'
         },
         'launchconfiguration' : {
             'serverProductCode' : 'serverproductid'
@@ -292,4 +311,20 @@ def col_name_mapper():
         'serverinstance' : {
             'serverProductCode' : 'serverproductcodeid'
         }
+    }
+
+def init_table_rows():
+    return {
+        'region' : [
+            {'regioncode' : 'KR', 'regionname' : 'KR'}
+        ],
+        'zone' : [
+            {'zonename' : 'KR-1', 'zonecode' : 'KR-1', 'zonedescription' : 'KR-1'}
+        ],
+        'protocoltype' : [
+            {'code' : 'err', 'codename' : 'err', 'codenumber' : 0},
+            {'code' : 'tcp', 'codename' : 'tcp', 'codenumber' : 1},
+            {'code' : 'icmp', 'codename' : 'icmp', 'codenumber' : 2},
+            {'code' : 'udp', 'codename' : 'udp', 'codenumber' : 3}
+        ]
     }
