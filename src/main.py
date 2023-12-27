@@ -1,7 +1,5 @@
-from flask import Flask, request, Response
+from flask import Flask, request
 from flask_cors import CORS
-import json
-# import requests
 import getConfig as gcf
 import createDB
 import readVPC2InsertDB as rv2

@@ -1,141 +1,16 @@
 def url_info():
     return {
-        # 중권
-        "RouteTable" : {
-            "api_url" : "vpc/v2",
-            "create" : "createRouteTable",
-            "read" : "getRouteTableList",
-            "update" : "setRouteTableDescription",
-            "delete" : "deleteRouteTable"
-        },
-        "Route" : {
-            "api_url" : "vpc/v2", 
-            "create" : "addRoute",
-            "read" : "getRouteList"
-        },
-        "PlacementGroup" : {
-            "api_url" : "vserver/v2",
-            "create" : "createPlacementGroup",
-            "read" : "getPlacementGroupList",
-            "delete" : "deletePlacementGroup"
-        },
-        "LaunchConfiguration" : {
-            "api_url" : "vautoscaling/v2",
-            "create" : "createLaunchConfiguration",
-            "read" : "getLaunchConfigurationList",
-            "delete" : "deleteLaunchConfiguration"
-        },
-        "InAutoScalingGroupServerInstance" : {  #자원 개수에 따른 루프 확인 필요
-            "api_url" : "vautoscaling/v2",
-            "read" : "getAutoScalingGroupList"
-        },
         "AdjustmentType" : {
             "api_url" : "vautoscaling/v2",
             "read" : "getAdjustmentTypeList"
         },
-        # 현병
-        "LoginKey" : {
-            "api_url" : "vserver/v2",
-            "read" : "getLoginKeyList"
-        },
-        "ServerInstance" : {
-            "api_url" : "vserver/v2",
-            "read" : "getServerInstanceList"
-        },
-        "Product" : {
-            "api_url" : "billing/v1/product",
-            "read" : "getProductList"
-        },
-        "MemberServerImageInstance" : {
-            "api_url" : "vserver/v2",
-            "read" : "getMemberServerImageInstanceList"
-        },
-        # 우동
-        "AutoScalingGroup" : {
+        "InAutoScalingGroupServerInstance" : {
             "api_url" : "vautoscaling/v2",
             "read" : "getAutoScalingGroupList"
-        },
-        "NatGatewayInstance" : {
-            "api_url" : "vpc/v2",
-            "read" : "getNatGatewayInstanceList"
-        },
-        "NetworkAcl" : {
-            "api_url" : "vpc/v2",
-            "read" : "getNetworkAclList"
-        },
-        "NetworkAclDenyAllowGroup" : {
-            "api_url" : "vpc/v2",
-            "read" : "getNetworkAclDenyAllowGroupList"
-        },
-        "Vpc" : {
-            "api_url" : "vpc/v2",
-            "read" : "getVpcList"
-        },
-        "Subnet" : {
-            "api_url" : "vpc/v2",
-            "read" : "getSubnetList"
-        },
-        "ActivityLog" : {
-            "api_url" : "vautoscaling/v2",
-            "read" : "getAutoScalingActivityLogList"
-        },
-        "NetworkAclRule" : {
-            "api_url" : "vpc/v2",
-            "read" : "getNetworkAclRuleList"
-        },
-        "ScalingPolicy" : {
-            "api_url" : "vautoscaling/v2",
-            "read" : "getAutoScalingPolicyList"
-        },
-        "ScheduledUpdateGroupAction" : {
-            "api_url" : "vautoscaling/v2",
-            "read" : "getScheduledActionList"
-        },
-        "BlockStorageInstance" : {
-            "api_url" : "vserver/v2",
-            "read" : "getBlockStorageInstanceList"
-        },
-        "BlockStorageSnapshotInstance" : {
-            "api_url" : "vserver/v2",
-            "read" : "getBlockStorageSnapshotInstanceList"
-        },
-        "NetworkInterface" : {
-            "api_url" : "vserver/v2",
-            "read" : "getNetworkInterfaceList"
-        },
-        "PublicIpInstance" : {
-            "api_url" : "vserver/v2",
-            "read" : "getPublicIpInstanceList"
-        },
-        "VpcPeeringInstance" : {
-            "api_url" : "vpc/v2",
-            "read" : "getVpcPeeringInstanceList"
-        },
-        # 상우
-        "AccessControlGroup" : {
-            "api_url" : "vserver/v2",
-            "read" : "getAccessControlGroupList"
-        },
-        "AccessControlGroupRule" : {
-            "api_url" : "vserver/v2",
-            "read" : "getAccessControlGroupRuleList"
         },
         "InitScript" : {
             "api_url" : "vserver/v2",
             "read" : "getInitScriptList"
-        },
-        # 은미
-        "LoadBalancerInstance" : {
-            "api_url" : "vloadbalancer/v2",
-            "read" : "getLoadBalancerInstanceList"
-        },
-        "LoadBalancerListener" : {
-            "api_url" : "vloadbalancer/v2",
-            "read" : "getLoadBalancerListenerList"
-        },
-        "LoadBalancerRule" : {
-            "api_url" : "vloadbalancer/v2",
-            "read" : "getLoadBalancerRuleList"
         },
         "LoadBalancerRuleAction" : {
             "api_url" : "vloadbalancer/v2",
@@ -145,10 +20,130 @@ def url_info():
             "api_url" : "vloadbalancer/v2",
             "read" : "getLoadBalancerRuleList"
         },
+        "Vpc" : {
+            "api_url" : "vpc/v2",
+            "read" : "getVpcList"
+        },
+        "AccessControlGroup" : {
+            "api_url" : "vserver/v2",
+            "read" : "getAccessControlGroupList"
+        },
+        "VpcPeeringInstance" : {
+            "api_url" : "vpc/v2",
+            "read" : "getVpcPeeringInstanceList"
+        },
+        "NetworkAclDenyAllowGroup" : {
+            "api_url" : "vpc/v2",
+            "read" : "getNetworkAclDenyAllowGroupList"
+        },
+        "NetworkAcl" : {
+            "api_url" : "vpc/v2",
+            "read" : "getNetworkAclList"
+        },
+        "LoadBalancerInstance" : {
+            "api_url" : "vloadbalancer/v2",
+            "read" : "getLoadBalancerInstanceList"
+        },
+        "RouteTable" : {
+            "api_url" : "vpc/v2",
+            "create" : "createRouteTable",
+            "read" : "getRouteTableList",
+            "update" : "setRouteTableDescription",
+            "delete" : "deleteRouteTable"
+        },
+        "LoginKey" : {
+            "api_url" : "vserver/v2",
+            "read" : "getLoginKeyList"
+        },
+        "AccessControlGroupRule" : {
+            "api_url" : "vserver/v2",
+            "read" : "getAccessControlGroupRuleList"
+        },        
+        "Product" : {
+            "api_url" : "billing/v1/product",
+            "read" : "getProductList"
+        },
+        "NetworkAclRule" : {
+            "api_url" : "vpc/v2",
+            "read" : "getNetworkAclRuleList"
+        },
+        "PlacementGroup" : {
+            "api_url" : "vserver/v2",
+            "create" : "createPlacementGroup",
+            "read" : "getPlacementGroupList",
+            "delete" : "deletePlacementGroup"
+        },
+        "Subnet" : {
+            "api_url" : "vpc/v2",
+            "read" : "getSubnetList"
+        },
+        "LoadBalancerListener" : {
+            "api_url" : "vloadbalancer/v2",
+            "read" : "getLoadBalancerListenerList"
+        },
+        "PublicIpInstance" : {
+            "api_url" : "vserver/v2",
+            "read" : "getPublicIpInstanceList"
+        },
+        "Route" : {
+            "api_url" : "vpc/v2", 
+            "create" : "addRoute",
+            "read" : "getRouteList"
+        },
+        "BlockStorageInstance" : {
+            "api_url" : "vserver/v2",
+            "read" : "getBlockStorageInstanceList"
+        },
+        "LaunchConfiguration" : {
+            "api_url" : "vautoscaling/v2",
+            "create" : "createLaunchConfiguration",
+            "read" : "getLaunchConfigurationList",
+            "delete" : "deleteLaunchConfiguration"
+        },
+        "ServerInstance" : {
+            "api_url" : "vserver/v2",
+            "read" : "getServerInstanceList"
+        },
+        "AutoScalingGroup" : {
+            "api_url" : "vautoscaling/v2",
+            "read" : "getAutoScalingGroupList"
+        },
+        "MemberServerImageInstance" : {
+            "api_url" : "vserver/v2",
+            "read" : "getMemberServerImageInstanceList"
+        },
+        "NetworkInterface" : {
+            "api_url" : "vserver/v2",
+            "read" : "getNetworkInterfaceList"
+        },
+        "NatGatewayInstance" : {
+            "api_url" : "vpc/v2",
+            "read" : "getNatGatewayInstanceList"
+        },
         "LoadBalancerSubnet" : {
             "api_url" : "vloadbalancer/v2",
             "read" : "getLoadBalancerInstanceList"
         },
+        "LoadBalancerRule" : {
+            "api_url" : "vloadbalancer/v2",
+            "read" : "getLoadBalancerRuleList"
+        },
+        "BlockStorageSnapshotInstance" : {
+            "api_url" : "vserver/v2",
+            "read" : "getBlockStorageSnapshotInstanceList"
+        },
+        "ActivityLog" : {
+            "api_url" : "vautoscaling/v2",
+            "read" : "getAutoScalingActivityLogList"
+        },
+        "ScalingPolicy" : {
+            "api_url" : "vautoscaling/v2",
+            "read" : "getAutoScalingPolicyList"
+        },
+        "ScheduledUpdateGroupAction" : {
+            "api_url" : "vautoscaling/v2",
+            "read" : "getScheduledActionList"
+        }
     }
 
 def special_info():
@@ -286,7 +281,7 @@ def out_candidate():
         networkinterface = ['enableFlowLog'],
         product = ['productItemKind', 'productItemKindDetail', 'softwareType'],
         vpcpeeringinstance = ['targetVpcName', 'sourceVpcIpv4CidrBlock', 'targetVpcIpv4CidrBlock', 'sourceVpcName', 'sourceVpcNo', 'targetVpcNo'],
-        LoadBalancerSubnet = ['publicIpInstanceNo']
+        loadbalancersubnet = ['publicIpInstanceNo']
     )
 
 def col_name_mapper():
