@@ -1,7 +1,7 @@
 from flask import Flask, request
 from flask_cors import CORS
 import getConfig as gcf
-import createDB
+import createSchema
 import readVPC2InsertDB as rv2
 import createVPC
 
@@ -9,7 +9,7 @@ import createVPC
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/create_db', methods=['POST'])
+@app.route('/create_schema', methods=['POST'])
 def create_db():
     # request format
     # {
@@ -20,12 +20,12 @@ def create_db():
     #     "user" : "root"
     # }
     req = request.get_json()
-    source = app_conf['SOURCE-NAVER-CLOUD'].copy()
+    source = app_conf['DATABASE-SOURCE'].copy()
     
     for k, v in req.items():
         source[k] = v
     
-    cock_create = createDB.Create(source)
+    cock_create = createSchema.Create(source)
     cock_create.create_schema()
     cock_create.create_table()
 
@@ -34,13 +34,13 @@ def create_db():
 @app.route('/read2insert', methods=['POST'])
 def read2insert():
     # {
-    #     "api": {
+    #     "apiSource": {
     #         "accessKey": "mYUP1ZqESUOpjyOokWC8",
     #         "secretKey": "31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM",
     #         "ncloudUrl": "https://ncloud.apigw.gov-ntruss.com",
     #         "billingApiUrl": "https://billingapi.apigw.gov-ntruss.com"
     #     },
-    #     "source": {
+    #     "dbSource": {
     #         "dbName": "cdm_fix",
     #         "schemaName": "test_schema",
     #         "schemaPath": "../schema/naverCloudSchema.sql",
@@ -50,8 +50,8 @@ def read2insert():
     #     }
     # }
     req = request.get_json()
-    api = app_conf['API'].copy()
-    source = app_conf['SOURCE-NAVER-CLOUD'].copy()
+    api = app_conf['API-SOURCE-NAVER-CLOUD'].copy()
+    source = app_conf['DATABASE-SOURCE'].copy()
     
     # print({'api' : api, 'source' : source})
 
@@ -59,8 +59,8 @@ def read2insert():
         if req_key in req.keys():
             for k, v in req[req_key].items():
                 obj[k] = v
-    change_default(api, 'api')
-    change_default(source, 'source')
+    change_default(api, 'apiSource')
+    change_default(source, 'dbSource')
     
     ri = rv2.Read2Insert(api, source)
     ri.run()
@@ -68,20 +68,20 @@ def read2insert():
     return 'sucess'
 
 
-@app.route('/create_vpc', methods=['POST'])
-def create_vpc():
-    #req = request.get_json()
-    api = app_conf['API']
-    source = app_conf['SOURCE-NAVER-CLOUD']
-    target = app_conf['TARGET-NAVER-CLOUD']
+# @app.route('/create_vpc', methods=['POST'])
+# def create_vpc():
+#     #req = request.get_json()
+#     api = app_conf['API-SOURCE-NAVER-CLOUD']
+#     source = app_conf['DATABASE-SOURCE']
+#     target = app_conf['DATABASE-TARGET']
 
-    # for k, v in req.items():
-    #     source[k] = v
+#     # for k, v in req.items():
+#     #     source[k] = v
     
-    cv = createVPC.Create(api, source, target)
-    cv.run()
+#     cv = createVPC.Create(api, source, target)
+#     cv.run()
 
-    return 'sucess'
+#     return 'sucess'
 
 #Server Run
 if __name__ == '__main__':
