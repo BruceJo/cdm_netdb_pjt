@@ -1,5 +1,10 @@
+############################################
+# Common Info                              #
+############################################
+
 def url_info():
     return {
+        ### https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 주소를 작성
         "AdjustmentType" : {
             "api_url" : "vautoscaling/v2",
             "read" : "getAdjustmentTypeList"
@@ -145,6 +150,26 @@ def url_info():
             "read" : "getScheduledActionList"
         }
     }
+
+def set_url(name, action):
+    nc = url_info()
+    table_name = name.lower()
+    action = action[0].lower()
+
+    if action == "c":
+        api_url, sub_url = nc[name]["api_url"], nc[name]["create"]
+    elif action == "r":
+        api_url, sub_url = nc[name]["api_url"], nc[name]["read"]
+    elif action == "u":
+        api_url, sub_url = nc[name]["api_url"], nc[name]["update"]
+    elif action == "d":
+        api_url, sub_url = nc[name]["api_url"], nc[name]["delete"]
+    
+    return table_name, api_url, sub_url
+
+############################################
+# Read to Insert Info                      #
+############################################
 
 def special_info():
     return {
@@ -322,4 +347,14 @@ def init_table_rows():
             {'code' : 'icmp', 'codename' : 'icmp', 'codenumber' : 2},
             {'code' : 'udp', 'codename' : 'udp', 'codenumber' : 3}
         ]
+    }
+
+############################################
+# Create Info                              #
+############################################
+
+def include_keys():
+    return {
+        ### https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 요청 파라미터를 작성
+        'routetable' : ['vpcNo', 'routeTableName', 'supportedSubnetTypeCode', 'routeTableDescription']
     }
