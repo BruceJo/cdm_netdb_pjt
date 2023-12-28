@@ -8,15 +8,15 @@
 |-- schema
 |   `--naverCloudSchema.sql
 |-- src
-|   |-- connCockroachDB.py
-|   |-- createDB.py
+|   |-- connDbnApi.py
+|   |-- createSchema.py
 |   |-- createVPC.py
-|   |-- deleteVPC.py
 |   |-- getConfig.py
 |   |-- main.py
 |   |-- naverCloud.py
 |   |-- readVPC2InsertDB.py
-|   `-- updateVPC.py
+|   |-- vudVPC.py
+|   `-- .gitignore
 `-- README.md
 ```
 
