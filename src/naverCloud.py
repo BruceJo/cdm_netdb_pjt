@@ -4,7 +4,7 @@
 
 def url_info():
     return {
-        ### https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 주소를 작성
+        ### step.2 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 주소를 작성
         "AdjustmentType" : {
             "api_url" : "vautoscaling/v2",
             "read" : "getAdjustmentTypeList"
@@ -355,6 +355,6 @@ def init_table_rows():
 
 def include_keys():
     return {
-        ### https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 요청 파라미터를 작성
+        ### step.3 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 요청 파라미터를 작성
         'routetable' : ['vpcNo', 'routeTableName', 'supportedSubnetTypeCode', 'routeTableDescription']
     }

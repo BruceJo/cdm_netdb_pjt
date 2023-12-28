@@ -50,7 +50,7 @@ class Create():
 
         dict1 = {}
         for key in self.include_keys[self.table_name]:
-            ### Source 테이블에서 가져온 정보를 알맞게 변환
+            ### step.4 Source 테이블에서 가져온 정보를 알맞게 변환
             if key[-4:] == 'Name':      # 테스트 환경에서 Naver Cloud가 하나뿐이므로, 중복이름인경우 생성이 불가하기에 예외처리
                 value = row_dict[key.lower()] + '-dr'
             elif key == 'vpcNo':
@@ -73,7 +73,7 @@ class Create():
 
     def run(self):
         ### for this in self.nc.keys():
-        this = 'RouteTable' ### 본인 Table을 기입
+        this = 'RouteTable' ### step.1 본인 Table을 기입
         try:
             self.set_url(this, "create")
         except KeyError:
@@ -88,6 +88,7 @@ class Create():
         finally:
             self.set_url(this, "read")
             print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+            ### step.5 터미널에 출력되는 1~5를 확인
         
         # # Integration test
         # rows = self.get_table()
