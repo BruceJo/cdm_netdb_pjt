@@ -79,6 +79,7 @@ class Create():
         except KeyError:
             pass    # continue
         
+        # Unit test
         row = self.get_table()[0]
         try:
             self.create(row)
@@ -87,3 +88,14 @@ class Create():
         finally:
             self.set_url(this, "read")
             print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+        
+        # # Integration test
+        # rows = self.get_table()
+        # for row in rows:
+        #     try:
+        #         self.create(row)
+        #     except Exception as e:
+        #         print(e)
+        #     finally:
+        #         self.set_url(this, "read")
+        #         print('5. api result\n', self.pretty_dict(self.read_db()), '\n')

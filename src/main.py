@@ -3,20 +3,21 @@ from flask_cors import CORS
 import getConfig as gcf
 import createSchema
 import readVPC2InsertDB as rv2
-import viewVPC
 import createVPC
-import updateVPC
+import vudVPC
 
 #Flask init
 app = Flask(__name__)
 CORS(app)
 
+# function
 def change_default(req, obj, req_key):
     if req_key in req.keys():
         for k, v in req[req_key].items():
             obj[k] = v
     return obj
 
+# route
 @app.route('/create_schema', methods=['POST'])
 def create_db():
     # request format. Required ["dbSource"]["schemaName"]
@@ -41,6 +42,7 @@ def create_db():
     cock_create.create_table()
 
     return 'success'
+
 
 @app.route('/read2insert', methods=['POST'])
 def read2insert():
@@ -115,9 +117,10 @@ def create_vpc():
 
     return 'success'
 
+
 @app.route('/view_vpc', methods=['POST'])
 def view_vpc():
-    # request format. Required ["target"]["name"]
+    # request format. Required ["view"]["target"]
     # {
     #     "apiTarget": {
     #         "accessKey": "mYUP1ZqESUOpjyOokWC8",
@@ -125,44 +128,92 @@ def view_vpc():
     #         "ncloudUrl": "https://ncloud.apigw.gov-ntruss.com",
     #         "billingApiUrl": "https://billingapi.apigw.gov-ntruss.com"
     #     },
-    #     "target" : {
-    #         "name" : "RouteTable"
+    #     "read" : {
+    #         "target" : "RouteTable"
     #     }
     # }
     req = request.get_json()
-    if 'target' not in req: 
-        return 'fail, need key ["target"]', 400
-    elif 'name' not in req['target']:
-        return 'fail, need key ["target"]["name"]', 400
+    if 'read' not in req: 
+        return 'fail, need key ["read"]', 400
+    elif 'target' not in req['read']:
+        return 'fail, need key ["read"]["target"]', 400
     
     api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
     api_target = change_default(req, api_target, 'apiTarget')
     
-    vv = viewVPC.View(api_target, req['target'])
+    vv = vudVPC.VUD(api_target, req['read'], 'r')
     
-    return vv.view()
+    return vv.run()
 
 
-# @app.route('/update_vpc', methods=['POST'])
-# def update_vpc():
-#     req = request.get_json()
-#     if 'action' not in req: 
-#         return 'fail, need key ["action"]', 400
-#     elif req['action'] not in ['check', 'update']:
-#         return 'fail, need value ["action"] : { "check" | "update" }', 400
+@app.route('/update_vpc', methods=['POST'])
+def update_vpc():
+    # request format. Required ["update"]["target"], ["update"]["body"]
+    # {
+    #     "apiTarget": {
+    #         "accessKey": "mYUP1ZqESUOpjyOokWC8",
+    #         "secretKey": "31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM",
+    #         "ncloudUrl": "https://ncloud.apigw.gov-ntruss.com",
+    #         "billingApiUrl": "https://billingapi.apigw.gov-ntruss.com"
+    #     },
+    #     "update" : {
+    #         "target" : "RouteTable",
+    #         "body" : {
+    #             "routeTableNo" : "20247",
+    #             "routeTableDescription" : "many thanks, Jo."
+    #         }
+    #     }
+    # }
+    req = request.get_json()
+    if 'update' not in req: 
+        return 'fail, need key ["update"]', 400
+    elif 'target' not in req['update']:
+        return 'fail, need key ["update"]["target"]', 400
+    elif 'body' not in req['update']:
+        return 'fail, need key ["update"]["body"]', 400
 
-#     api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
-#     api_target = change_default(req, api_target, 'apiTarget')
+    api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
+    api_target = change_default(req, api_target, 'apiTarget')
     
-#     if req['action'] == 'check':
-#         return updateVPC.Update(api_target).check()
-#     elif req['action'] == 'update':
-#         if 'update' not in req:
-#             return 'fail, need update details', 400
-#         return 'success'
+    uv = vudVPC.VUD(api_target, req['update'], 'u')
+    
+    return uv.run()
 
 
-#Server Run
+@app.route('/delete_vpc', methods=['POST'])
+def delete_vpc():
+    # request format. Required ["delete"]["target"], ["delete"]["body"]
+    # {
+    #     "apiTarget": {
+    #         "accessKey": "mYUP1ZqESUOpjyOokWC8",
+    #         "secretKey": "31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM",
+    #         "ncloudUrl": "https://ncloud.apigw.gov-ntruss.com",
+    #         "billingApiUrl": "https://billingapi.apigw.gov-ntruss.com"
+    #     },
+    #     "delete" : {
+    #         "target" : "RouteTable",
+    #         "body" : {
+    #             "routeTableNo" : "20247"
+    #         }
+    #     }
+    # }
+    req = request.get_json()
+    if 'delete' not in req: 
+        return 'fail, need key ["delete"]', 400
+    elif 'target' not in req['delete']:
+        return 'fail, need key ["delete"]["target"]', 400
+    elif 'body' not in req['delete']:
+        return 'fail, need key ["delete"]["body"]', 400
+
+    api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
+    api_target = change_default(req, api_target, 'apiTarget')
+    
+    ud = vudVPC.VUD(api_target, req['delete'], 'd')
+    
+    return ud.run()
+
+
+# Server Run
 if __name__ == '__main__':
     CONF_PATH = "../conf/app.conf"
     app_conf = gcf.Config(CONF_PATH).getConfig()
