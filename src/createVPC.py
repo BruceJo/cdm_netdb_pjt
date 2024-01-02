@@ -65,14 +65,30 @@ class Create():
                 pass
             elif key == 'blockStorageSnapshotInstanceNo':
                 value = None
-            elif key == 'blockStorageSize':
-                value = row_dict['blockstoragesize']
-                value = round(value/(1024**3))
+            # 나중에 한번에 묶어 처리 'Code'
+            elif key == 'loadBalancerTypeCode':
+                value = 'APPLICATION'   # 이 예제에서 db의 정보가 Code가 아닌 값으로 저장되어있어 예외처리
+            elif key in ['loadBalancerNetworkTypeCode', 'throughputTypeCode']:
+                value = row_dict[key[:-4].lower()].upper() # 이 예제에서 db의 정보가 Code가 아닌 값으로 저장되어있어 예외처리
+                print('value', value)
+            elif key in ['supportedSubnetTypeCode', 'loadBalancerTypeCode', 'loadBalancerNetworkTypeCode', 'throughputTypeCode']:
+                value = row_dict[key[:-4].lower()]
+            elif '.N' in key:   # DB 컬럼명 중 'List'로 끝나는 컬럼 중점적으로 자료형 사전 통일 필요 from readVPC2InsertDB
+                # _temp_key = key.split('.N')
+                # _main_key, _sub_key = _temp_key[0], _temp_key[1] if _temp_key[1] else None
+                # obj = eval(row_dict[_main_key.lower()])
+                
+                # if _sub_key:
+                #     ...
+                # else:
+                #     ...
+                continue
             else:
                 value = row_dict[key.lower()]
-            dict1.update({key : value})
-            del dict1['blockStorageSnapshotInstanceNo']
 
+            dict1.update({key : value})
+        
+        dict1 = {k: v for k, v in dict1.items() if v is not None}
         print('3. body\n', self.pretty_dict(dict1), '\n')
         result = self.cc.request_api(self.api_url, self.sub_url, **dict1)
         print('4. request result\n', self.pretty_dict(result), '\n')
@@ -84,7 +100,7 @@ class Create():
 
     def run(self):
         ### for this in self.nc.keys():
-        this = 'BlockStorageInstance' ### step.1 본인 Table을 기입
+        this = 'publicipinstance' ### step.1 본인 Table을 기입
         try:
             self.set_url(this, "create")
         except KeyError:
@@ -92,13 +108,16 @@ class Create():
         
         # Unit test
         row = self.get_table()[0]
-        try:
-            self.create(row)
-        except Exception as e:
-            print(e)
-        finally:
-            self.set_url(this, "read")
-            print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+        self.create(row)
+        self.set_url(this, "read")
+        print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+        # try:
+        #     self.create(row)
+        # except Exception as e:
+        #     print(e)
+        # finally:
+        #     self.set_url(this, "read")
+        #     print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
             ### step.5 터미널에 출력되는 1~5를 확인
         
         # # Integration test
