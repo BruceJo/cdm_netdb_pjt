@@ -5,7 +5,7 @@ class Create():
         self.destination = destination
 
     def create_schema(self):
-        conn = cda.Connect(destination = self.destination).connect_cockroachdb()
+        conn = cda.Connect(db = self.destination).connect_cockroachdb()
         conn.autocommit = True
         cur = conn.cursor()
         q = f"CREATE SCHEMA IF NOT EXISTS {self.destination['schemaName']};"
@@ -14,7 +14,7 @@ class Create():
         conn.close()
     
     def create_table(self):
-        conn = cda.Connect(destination = self.destination).connect_cockroachdb()
+        conn = cda.Connect(db = self.destination).connect_cockroachdb()
         conn.autocommit = True
         cur = conn.cursor()
         with open(self.destination["schemaPath"], 'r') as file:
