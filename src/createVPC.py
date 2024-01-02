@@ -24,7 +24,7 @@ class Create():
     
     def set_url(self, name, action):
         self.table_name, self.api_url, self.sub_url = naverCloud.set_url(name, action)
-
+        
     def get_table(self):
         result = self.cc.query_db(f"SELECT * FROM {self.source_db['schemaName']}.{self.table_name};")
         return None if len(result) == 0 else result
@@ -55,6 +55,16 @@ class Create():
                 value = row_dict[key.lower()] + '-dr'
             elif key == 'vpcNo':
                 value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
+            elif key == 'supportedSubnetTypeCode':  # 나중에 한번에 묶어 처리 'Code'
+                value = row_dict['supportedsubnettype']
+            elif key == 'zoneCode':
+                value = self.get_value('zonecode', 'zone', **{'id' : row_dict['zoneid']})
+            elif key == 'blockStorageDiskDetailTypeCode':
+                value = row_dict['blockstoragediskdetailtype']
+            elif key == 'blockStorageVolumeTypeCode':
+                pass
+            elif key == 'blockStorageSnapshotInstanceNo':
+                value = None
             # 나중에 한번에 묶어 처리 'Code'
             elif key == 'loadBalancerTypeCode':
                 value = 'APPLICATION'   # 이 예제에서 db의 정보가 Code가 아닌 값으로 저장되어있어 예외처리
@@ -90,7 +100,7 @@ class Create():
 
     def run(self):
         ### for this in self.nc.keys():
-        this = 'LoadBalancerInstance' ### step.1 본인 Table을 기입
+        this = 'publicipinstance' ### step.1 본인 Table을 기입
         try:
             self.set_url(this, "create")
         except KeyError:
