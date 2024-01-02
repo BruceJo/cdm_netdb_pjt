@@ -3,9 +3,11 @@
 -- Drop table
 
 -- DROP TABLE accesscontrolgroup;
+--CREATE SEQUENCE
 
+CREATE SEQUENCE IF NOT EXISTS accesscontrolgroup_seq;
 CREATE TABLE accesscontrolgroup (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('accesscontrolgroup_seq'),
 	accesscontrolgroupno VARCHAR(255) NOT NULL,
 	accesscontrolgroupname VARCHAR(255) NOT NULL,
 	isdefault BOOL NOT NULL,
@@ -21,9 +23,9 @@ CREATE TABLE accesscontrolgroup (
 -- Drop table
 
 -- DROP TABLE adjustmenttype;
-
+CREATE SEQUENCE IF NOT EXISTS adjustmenttype_seq;
 CREATE TABLE adjustmenttype (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('adjustmenttype_seq'),
 	code VARCHAR(255) NOT NULL,
 	codename VARCHAR(255) NOT NULL,
 	CONSTRAINT adjustmenttype_pkey PRIMARY KEY (id ASC)
@@ -35,9 +37,9 @@ CREATE TABLE adjustmenttype (
 -- Drop table
 
 -- DROP TABLE inautoscalinggroupserverinstance;
-
+CREATE SEQUENCE IF NOT EXISTS inautoscalinggroupserverinstance_seq;
 CREATE TABLE inautoscalinggroupserverinstance (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('inautoscalinggroupserverinstance_seq'),
 	serverinstanceno VARCHAR(255) NULL,
 	healthstatus VARCHAR(255) NULL,
 	lifecyclestate VARCHAR(255) NULL,
@@ -50,9 +52,9 @@ CREATE TABLE inautoscalinggroupserverinstance (
 -- Drop table
 
 -- DROP TABLE initscript;
-
+CREATE SEQUENCE IF NOT EXISTS initscript_seq;
 CREATE TABLE initscript (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('initscript_seq'),
 	initscriptno VARCHAR(255) NOT NULL,
 	initscriptname VARCHAR(255) NOT NULL,
 	createdate TIMESTAMP NOT NULL,
@@ -68,9 +70,9 @@ CREATE TABLE initscript (
 -- Drop table
 
 -- DROP TABLE loadbalancerruleaction;
-
+CREATE SEQUENCE IF NOT EXISTS loadbalancerruleaction_seq;
 CREATE TABLE loadbalancerruleaction (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('loadbalancerruleaction_seq'),
 	ruleactiontype VARCHAR(255) NOT NULL,
 	targetgroupaction VARCHAR(255) NULL,
 	redirectionaction VARCHAR(255) NULL,
@@ -83,9 +85,9 @@ CREATE TABLE loadbalancerruleaction (
 -- Drop table
 
 -- DROP TABLE loadbalancerrulecondition;
-
+CREATE SEQUENCE IF NOT EXISTS loadbalancerrulecondition_seq;
 CREATE TABLE loadbalancerrulecondition (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('loadbalancerrulecondition_seq'),
 	ruleconditiontype VARCHAR(255) NOT NULL,
 	hostheadercondition VARCHAR(255) NULL,
 	pathpatterncondition VARCHAR(255) NULL,
@@ -98,9 +100,9 @@ CREATE TABLE loadbalancerrulecondition (
 -- Drop table
 
 -- DROP TABLE loginkey;
-
+CREATE SEQUENCE IF NOT EXISTS loginkey_seq;
 CREATE TABLE loginkey (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('loginkey_seq'),
 	fingerprint VARCHAR(255) NOT NULL,
 	keyname VARCHAR(255) NOT NULL,
 	createdate TIMESTAMP NOT NULL,
@@ -113,9 +115,9 @@ CREATE TABLE loginkey (
 -- Drop table
 
 -- DROP TABLE memberserverimageinstance;
-
+CREATE SEQUENCE IF NOT EXISTS memberserverimageinstance_seq;
 CREATE TABLE memberserverimageinstance (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('memberserverimageinstance_seq'),
 	originalserverinstanceid INT8 NOT NULL,
 	memberserverimageinstanceno VARCHAR(255) NOT NULL,
 	memberserverimagename VARCHAR(255) NOT NULL,
@@ -137,9 +139,9 @@ CREATE TABLE memberserverimageinstance (
 -- Drop table
 
 -- DROP TABLE placementgroup;
-
+CREATE SEQUENCE IF NOT EXISTS placementgroup_seq;
 CREATE TABLE placementgroup (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('placementgroup_seq'),
 	placementgroupno VARCHAR(255) NOT NULL,
 	placementgroupname VARCHAR(255) NOT NULL,
 	placementgrouptype VARCHAR(255) NOT NULL,
@@ -152,9 +154,9 @@ CREATE TABLE placementgroup (
 -- Drop table
 
 -- DROP TABLE product;
-
+CREATE SEQUENCE IF NOT EXISTS product_seq;
 CREATE TABLE product (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('product_seq'),
 	productcode VARCHAR(255) NOT NULL,
 	productname VARCHAR(255) NOT NULL,
 	producttype VARCHAR(255) NOT NULL,
@@ -179,9 +181,9 @@ CREATE TABLE product (
 -- Drop table
 
 -- DROP TABLE protocoltype;
-
+CREATE SEQUENCE IF NOT EXISTS protocoltype_seq;
 CREATE TABLE protocoltype (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('protocoltype_seq'),
 	code VARCHAR(255) NOT NULL,
 	codename VARCHAR(255) NOT NULL,
 	codenumber INT8 NOT NULL,
@@ -194,9 +196,9 @@ CREATE TABLE protocoltype (
 -- Drop table
 
 -- DROP TABLE publicipinstance;
-
+CREATE SEQUENCE IF NOT EXISTS publicipinstance_seq;
 CREATE TABLE publicipinstance (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('publicipinstance_seq'),
 	publicipinstanceno VARCHAR(255) NOT NULL,
 	publicip VARCHAR(255) NOT NULL,
 	createdate TIMESTAMP NOT NULL,
@@ -217,9 +219,9 @@ CREATE TABLE publicipinstance (
 -- Drop table
 
 -- DROP TABLE "region";
-
+CREATE SEQUENCE IF NOT EXISTS region_seq;
 CREATE TABLE region (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('region_seq'),
 	regioncode VARCHAR(255) NOT NULL,
 	regionname VARCHAR(255) NOT NULL,
 	CONSTRAINT region_pkey PRIMARY KEY (id ASC)
@@ -231,9 +233,9 @@ CREATE TABLE region (
 -- Drop table
 
 -- DROP TABLE accesscontrolgrouprule;
-
+CREATE SEQUENCE IF NOT EXISTS accesscontrolgrouprule_seq;
 CREATE TABLE accesscontrolgrouprule (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('accesscontrolgrouprule_seq'),
 	accesscontrolgroupid INT8 NOT NULL,
 	protocoltypeid INT8 NOT NULL,
 	ipblock VARCHAR(255) NULL,
@@ -252,9 +254,9 @@ CREATE TABLE accesscontrolgrouprule (
 -- Drop table
 
 -- DROP TABLE launchconfiguration;
-
+CREATE SEQUENCE IF NOT EXISTS launchconfiguration_seq;
 CREATE TABLE launchconfiguration (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('launchconfiguration_seq'),
 	regionid INT8 NOT NULL,
 	serverproductid INT8 NOT NULL,
 	loginkeyid INT8 NOT NULL,
@@ -278,9 +280,9 @@ CREATE TABLE launchconfiguration (
 -- Drop table
 
 -- DROP TABLE vpc;
-
+CREATE SEQUENCE IF NOT EXISTS vpc_seq;
 CREATE TABLE vpc (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('vpc_seq'),
 	regionid INT8 NOT NULL,
 	vpcno VARCHAR(255) NOT NULL,
 	vpcname VARCHAR(255) NOT NULL,
@@ -297,9 +299,9 @@ CREATE TABLE vpc (
 -- Drop table
 
 -- DROP TABLE vpcpeeringinstance;
-
+CREATE SEQUENCE IF NOT EXISTS vpcpeeringinstance_seq;
 CREATE TABLE vpcpeeringinstance (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('vpcpeeringinstance_seq'),
 	regionid INT8 NOT NULL,
 	sourcevpcid INT8 NOT NULL,
 	targetvpcid INT8 NOT NULL,
@@ -329,9 +331,9 @@ CREATE TABLE vpcpeeringinstance (
 -- Drop table
 
 -- DROP TABLE "zone";
-
+CREATE SEQUENCE IF NOT EXISTS zone_seq;
 CREATE TABLE zone (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('zone_seq'),
 	regionid INT8 NOT NULL,
 	zonename VARCHAR(255) NOT NULL,
 	zonecode VARCHAR(255) NOT NULL,
@@ -346,9 +348,9 @@ CREATE TABLE zone (
 -- Drop table
 
 -- DROP TABLE blockstorageinstance;
-
+CREATE SEQUENCE IF NOT EXISTS blockstorageinstance_seq;
 CREATE TABLE blockstorageinstance (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('blockstorageinstance_seq'),
 	zoneid INT8 NOT NULL,
 	regionid INT8 NOT NULL,
 	blockstorageinstanceno VARCHAR(255) NOT NULL,
@@ -379,9 +381,9 @@ CREATE TABLE blockstorageinstance (
 -- Drop table
 
 -- DROP TABLE blockstoragesnapshotinstance;
-
+CREATE SEQUENCE IF NOT EXISTS blockstoragesnapshotinstance_seq;
 CREATE TABLE blockstoragesnapshotinstance (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('blockstoragesnapshotinstance_seq'),
 	blockstorageinstanceid INT8 NOT NULL,
 	blockstoragesnapshotinstanceno VARCHAR(255) NOT NULL,
 	blockstoragesnapshotname VARCHAR(255) NOT NULL,
@@ -405,9 +407,9 @@ CREATE TABLE blockstoragesnapshotinstance (
 -- Drop table
 
 -- DROP TABLE loadbalancerinstance;
-
+CREATE SEQUENCE IF NOT EXISTS loadbalancerinstance_seq;
 CREATE TABLE loadbalancerinstance (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('loadbalancerinstance_seq'),
 	vpcid INT8 NOT NULL,
 	regionid INT8 NOT NULL,
 	loadbalancerinstanceno VARCHAR(255) NOT NULL,
@@ -437,9 +439,9 @@ CREATE TABLE loadbalancerinstance (
 -- Drop table
 
 -- DROP TABLE loadbalancerlistener;
-
+CREATE SEQUENCE IF NOT EXISTS loadbalancerlistener_seq;
 CREATE TABLE loadbalancerlistener (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('loadbalancerlistener_seq'),
 	loadbalancerinstanceid INT8 NOT NULL,
 	loadbalancerlistenerno VARCHAR(255) NOT NULL,
 	protocoltype VARCHAR(50) NOT NULL,
@@ -459,9 +461,9 @@ CREATE TABLE loadbalancerlistener (
 -- Drop table
 
 -- DROP TABLE loadbalancerrule;
-
+CREATE SEQUENCE IF NOT EXISTS loadbalancerrule_seq;
 CREATE TABLE loadbalancerrule (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('loadbalancerrule_seq'),
 	loadbalancerlistenerid INT8 NOT NULL,
 	loadbalancerruleno VARCHAR(255) NOT NULL,
 	priority INT8 NOT NULL,
@@ -477,9 +479,9 @@ CREATE TABLE loadbalancerrule (
 -- Drop table
 
 -- DROP TABLE memberserverimage;
-
+CREATE SEQUENCE IF NOT EXISTS memberserverimage_seq;
 CREATE TABLE memberserverimage (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('memberserverimage_seq'),
 	originalserverinstanceid INT8 NOT NULL,
 	zoneid INT8 NOT NULL,
 	memberserverimageno VARCHAR(255) NOT NULL,
@@ -502,9 +504,9 @@ CREATE TABLE memberserverimage (
 -- Drop table
 
 -- DROP TABLE networkacl;
-
+CREATE SEQUENCE IF NOT EXISTS networkacl_seq;
 CREATE TABLE networkacl (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('networkacl_seq'),
 	vpcid INT8 NOT NULL,
 	networkaclno VARCHAR(255) NOT NULL,
 	networkaclname VARCHAR(255) NOT NULL,
@@ -522,9 +524,9 @@ CREATE TABLE networkacl (
 -- Drop table
 
 -- DROP TABLE networkacldenyallowgroup;
-
+CREATE SEQUENCE IF NOT EXISTS networkacldenyallowgroup_seq;
 CREATE TABLE networkacldenyallowgroup (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('networkacldenyallowgroup_seq'),
 	vpcid INT8 NOT NULL,
 	networkacldenyallowgroupno VARCHAR(255) NOT NULL,
 	networkacldenyallowgroupname VARCHAR(255) NOT NULL,
@@ -543,9 +545,9 @@ CREATE TABLE networkacldenyallowgroup (
 -- Drop table
 
 -- DROP TABLE networkaclrule;
-
+CREATE SEQUENCE IF NOT EXISTS networkaclrule_seq;
 CREATE TABLE networkaclrule (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('networkaclrule_seq'),
 	networkaclid INT8 NOT NULL,
 	protocolid INT8 NOT NULL,
 	priority INT8 NOT NULL,
@@ -567,9 +569,9 @@ CREATE TABLE networkaclrule (
 -- Drop table
 
 -- DROP TABLE routetable;
-
+CREATE SEQUENCE IF NOT EXISTS routetable_seq;
 CREATE TABLE routetable (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('routetable_seq'),
 	regionid INT8 NOT NULL,
 	vpcid INT8 NOT NULL,
 	routetableno VARCHAR(255) NOT NULL,
@@ -589,9 +591,9 @@ CREATE TABLE routetable (
 -- Drop table
 
 -- DROP TABLE subnet;
-
+CREATE SEQUENCE IF NOT EXISTS subnet_seq;
 CREATE TABLE subnet (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('subnet_seq'),
 	vpcid INT8 NOT NULL,
 	zoneid INT8 NOT NULL,
 	networkaclid INT8 NOT NULL,
@@ -615,9 +617,9 @@ CREATE TABLE subnet (
 -- Drop table
 
 -- DROP TABLE autoscalinggroup;
-
+CREATE SEQUENCE IF NOT EXISTS autoscalinggroup_seq;
 CREATE TABLE autoscalinggroup (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('autoscalinggroup_seq'),
 	vpcid INT8 NOT NULL,
 	subnetid INT8 NOT NULL,
 	servernameprefix VARCHAR(255) NULL,
@@ -647,9 +649,9 @@ CREATE TABLE autoscalinggroup (
 -- Drop table
 
 -- DROP TABLE loadbalancersubnet;
-
+CREATE SEQUENCE IF NOT EXISTS loadbalancersubnet_seq;
 CREATE TABLE loadbalancersubnet (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('loadbalancersubnet_seq'),
 	zoneid INT8 NOT NULL,
 	subnetid INT8 NOT NULL,
 	publicipinstanceid INT8 NULL,
@@ -665,9 +667,9 @@ CREATE TABLE loadbalancersubnet (
 -- Drop table
 
 -- DROP TABLE natgatewayinstance;
-
+CREATE SEQUENCE IF NOT EXISTS natgatewayinstance_seq;
 CREATE TABLE natgatewayinstance (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('natgatewayinstance_seq'),
 	vpcid INT8 NOT NULL,
 	subnetid INT8 NOT NULL,
 	natgatewayinstanceno VARCHAR(255) NOT NULL,
@@ -692,9 +694,9 @@ CREATE TABLE natgatewayinstance (
 -- Drop table
 
 -- DROP TABLE networkinterface;
-
+CREATE SEQUENCE IF NOT EXISTS networkinterface_seq;
 CREATE TABLE networkinterface (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('networkinterface_seq'),
 	subnetid INT8 NOT NULL,
 	networkinterfaceno VARCHAR(255) NOT NULL,
 	networkinterfacename VARCHAR(255) NOT NULL,
@@ -719,9 +721,9 @@ CREATE TABLE networkinterface (
 -- Drop table
 
 -- DROP TABLE route;
-
+CREATE SEQUENCE IF NOT EXISTS route_seq;
 CREATE TABLE route (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('route_seq'),
 	routetableid INT8 NOT NULL,
 	destinationcidrblock VARCHAR(255) NOT NULL,
 	targetname VARCHAR(255) NOT NULL,
@@ -738,9 +740,9 @@ CREATE TABLE route (
 -- Drop table
 
 -- DROP TABLE scalingpolicy;
-
+CREATE SEQUENCE IF NOT EXISTS scalingpolicy_seq;
 CREATE TABLE scalingpolicy (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('scalingpolicy_seq'),
 	autoscalinggroupid INT8 NOT NULL,
 	policyno VARCHAR(255) NOT NULL,
 	policyname VARCHAR(255) NOT NULL,
@@ -758,9 +760,9 @@ CREATE TABLE scalingpolicy (
 -- Drop table
 
 -- DROP TABLE scheduledupdategroupaction;
-
+CREATE SEQUENCE IF NOT EXISTS scheduledupdategroupaction_seq;
 CREATE TABLE scheduledupdategroupaction (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('scheduledupdategroupaction_seq'),
 	autoscalinggroupid INT8 NOT NULL,
 	scheduledactionno VARCHAR(255) NOT NULL,
 	scheduledactionname VARCHAR(255) NOT NULL,
@@ -781,9 +783,9 @@ CREATE TABLE scheduledupdategroupaction (
 -- Drop table
 
 -- DROP TABLE serverinstance;
-
+CREATE SEQUENCE IF NOT EXISTS serverinstance_seq;
 CREATE TABLE serverinstance (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('serverinstance_seq'),
 	serverproductcodeid INT8 NOT NULL,
 	zoneid INT8 NOT NULL,
 	regionid INT8 NOT NULL,
@@ -828,9 +830,9 @@ CREATE TABLE serverinstance (
 -- Drop table
 
 -- DROP TABLE activitylog;
-
+CREATE SEQUENCE IF NOT EXISTS activitylog_seq;
 CREATE TABLE activitylog (
-	id INT8 NOT NULL DEFAULT unique_rowid(),
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('activitylog_seq'),
 	activityno VARCHAR(255) NOT NULL,
 	autoscalinggroupid INT8 NOT NULL,
 	serverinstanceno VARCHAR(255) NULL,

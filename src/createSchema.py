@@ -27,3 +27,18 @@ class Create():
         #     cur.execute(s+';')
         cur.close()
         conn.close()
+
+    # @author: DongHyeon Cha
+    # @brief: Create sequence
+    def create_sequence(self):
+        conn = cda.Connect(db = self.destination).connect_cockroachdb()
+        conn.autocommit = True
+        cur = conn.cursor()
+        with open(self.destination["schemaPath"], 'r') as file:
+            sql = file.read()
+        
+        sql = sql.replace("CREATE SEQUENCE ", f"CREATE SEQUENCE {self.destination['schemaName']}.")
+        cur.execute(f"set schema {self.destination['schemaName']};")
+        cur.execute(sql)
+        cur.close()
+        conn.close()
