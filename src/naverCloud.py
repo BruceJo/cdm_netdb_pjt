@@ -1,5 +1,10 @@
+############################################
+# Common Info                              #
+############################################
+
 def url_info():
     return {
+        ### step.2 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 주소를 작성
         "AdjustmentType" : {
             "api_url" : "vautoscaling/v2",
             "read" : "getAdjustmentTypeList"
@@ -30,7 +35,11 @@ def url_info():
         },
         "VpcPeeringInstance" : {
             "api_url" : "vpc/v2",
-            "read" : "getVpcPeeringInstanceList"
+            "read" : "getVpcPeeringInstanceList",
+            "create" : "createVpcPeeringInstance",
+            "delete" : "deleteVpcPeeringInstance",
+            "acOrRe" : "acceptOrRejectVpcPeering",
+            "set" : "setVpcPeeringDescription"
         },
         "NetworkAclDenyAllowGroup" : {
             "api_url" : "vpc/v2",
@@ -83,7 +92,11 @@ def url_info():
         },
         "PublicIpInstance" : {
             "api_url" : "vserver/v2",
-            "read" : "getPublicIpInstanceList"
+            "read" : "getPublicIpInstanceList",
+            "create" : "createPublicIpInstance",
+            "associate" : "associatePublicIpWithServerInstance",
+            "disassociate" : "disassociatePublicIpFromServerInstance",
+            "delete" : "deletePublicIpInstances"
         },
         "Route" : {
             "api_url" : "vpc/v2", 
@@ -92,7 +105,14 @@ def url_info():
         },
         "BlockStorageInstance" : {
             "api_url" : "vserver/v2",
-            "read" : "getBlockStorageInstanceList"
+            "read" : "getBlockStorageInstanceList",
+            "create" : "createBlockStorageInstance",
+            "changeBDI" : "createBlockStorageInstance",
+            "changeVolumeSize" : "changeBlockStorageVolumeSize",
+            "attach" : "attachBlockStorageInstance",
+            "detach" : "detachBlockStorageInstances",
+            "setProtection" : "setBlockStorageReturnProtection",
+            "delete" : "deleteBlockStorageInstances"
         },
         "LaunchConfiguration" : {
             "api_url" : "vautoscaling/v2",
@@ -114,7 +134,14 @@ def url_info():
         },
         "NetworkInterface" : {
             "api_url" : "vserver/v2",
-            "read" : "getNetworkInterfaceList"
+            "read" : "getNetworkInterfaceList",
+            "create" : "createNetworkInterface",
+            "delete" : "deleteNetworkInterface",
+            "attach" : "attachNetworkInterface",
+            "detach" : "detachNetworkInterface",
+            "add" : "addNetworkInterfaceAccessControlGroup",
+            "remove" : "removeNetworkInterfaceAccessControlGroup"
+            
         },
         "NatGatewayInstance" : {
             "api_url" : "vpc/v2",
@@ -130,7 +157,9 @@ def url_info():
         },
         "BlockStorageSnapshotInstance" : {
             "api_url" : "vserver/v2",
-            "read" : "getBlockStorageSnapshotInstanceList"
+            "read" : "getBlockStorageSnapshotInstanceList",
+            "create" : "createBlockStorageSnapshotInstance",
+            "delete" : "deleteBlockStorageSnapshotInstances"
         },
         "ActivityLog" : {
             "api_url" : "vautoscaling/v2",
@@ -145,6 +174,26 @@ def url_info():
             "read" : "getScheduledActionList"
         }
     }
+
+def set_url(name, action):
+    nc = url_info()
+    table_name = name.lower()
+    action = action[0].lower()
+
+    if action == "c":
+        api_url, sub_url = nc[name]["api_url"], nc[name]["create"]
+    elif action == "r":
+        api_url, sub_url = nc[name]["api_url"], nc[name]["read"]
+    elif action == "u":
+        api_url, sub_url = nc[name]["api_url"], nc[name]["update"]
+    elif action == "d":
+        api_url, sub_url = nc[name]["api_url"], nc[name]["delete"]
+    
+    return table_name, api_url, sub_url
+
+############################################
+# Read to Insert Info                      #
+############################################
 
 def special_info():
     return {
@@ -322,4 +371,17 @@ def init_table_rows():
             {'code' : 'icmp', 'codename' : 'icmp', 'codenumber' : 2},
             {'code' : 'udp', 'codename' : 'udp', 'codenumber' : 3}
         ]
+    }
+
+############################################
+# Create Info                              #
+############################################
+
+def include_keys():
+    return {
+        ### step.3 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 요청 파라미터를 작성
+        'routetable' : ['vpcNo', 'routeTableName', 'supportedSubnetTypeCode', 'routeTableDescription'],
+        'blockstorageinstance' : ['zoneCode', 'blockStorageName', 'blockStorageDiskDetailTypeCode', 'blockStorageVolumeTypeCode', 
+                                  'serverInstanceNo', 'blockStorageSnapshotInstanceNo', 'blockStorageSize', 'blockStorageDescription', 'isReturnProtection'],
+        'publicipinstance' : ['serverInstanceNo', 'publicIpDescription']
     }

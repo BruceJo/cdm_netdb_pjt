@@ -8,17 +8,17 @@ import urllib
 import json
 
 class Connect():
-    def __init__(self, api=None, destination=None):
+    def __init__(self, api=None, db=None):
         if api != None:
             self.secret_key = api['secretKey']
             self.access_key = api['accessKey']
             self.ncloudUrl = api['ncloudUrl']
             self.billingApiUrl = api['billingApiUrl']
-        if destination != None:
-            self.db_name = destination['dbName']
-            self.host = destination['host']
-            self.port = destination['port']
-            self.user = destination['user']
+        if db != None:
+            self.db_name = db['dbName']
+            self.host = db['host']
+            self.port = db['port']
+            self.user = db['user']
 
     # conn api
     def create_signature(self, method, api_url, timestamp):

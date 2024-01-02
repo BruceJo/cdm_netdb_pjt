@@ -1,36 +1,27 @@
 import connDbnApi as cda
-import naverCloud as ncset
+import naverCloud
 import json
 
 class Read2Insert():
     def __init__(self, api, destination):
         self.destination = destination
-        self.cc = cda.Connect(api=api, destination=destination)
+        self.cc = cda.Connect(api=api, db=destination)
         self.conn = self.cc.connect_cockroachdb()
         self.conn.autocommit = True
         self.cur = self.conn.cursor()
-        self.nc = ncset.url_info()
-        self.code_candidate = ncset.code_candidate()
-        self.out_candidate = ncset.out_candidate()
-        self.col_name_mapper = ncset.col_name_mapper()
-        self.special_info = ncset.special_info()
-        self.init_table_rows = ncset.init_table_rows()
+        self.nc = naverCloud.url_info()
+        self.code_candidate = naverCloud.code_candidate()
+        self.out_candidate = naverCloud.out_candidate()
+        self.col_name_mapper = naverCloud.col_name_mapper()
+        self.special_info = naverCloud.special_info()
+        self.init_table_rows = naverCloud.init_table_rows()
         self.special_table = ['Route', 'ActivityLog', 'NetworkAclRule', 'ScalingPolicy', 'ScheduledUpdateGroupAction', 
                               'AccessControlGroupRule', 'LoadBalancerListener', 'LoadBalancerRule', 'LoadBalancerRuleAction',
                               'LoadBalancerRuleCondition']
         self.continue_flag = False
 
     def set_url(self, name, action):
-        self.table_name = name.lower()
-        action = action[0].lower()
-        if action == "c":
-            self.api_url, self.sub_url = self.nc[name]["api_url"], self.nc[name]["create"]
-        elif action == "r":
-            self.api_url, self.sub_url = self.nc[name]["api_url"], self.nc[name]["read"]
-        elif action == "u":
-            self.api_url, self.sub_url = self.nc[name]["api_url"], self.nc[name]["update"]
-        elif action == "d":
-            self.api_url, self.sub_url = self.nc[name]["api_url"], self.nc[name]["delete"]
+        self.table_name, self.api_url, self.sub_url = naverCloud.set_url(name, action)
 
     def read_db(self):
         res = self.cc.request_api(self.api_url, self.sub_url)
