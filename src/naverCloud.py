@@ -1,6 +1,58 @@
+############################################
+# Common Info                              #
+############################################
+
 def url_info():
     return {
-        # 중권
+        ### step.2 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 주소를 작성
+        "AdjustmentType" : {
+            "api_url" : "vautoscaling/v2",
+            "read" : "getAdjustmentTypeList"
+        },
+        "InAutoScalingGroupServerInstance" : {
+            "api_url" : "vautoscaling/v2",
+            "read" : "getAutoScalingGroupList"
+        },
+        "InitScript" : {
+            "api_url" : "vserver/v2",
+            "read" : "getInitScriptList"
+        },
+        "LoadBalancerRuleAction" : {
+            "api_url" : "vloadbalancer/v2",
+            "read" : "getLoadBalancerRuleList"
+        },
+        "LoadBalancerRuleCondition" : {
+            "api_url" : "vloadbalancer/v2",
+            "read" : "getLoadBalancerRuleList"
+        },
+        "Vpc" : {
+            "api_url" : "vpc/v2",
+            "read" : "getVpcList"
+        },
+        "AccessControlGroup" : {
+            "api_url" : "vserver/v2",
+            "read" : "getAccessControlGroupList"
+        },
+        "VpcPeeringInstance" : {
+            "api_url" : "vpc/v2",
+            "read" : "getVpcPeeringInstanceList",
+            "create" : "createVpcPeeringInstance",
+            "delete" : "deleteVpcPeeringInstance",
+            "acOrRe" : "acceptOrRejectVpcPeering",
+            "set" : "setVpcPeeringDescription"
+        },
+        "NetworkAclDenyAllowGroup" : {
+            "api_url" : "vpc/v2",
+            "read" : "getNetworkAclDenyAllowGroupList"
+        },
+        "NetworkAcl" : {
+            "api_url" : "vpc/v2",
+            "read" : "getNetworkAclList"
+        },
+        "LoadBalancerInstance" : {
+            "api_url" : "vloadbalancer/v2",
+            "read" : "getLoadBalancerInstanceList"
+        },
         "RouteTable" : {
             "api_url" : "vpc/v2",
             "create" : "createRouteTable",
@@ -8,10 +60,21 @@ def url_info():
             "update" : "setRouteTableDescription",
             "delete" : "deleteRouteTable"
         },
-        "Route" : {
-            "api_url" : "vpc/v2", 
-            "create" : "addRoute",
-            "read" : "getRouteList"
+        "LoginKey" : {
+            "api_url" : "vserver/v2",
+            "read" : "getLoginKeyList"
+        },
+        "AccessControlGroupRule" : {
+            "api_url" : "vserver/v2",
+            "read" : "getAccessControlGroupRuleList"
+        },        
+        "Product" : {
+            "api_url" : "billing/v1/product",
+            "read" : "getProductList"
+        },
+        "NetworkAclRule" : {
+            "api_url" : "vpc/v2",
+            "read" : "getNetworkAclRuleList"
         },
         "PlacementGroup" : {
             "api_url" : "vserver/v2",
@@ -19,69 +82,88 @@ def url_info():
             "read" : "getPlacementGroupList",
             "delete" : "deletePlacementGroup"
         },
+        "Subnet" : {
+            "api_url" : "vpc/v2",
+            "read" : "getSubnetList"
+        },
+        "LoadBalancerListener" : {
+            "api_url" : "vloadbalancer/v2",
+            "read" : "getLoadBalancerListenerList"
+        },
+        "PublicIpInstance" : {
+            "api_url" : "vserver/v2",
+            "read" : "getPublicIpInstanceList",
+            "create" : "createPublicIpInstance",
+            "associate" : "associatePublicIpWithServerInstance",
+            "disassociate" : "disassociatePublicIpFromServerInstance",
+            "delete" : "deletePublicIpInstances"
+        },
+        "Route" : {
+            "api_url" : "vpc/v2", 
+            "create" : "addRoute",
+            "read" : "getRouteList"
+        },
+        "BlockStorageInstance" : {
+            "api_url" : "vserver/v2",
+            "read" : "getBlockStorageInstanceList",
+            "create" : "createBlockStorageInstance",
+            "changeBDI" : "createBlockStorageInstance",
+            "changeVolumeSize" : "changeBlockStorageVolumeSize",
+            "attach" : "attachBlockStorageInstance",
+            "detach" : "detachBlockStorageInstances",
+            "setProtection" : "setBlockStorageReturnProtection",
+            "delete" : "deleteBlockStorageInstances"
+        },
         "LaunchConfiguration" : {
             "api_url" : "vautoscaling/v2",
             "create" : "createLaunchConfiguration",
             "read" : "getLaunchConfigurationList",
             "delete" : "deleteLaunchConfiguration"
         },
-        "InAutoScalingGroupServerInstance" : {  #자원 개수에 따른 루프 확인 필요
-            "api_url" : "vautoscaling/v2",
-            "read" : "getAutoScalingGroupList"
-        },
-        "AdjustmentType" : {
-            "api_url" : "vautoscaling/v2",
-            "read" : "getAdjustmentTypeList"
-        },
-        # 현병
-        "LoginKey" : {
-            "api_url" : "vserver/v2",
-            "read" : "getLoginKeyList"
-        },
         "ServerInstance" : {
             "api_url" : "vserver/v2",
             "read" : "getServerInstanceList"
         },
-        "Product" : {
-            "api_url" : "billing/v1/product",
-            "read" : "getProductList"
+        "AutoScalingGroup" : {
+            "api_url" : "vautoscaling/v2",
+            "read" : "getAutoScalingGroupList"
         },
         "MemberServerImageInstance" : {
             "api_url" : "vserver/v2",
             "read" : "getMemberServerImageInstanceList"
         },
-        # 우동
-        "AutoScalingGroup" : {
-            "api_url" : "vautoscaling/v2",
-            "read" : "getAutoScalingGroupList"
+        "NetworkInterface" : {
+            "api_url" : "vserver/v2",
+            "read" : "getNetworkInterfaceList",
+            "create" : "createNetworkInterface",
+            "delete" : "deleteNetworkInterface",
+            "attach" : "attachNetworkInterface",
+            "detach" : "detachNetworkInterface",
+            "add" : "addNetworkInterfaceAccessControlGroup",
+            "remove" : "removeNetworkInterfaceAccessControlGroup"
+            
         },
         "NatGatewayInstance" : {
             "api_url" : "vpc/v2",
             "read" : "getNatGatewayInstanceList"
         },
-        "NetworkAcl" : {
-            "api_url" : "vpc/v2",
-            "read" : "getNetworkAclList"
+        "LoadBalancerSubnet" : {
+            "api_url" : "vloadbalancer/v2",
+            "read" : "getLoadBalancerInstanceList"
         },
-        "NetworkAclDenyAllowGroup" : {
-            "api_url" : "vpc/v2",
-            "read" : "getNetworkAclDenyAllowGroupList"
+        "LoadBalancerRule" : {
+            "api_url" : "vloadbalancer/v2",
+            "read" : "getLoadBalancerRuleList"
         },
-        "Vpc" : {
-            "api_url" : "vpc/v2",
-            "read" : "getVpcList"
-        },
-        "Subnet" : {
-            "api_url" : "vpc/v2",
-            "read" : "getSubnetList"
+        "BlockStorageSnapshotInstance" : {
+            "api_url" : "vserver/v2",
+            "read" : "getBlockStorageSnapshotInstanceList",
+            "create" : "createBlockStorageSnapshotInstance",
+            "delete" : "deleteBlockStorageSnapshotInstances"
         },
         "ActivityLog" : {
             "api_url" : "vautoscaling/v2",
             "read" : "getAutoScalingActivityLogList"
-        },
-        "NetworkAclRule" : {
-            "api_url" : "vpc/v2",
-            "read" : "getNetworkAclRuleList"
         },
         "ScalingPolicy" : {
             "api_url" : "vautoscaling/v2",
@@ -90,58 +172,28 @@ def url_info():
         "ScheduledUpdateGroupAction" : {
             "api_url" : "vautoscaling/v2",
             "read" : "getScheduledActionList"
-        },
-        "BlockStorageInstance" : {
-            "api_url" : "vserver/v2",
-            "read" : "getBlockStorageInstanceList"
-        },
-        "BlockStorageSnapshotInstance" : {
-            "api_url" : "vserver/v2",
-            "read" : "getBlockStorageSnapshotInstanceList"
-        },
-        "NetworkInterface" : {
-            "api_url" : "vserver/v2",
-            "read" : "getNetworkInterfaceList"
-        },
-        "PublicIpInstance" : {
-            "api_url" : "vserver/v2",
-            "read" : "getPublicIpInstanceList"
-        },
-        "VpcPeeringInstance" : {
-            "api_url" : "vpc/v2",
-            "read" : "getVpcPeeringInstanceList"
-        },
-        # 상우
-        "AccessControlGroup" : {
-            "api_url" : "vserver/v2",
-            "read" : "getAccessControlGroupList"
-        },
-        "AccessControlGroupRule" : {
-            "api_url" : "vserver/v2",
-            "read" : "getAccessControlGroupRuleList"
-        },
-        "InitScript" : {
-            "api_url" : "vserver/v2",
-            "read" : "getInitScriptList"
-        },
-        # 은미
-        "LoadBalancerInstance" : {
-            "api_url" : "vloadbalancer/v2",
-            "read" : "getLoadBalancerInstanceList"
-        },
-        "LoadBalancerListener" : {
-            "api_url" : "vloadbalancer/v2",
-            "read" : "getLoadBalancerListenerList"
-        },
-        "LoadBalancerRule" : {
-            "api_url" : "vloadbalancer/v2",
-            "read" : "getLoadBalancerRuleList"
-        },
-        "LoadBalancerRuleAction" : {
-            "api_url" : "vloadbalancer/v2",
-            "read" : "getLoadBalancerRuleList"
-        },
+        }
     }
+
+def set_url(name, action):
+    nc = url_info()
+    table_name = name.lower()
+    action = action[0].lower()
+
+    if action == "c":
+        api_url, sub_url = nc[name]["api_url"], nc[name]["create"]
+    elif action == "r":
+        api_url, sub_url = nc[name]["api_url"], nc[name]["read"]
+    elif action == "u":
+        api_url, sub_url = nc[name]["api_url"], nc[name]["update"]
+    elif action == "d":
+        api_url, sub_url = nc[name]["api_url"], nc[name]["delete"]
+    
+    return table_name, api_url, sub_url
+
+############################################
+# Read to Insert Info                      #
+############################################
 
 def special_info():
     return {
@@ -227,6 +279,15 @@ def special_info():
                 "loadBalancerListenerNo" : "row['loadbalancerlistenerno']"
             }
         },
+        "loadbalancerrulecondition" : {
+            "table" : ["loadbalancerlistener"],
+            "where" : [],
+            "value" : ["loadbalancerlistenerno"],
+            "stage" : "loadBalancerRuleList",
+            "fetch" : {
+                "loadBalancerListenerNo" : "row['loadbalancerlistenerno']"
+            }
+        },
     }
 
 def code_candidate():
@@ -268,7 +329,8 @@ def out_candidate():
         blockstoragesnapshotinstance = ['originalBlockStorageInstanceNo', 'isBootable'],
         networkinterface = ['enableFlowLog'],
         product = ['productItemKind', 'productItemKindDetail', 'softwareType'],
-        vpcpeeringinstance = ['targetVpcName', 'sourceVpcIpv4CidrBlock', 'targetVpcIpv4CidrBlock', 'sourceVpcName', 'sourceVpcNo', 'targetVpcNo']
+        vpcpeeringinstance = ['targetVpcName', 'sourceVpcIpv4CidrBlock', 'targetVpcIpv4CidrBlock', 'sourceVpcName', 'sourceVpcNo', 'targetVpcNo'],
+        loadbalancersubnet = ['publicIpInstanceNo']
     )
 
 def col_name_mapper():
@@ -284,7 +346,8 @@ def col_name_mapper():
             'originalBlockStorageInstanceNo' : 'blockstorageinstanceid',
             'productItemKind' : 'producttype',
             'targetVpcNo' : 'targetvpcid',
-            'sourceVpcNo' : 'sourcevpcid'
+            'sourceVpcNo' : 'sourcevpcid',
+            'publicIpInstanceNo' : 'publicipinstanceid'
         },
         'launchconfiguration' : {
             'serverProductCode' : 'serverproductid'
@@ -292,4 +355,33 @@ def col_name_mapper():
         'serverinstance' : {
             'serverProductCode' : 'serverproductcodeid'
         }
+    }
+
+def init_table_rows():
+    return {
+        'region' : [
+            {'regioncode' : 'KR', 'regionname' : 'KR'}
+        ],
+        'zone' : [
+            {'zonename' : 'KR-1', 'zonecode' : 'KR-1', 'zonedescription' : 'KR-1'}
+        ],
+        'protocoltype' : [
+            {'code' : 'err', 'codename' : 'err', 'codenumber' : 0},
+            {'code' : 'tcp', 'codename' : 'tcp', 'codenumber' : 1},
+            {'code' : 'icmp', 'codename' : 'icmp', 'codenumber' : 2},
+            {'code' : 'udp', 'codename' : 'udp', 'codenumber' : 3}
+        ]
+    }
+
+############################################
+# Create Info                              #
+############################################
+
+def include_keys():
+    return {
+        ### step.3 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 요청 파라미터를 작성
+        'routetable' : ['vpcNo', 'routeTableName', 'supportedSubnetTypeCode', 'routeTableDescription'],
+        'blockstorageinstance' : ['zoneCode', 'blockStorageName', 'blockStorageDiskDetailTypeCode', 'blockStorageVolumeTypeCode', 
+                                  'serverInstanceNo', 'blockStorageSnapshotInstanceNo', 'blockStorageSize', 'blockStorageDescription', 'isReturnProtection'],
+        'publicipinstance' : ['serverInstanceNo', 'publicIpDescription']
     }
