@@ -66,13 +66,12 @@ class Create():
             elif key == 'blockStorageSnapshotInstanceNo':
                 value = None
             elif key == 'blockStorageSize':
-                print(value)
-                value == round(value/(1024*3))
-                print(value)
+                value = row_dict['blockstoragesize']
+                value = round(value/(1024**3))
             else:
                 value = row_dict[key.lower()]
-
             dict1.update({key : value})
+            del dict1['blockStorageSnapshotInstanceNo']
 
         print('3. body\n', self.pretty_dict(dict1), '\n')
         result = self.cc.request_api(self.api_url, self.sub_url, **dict1)
