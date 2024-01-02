@@ -9,14 +9,19 @@ class VUD():    # view, update, delete
         self.cc = cda.Connect(api=api_target)
         self.flag = flag
     
-    def set_url(self, name, action):
-        self.table_name, self.api_url, self.sub_url = naverCloud.set_url(name, action)
+    def set_url(self, name, action, *choice):
+        self.table_name, self.api_url, self.sub_url = naverCloud.set_url(name, action, *choice)
 
     def run(self):
         try:
-            self.set_url(self.req_target['target'], self.flag)
+            if 'key' in self.req_target:
+                self.set_url(self.req_target['target'], self.flag, self.req_target['key'])
+            else:
+                self.set_url(self.req_target['target'], self.flag)
         except KeyError as e:
             return f"[ERR] Not found your "+str(e), 400
+        except NameError as e:
+            return f"[ERR] Required field is not specified. location : ['key'], value : "+str(e), 400
         
         if self.flag == 'r':
             res = self.cc.request_api(self.api_url, self.sub_url)

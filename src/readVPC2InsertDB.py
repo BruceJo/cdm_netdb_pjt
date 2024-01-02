@@ -15,9 +15,9 @@ class Read2Insert():
         self.col_name_mapper = naverCloud.col_name_mapper()
         self.special_info = naverCloud.special_info()
         self.init_table_rows = naverCloud.init_table_rows()
-        self.special_table = ['Route', 'ActivityLog', 'NetworkAclRule', 'ScalingPolicy', 'ScheduledUpdateGroupAction', 
+        self.special_table = [x.lower() for x in ['Route', 'ActivityLog', 'NetworkAclRule', 'ScalingPolicy', 'ScheduledUpdateGroupAction', 
                               'AccessControlGroupRule', 'LoadBalancerListener', 'LoadBalancerRule', 'LoadBalancerRuleAction',
-                              'LoadBalancerRuleCondition']
+                              'LoadBalancerRuleCondition']]
         self.continue_flag = False
 
     def set_url(self, name, action):
@@ -238,15 +238,15 @@ class Read2Insert():
     def run(self):
         self.init_table()
 
-        # this = 'Route'
+        # this = 'RouteTable'
         for this in self.nc.keys():
             self.set_url(this, "read")
             with open("insert_query.log", "a") as file:
                 file.write('>>>> table_name : ' + self.table_name + '\n')
                 file.close()
             
-            if this in self.special_table:
-                self.insert_special(this)
+            if self.table_name in self.special_table:
+                self.insert_special(self.table_name)
             else:
                 read_data = self.read_db()
                 self.run_insert(read_data)
