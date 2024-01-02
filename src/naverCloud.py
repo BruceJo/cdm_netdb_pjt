@@ -35,7 +35,11 @@ def url_info():
         },
         "VpcPeeringInstance" : {
             "api_url" : "vpc/v2",
-            "read" : "getVpcPeeringInstanceList"
+            "read" : "getVpcPeeringInstanceList",
+            "create" : "createVpcPeeringInstance",
+            "delete" : "deleteVpcPeeringInstance",
+            "acOrRe" : "acceptOrRejectVpcPeering",
+            "set" : "setVpcPeeringDescription"
         },
         "NetworkAclDenyAllowGroup" : {
             "api_url" : "vpc/v2",
@@ -92,7 +96,11 @@ def url_info():
         },
         "PublicIpInstance" : {
             "api_url" : "vserver/v2",
-            "read" : "getPublicIpInstanceList"
+            "read" : "getPublicIpInstanceList",
+            "create" : "createPublicIpInstance",
+            "associate" : "associatePublicIpWithServerInstance",
+            "disassociate" : "disassociatePublicIpFromServerInstance",
+            "delete" : "deletePublicIpInstances"
         },
         "Route" : {
             "api_url" : "vpc/v2", 
@@ -101,7 +109,14 @@ def url_info():
         },
         "BlockStorageInstance" : {
             "api_url" : "vserver/v2",
-            "read" : "getBlockStorageInstanceList"
+            "read" : "getBlockStorageInstanceList",
+            "create" : "createBlockStorageInstance",
+            "changeBDI" : "createBlockStorageInstance",
+            "changeVolumeSize" : "changeBlockStorageVolumeSize",
+            "attach" : "attachBlockStorageInstance",
+            "detach" : "detachBlockStorageInstances",
+            "setProtection" : "setBlockStorageReturnProtection",
+            "delete" : "deleteBlockStorageInstances"
         },
         "LaunchConfiguration" : {
             "api_url" : "vautoscaling/v2",
@@ -123,7 +138,14 @@ def url_info():
         },
         "NetworkInterface" : {
             "api_url" : "vserver/v2",
-            "read" : "getNetworkInterfaceList"
+            "read" : "getNetworkInterfaceList",
+            "create" : "createNetworkInterface",
+            "delete" : "deleteNetworkInterface",
+            "attach" : "attachNetworkInterface",
+            "detach" : "detachNetworkInterface",
+            "add" : "addNetworkInterfaceAccessControlGroup",
+            "remove" : "removeNetworkInterfaceAccessControlGroup"
+            
         },
         "NatGatewayInstance" : {
             "api_url" : "vpc/v2",
@@ -139,7 +161,9 @@ def url_info():
         },
         "BlockStorageSnapshotInstance" : {
             "api_url" : "vserver/v2",
-            "read" : "getBlockStorageSnapshotInstanceList"
+            "read" : "getBlockStorageSnapshotInstanceList",
+            "create" : "createBlockStorageSnapshotInstance",
+            "delete" : "deleteBlockStorageSnapshotInstances"
         },
         "ActivityLog" : {
             "api_url" : "vautoscaling/v2",
@@ -367,7 +391,10 @@ def init_table_rows():
 def include_keys():
     return {
         ### step.3 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 요청 파라미터를 작성
-        # 단, regionCode와 responseFormatType는 제외한다
         'routetable' : ['vpcNo', 'routeTableName', 'supportedSubnetTypeCode', 'routeTableDescription'],
+        'blockstorageinstance' : ['zoneCode', 'blockStorageName', 'blockStorageDiskDetailTypeCode', 'blockStorageVolumeTypeCode', 
+                                  'serverInstanceNo', 'blockStorageSnapshotInstanceNo', 'blockStorageSize', 'blockStorageDescription', 'isReturnProtection'],
+        'publicipinstance' : ['serverInstanceNo', 'publicIpDescription'],
+        # 단, regionCode와 responseFormatType는 제외한다
         'loadbalancerinstance' : ['loadBalancerTypeCode', 'loadBalancerName', 'loadBalancerNetworkTypeCode', 'throughputTypeCode', 'idleTimeout', 'vpcNo', 'loadBalancerDescription', 'subnetNoList.N', 'loadBalancerSubnetList.N.subnetNo', 'loadBalancerSubnetList.N.publicIpInstanceNo', 'loadBalancerListenerList.N.protocolTypeCode', 'loadBalancerListenerList.N.port', 'loadBalancerListenerList.N.targetGroupNo', 'loadBalancerListenerList.N.useHttp2', 'loadBalancerListenerList.N.sslCertificateNo', 'loadBalancerListenerList.N.tlsMinVersionTypeCode', 'loadBalancerListenerList.N.cipherSuiteList.N']
     }
