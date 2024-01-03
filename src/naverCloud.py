@@ -51,7 +51,11 @@ def url_info():
         },
         "LoadBalancerInstance" : {
             "api_url" : "vloadbalancer/v2",
-            "read" : "getLoadBalancerInstanceList"
+            "read" : "getLoadBalancerInstanceList",
+            "create" : "createLoadBalancerInstance",
+            "delete" : "deleteLoadBalancerInstances",
+            "update" : ["changeLoadBalancerInstanceConfiguration", "setLoadBalancerInstanceSubnet"]
+
         },
         "RouteTable" : {
             "api_url" : "vpc/v2",
@@ -175,20 +179,27 @@ def url_info():
         }
     }
 
-def set_url(name, action):
+def set_url(name, action, *choice):
     nc = url_info()
+    nc = {k.lower() : v for k, v in nc.items()}
     table_name = name.lower()
     action = action[0].lower()
 
     if action == "c":
-        api_url, sub_url = nc[name]["api_url"], nc[name]["create"]
+        api_url, sub_url = nc[table_name]["api_url"], nc[table_name]["create"]
     elif action == "r":
-        api_url, sub_url = nc[name]["api_url"], nc[name]["read"]
+        api_url, sub_url = nc[table_name]["api_url"], nc[table_name]["read"]
     elif action == "u":
-        api_url, sub_url = nc[name]["api_url"], nc[name]["update"]
+        api_url, sub_url = nc[table_name]["api_url"], nc[table_name]["update"]
     elif action == "d":
-        api_url, sub_url = nc[name]["api_url"], nc[name]["delete"]
+        api_url, sub_url = nc[table_name]["api_url"], nc[table_name]["delete"]
     
+    if isinstance(sub_url, list):
+        if choice:
+            sub_url = choice[0]
+        else:
+            raise NameError(sub_url)
+
     return table_name, api_url, sub_url
 
 ############################################
@@ -383,5 +394,7 @@ def include_keys():
         'routetable' : ['vpcNo', 'routeTableName', 'supportedSubnetTypeCode', 'routeTableDescription'],
         'blockstorageinstance' : ['zoneCode', 'blockStorageName', 'blockStorageDiskDetailTypeCode', 'blockStorageVolumeTypeCode', 
                                   'serverInstanceNo', 'blockStorageSnapshotInstanceNo', 'blockStorageSize', 'blockStorageDescription', 'isReturnProtection'],
-        'publicipinstance' : ['serverInstanceNo', 'publicIpDescription']
+        'publicipinstance' : ['serverInstanceNo', 'publicIpDescription'],
+        # 단, regionCode와 responseFormatType는 제외한다
+        'loadbalancerinstance' : ['loadBalancerTypeCode', 'loadBalancerName', 'loadBalancerNetworkTypeCode', 'throughputTypeCode', 'idleTimeout', 'vpcNo', 'loadBalancerDescription', 'subnetNoList.N', 'loadBalancerSubnetList.N.subnetNo', 'loadBalancerSubnetList.N.publicIpInstanceNo', 'loadBalancerListenerList.N.protocolTypeCode', 'loadBalancerListenerList.N.port', 'loadBalancerListenerList.N.targetGroupNo', 'loadBalancerListenerList.N.useHttp2', 'loadBalancerListenerList.N.sslCertificateNo', 'loadBalancerListenerList.N.tlsMinVersionTypeCode', 'loadBalancerListenerList.N.cipherSuiteList.N']
     }
