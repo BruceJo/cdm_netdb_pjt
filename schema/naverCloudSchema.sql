@@ -129,7 +129,7 @@ CREATE TABLE memberserverimageinstance (
 	memberserverimageblockstoragetotalrows INT8 NOT NULL,
 	memberserverimageblockstoragetotalsize INT8 NOT NULL,
 	sharestatus VARCHAR(255) NOT NULL,
-	sharedloginidlist STRING NOT NULL,
+	sharedloginidlist JSONB NOT NULL,
 	CONSTRAINT memberserverimageinstance_pkey PRIMARY KEY (id ASC)
 );
 
@@ -420,14 +420,14 @@ CREATE TABLE loadbalancerinstance (
 	createdate TIMESTAMP NOT NULL,
 	loadbalancername VARCHAR(255) NOT NULL,
 	loadbalancerdomain VARCHAR(255) NOT NULL,
-	loadbalanceriplist STRING NULL,
+	loadbalanceriplist JSONB NULL,
 	loadbalancertype VARCHAR(255) NOT NULL,
 	loadbalancernetworktype VARCHAR(255) NOT NULL,
 	throughputtype VARCHAR(255) NOT NULL,
 	idletimeout INT8 NULL,
-	subnetnolist VARCHAR(255) NOT NULL,
-	loadbalancersubnetlist VARCHAR(255) NOT NULL,
-	loadbalancerlistenernolist VARCHAR(255) NULL,
+	subnetnolist JSONB NOT NULL,
+	loadbalancersubnetlist JSONB NOT NULL,
+	loadbalancerlistenernolist JSONB NULL,
 	CONSTRAINT loadbalancerinstance_pkey PRIMARY KEY (id ASC),
 	CONSTRAINT loadbalancerinstance_vpcid_fkey FOREIGN KEY (vpcid) REFERENCES vpc(id),
 	CONSTRAINT loadbalancerinstance_regionid_fkey FOREIGN KEY (regionid) REFERENCES region(id)
@@ -449,8 +449,8 @@ CREATE TABLE loadbalancerlistener (
 	usehttp2 BOOL NOT NULL,
 	sslcertificateno VARCHAR(255) NULL,
 	tlsminversiontype VARCHAR(50) NULL,
-	loadbalancerrulenolist VARCHAR(255) NOT NULL,
-	ciphersuitelist VARCHAR(255) NOT NULL,
+	loadbalancerrulenolist JSONB NOT NULL,
+	ciphersuitelist JSONB NOT NULL,
 	CONSTRAINT loadbalancerlistener_pkey PRIMARY KEY (id ASC),
 	CONSTRAINT loadbalancerlistener_loadbalancerinstanceid_fkey FOREIGN KEY (loadbalancerinstanceid) REFERENCES loadbalancerinstance(id)
 );
@@ -467,8 +467,8 @@ CREATE TABLE loadbalancerrule (
 	loadbalancerlistenerid INT8 NOT NULL,
 	loadbalancerruleno VARCHAR(255) NOT NULL,
 	priority INT8 NOT NULL,
-	loadbalancerruleconditionlist VARCHAR(255) NOT NULL,
-	loadbalancerruleactionlist VARCHAR(255) NOT NULL,
+	loadbalancerruleconditionlist JSONB NOT NULL,
+	loadbalancerruleactionlist JSONB NOT NULL,
 	CONSTRAINT loadbalancerrule_pkey PRIMARY KEY (id ASC),
 	CONSTRAINT loadbalancerrule_loadbalancerlistenerid_fkey FOREIGN KEY (loadbalancerlistenerid) REFERENCES loadbalancerlistener(id)
 );
@@ -531,7 +531,7 @@ CREATE TABLE networkacldenyallowgroup (
 	networkacldenyallowgroupno VARCHAR(255) NOT NULL,
 	networkacldenyallowgroupname VARCHAR(255) NOT NULL,
 	networkacldenyallowgroupstatus VARCHAR(255) NOT NULL,
-	iplist STRING NULL,
+	iplist JSONB NULL,
 	networkacldenyallowgroupdescription VARCHAR(255) NULL,
 	createdate TIMESTAMP NOT NULL,
 	isapplied BOOL NOT NULL,
@@ -708,9 +708,9 @@ CREATE TABLE networkinterface (
 	instanceno VARCHAR(255) NULL,
 	ip VARCHAR(255) NOT NULL,
 	macaddress VARCHAR(255) NOT NULL,
-	accesscontrolgroupnolist VARCHAR(255) NULL,
+	accesscontrolgroupnolist JSONB NULL,
 	networkinterfacedescription VARCHAR(255) NULL,
-	secondaryiplist VARCHAR(255) NULL,
+	secondaryiplist JSONB NULL,
 	CONSTRAINT networkinterface_pkey PRIMARY KEY (id ASC),
 	CONSTRAINT networkinterface_subnetid_fkey FOREIGN KEY (subnetid) REFERENCES subnet(id)
 );
@@ -807,7 +807,7 @@ CREATE TABLE serverinstance (
 	uptime TIMESTAMP NOT NULL,
 	serverimageproductcode VARCHAR(255) NOT NULL,
 	isprotectservertermination BOOL NOT NULL,
-	networkinterfacenolist VARCHAR(255) NOT NULL,
+	networkinterfacenolist JSONB NOT NULL,
 	initscriptno VARCHAR(255) NULL,
 	serverinstancetype VARCHAR(255) NOT NULL,
 	baseblockstoragedisktype VARCHAR(255) NOT NULL,
@@ -815,7 +815,7 @@ CREATE TABLE serverinstance (
 	placementgroupno VARCHAR(255) NULL,
 	placementgroupname VARCHAR(255) NULL,
 	memberserverimageinstanceno VARCHAR(255) NULL,
-	blockdevicepartitionlist VARCHAR(255) NULL,
+	blockdevicepartitionlist JSONB NULL,
 	CONSTRAINT serverinstance_pkey PRIMARY KEY (id ASC),
 	CONSTRAINT serverinstance_serverproductcodeid_fkey FOREIGN KEY (serverproductcodeid) REFERENCES product(id),
 	CONSTRAINT serverinstance_zoneid_fkey FOREIGN KEY (zoneid) REFERENCES zone(id),
