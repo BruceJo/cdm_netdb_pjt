@@ -63,7 +63,6 @@ def url_info():
             "create" : "createLoadBalancerInstance",
             "delete" : "deleteLoadBalancerInstances",
             "update" : ["changeLoadBalancerInstanceConfiguration", "setLoadBalancerInstanceSubnet"]
-
         },
         "RouteTable" : {
             "api_url" : "vpc/v2",
