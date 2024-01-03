@@ -23,7 +23,7 @@ class Read2Insert():
     def set_url(self, name, action):
         self.table_name, self.api_url, self.sub_url = naverCloud.set_url(name, action)
 
-    def read_db(self):
+    def read_api(self):
         res = self.cc.request_api(self.api_url, self.sub_url)
         
         return res
@@ -127,7 +127,7 @@ class Read2Insert():
             elif i in ['createDate', 'uptime']:
                 src[i] = src[i].replace('T',' ').replace('Z','')
             elif self.table_name != 'autoscalinggroup' and i in ['networkInterfaceNoList', 'sharedLoginIdList', 'targetGroupNoList', 'inAutoScalingGroupServerInstanceList', 
-                        'suspendedProcessList', 'accessControlGroupNoList', 'accessControlGroupNoList', 'secondaryIpList', 
+                        'suspendedProcessList', 'accessControlGroupNoList', 'secondaryIpList', 
                         'loadBalancerIpList', 'subnetNoList', 'loadBalancerListenerNoList']:
                 src[i] = ','.join(src[i])
             elif i == 'inAutoScalingGroupServerInstanceList':
@@ -140,9 +140,9 @@ class Read2Insert():
                 _temp[i] = self.get_id('product', 'productcode', src[i])
             elif self.table_name != 'serverinstance' and i == 'loginKeyName':
                 _temp[i] = self.get_id('loginkey', 'keyname', src[i])
-            elif self.table_name != 'natgatewayinstance' and i == 'zoneCode':
+            elif self.table_name not in ['natgatewayinstance', 'zone'] and i == 'zoneCode':
                 _temp[i] = self.get_id('zone', 'zonecode', src[i])
-            elif i == 'regionCode':
+            elif self.table_name != 'region' and i == 'regionCode':
                 _temp[i] = self.get_id('region', 'regioncode', src[i])
             elif self.table_name != 'subnet' and i == 'subnetNo':
                 _temp[i] = self.get_id('subnet', 'subnetno', src[i])
@@ -173,7 +173,7 @@ class Read2Insert():
             dict1['infraresourcetype'] = '' # 이 예제에서는 infraresourcetype에 대한 데이터가 JSON에 없으므로 빈 문자열 사용
 
         # filter columns
-        except_tables = ['serverinstance', 'vpc', 'vpcpeeringinstance', 'subnet', 'natgatewayinstance']
+        except_tables = ['region', 'zone', 'serverinstance', 'vpc', 'vpcpeeringinstance', 'subnet', 'natgatewayinstance']
         if self.table_name in except_tables:
             out_field = self.out_candidate[self.table_name]
         elif self.table_name in ['accesscontrolgroup', 'publicipinstance']:
@@ -224,21 +224,13 @@ class Read2Insert():
                 self.proc_normal(src)
 
     def init_table(self):
-        self.table_name = 'region'
-        for _dict in self.init_table_rows[self.table_name]: self.insert_db(_dict)
-
-        self.table_name = 'zone'
-        for _dict in self.init_table_rows[self.table_name]: 
-            _dict.update({'regionid' : self.get_id('region', 'regioncode', 'KR')})
-            self.insert_db(_dict)
-
         self.table_name = 'protocoltype'
         for _dict in self.init_table_rows[self.table_name]: self.insert_db(_dict)
 
     def run(self):
         self.init_table()
 
-        # this = 'RouteTable'
+        #this = 'Zone'
         for this in self.nc.keys():
             self.set_url(this, "read")
             with open("insert_query.log", "a") as file:
@@ -248,7 +240,7 @@ class Read2Insert():
             if self.table_name in self.special_table:
                 self.insert_special(self.table_name)
             else:
-                read_data = self.read_db()
+                read_data = self.read_api()
                 self.run_insert(read_data)
 
 
