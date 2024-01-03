@@ -84,7 +84,7 @@ class Read2Insert():
             # protocolType 으로 인하여 고의적 하단 위치
             elif i in ['targetType', 'actionStatus', 'ruleAction', 'networkAclRuleType', 'adjustmentType', 'accessControlGroupRuleType', 'protocolType', 'ruleActionType', 'ruleConditionType']:
                 src[i] = src[i]['code']
-            elif i in ['loadBalancerRuleNoList', 'cipherSuiteList']:
+            elif i in ['loadBalancerRuleNoList', 'cipherSuiteList', 'targetGroupWeightList']:
                 src[i] = ','.join(src[i])
             elif i == 'tlsMinVersionType':
                 src[i] = src[i]['code'] if 'code' in src[i] else ''
@@ -105,17 +105,26 @@ class Read2Insert():
         elif self.table_name == 'loadbalancerrule':
             dict1['loadbalancerlistenerid'] = _temp['loadBalancerListenerNo']
 
-        if self.table_name == 'loadbalancerruleaction':
-            dict1['redirectionaction'] = '' # 이 예제에서는 redirectionaction에 대한 데이터가 JSON에 없으므로 빈 문자열 사용
+
+        #if self.table_name == 'loadbalancerruleaction':
+            #lhb
+            #dict1['redirectionaction'] = "" + json.dumps(_temp['targetGroupAction']).replace('\'', '"') + ""
+            #print('keys>>>',_temp.keys)
+            #dict1['redirectionaction'] = '' # 이 예제에서는 redirectionaction에 대한 데이터가 JSON에 없으므로 빈 문자열 사용
+            #dict1['targetGroupAction'] = "" + json.dumps(_temp['targetGroupAction']).replace('\'', '"') + ""
 
         if self.table_name == 'loadbalancerrulecondition':
             dict1['hostheadercondition'] = '' # 이 예제에서는 redirectionaction에 대한 데이터가 JSON에 없으므로 빈 문자열 사용
-            dict1['pathpatterncondition'] = '' # 이 예제에서는 redirectionaction에 대한 데이터가 JSON에 없으므로 빈 문자열 사용
+            #dict1['pathpatterncondition'] = '' # 이 예제에서는 redirectionaction에 대한 데이터가 JSON에 없으므로 빈 문자열 사용
+            #dict1['pathpatterncondition'] = "" + json.dumps(_temp['pathpatterncondition']).replace('\'', '"') + ""
+            #pathpatterncondition
 
 
         for key in src:
             if self.table_name != 'loadbalancerlistener':
-                out_candidate = ['routeTableNo', 'autoScalingGroupNo', 'regionCode', 'networkAclNo', 'protocolType', 'autoScalingGroupNo', 'accessControlGroupNo', 'loadBalancerListenerNo']
+                out_candidate = ['routeTableNo', 'autoScalingGroupNo', 'regionCode', 'networkAclNo', 
+                                 'protocolType', 'autoScalingGroupNo', 'accessControlGroupNo', 'loadBalancerListenerNo',
+                                 'targetGroupAction', 'pathPatternCondition'] #lhb add
             else:
                 out_candidate = ['loadBalancerInstanceNo']
             
