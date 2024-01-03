@@ -34,7 +34,7 @@ class Read2Insert():
             return None
         
         dict1 = {k: v for k, v in dict1.items() if v is not None}   # None -> null from (TBL)loadbalancersubnet/(COL)publicipinstanceid
-        dict1 = {k: (str(v) if (type(v)==list) else v) for k, v in dict1.items()}       # list(dict()) -> str() w/ ' string
+        dict1 = {k: (json.dumps(v) if (type(v)==list) else v) for k, v in dict1.items()}       # list(dict()) -> str() w/ ' string
         dict1 = {k: (v.replace("'", "''") if (type(v)==str and "'" in v) else v) for k, v in dict1.items()}     # escape ' -> ''
         
         key_list = list(dict1.keys())
@@ -76,7 +76,7 @@ class Read2Insert():
             elif i in ['targetType', 'actionStatus', 'ruleAction', 'networkAclRuleType', 'adjustmentType', 'accessControlGroupRuleType', 'protocolType', 'ruleActionType', 'ruleConditionType']:
                 src[i] = src[i]['code']
             elif i in ['loadBalancerRuleNoList', 'cipherSuiteList']:
-                src[i] = ','.join(src[i])
+                pass
             elif i == 'tlsMinVersionType':
                 src[i] = src[i]['code'] if 'code' in src[i] else ''
         
@@ -126,14 +126,10 @@ class Read2Insert():
                 src[i] = src[i]['code']
             elif i in ['createDate', 'uptime']:
                 src[i] = src[i].replace('T',' ').replace('Z','')
-            elif self.table_name != 'autoscalinggroup' and i in ['networkInterfaceNoList', 'sharedLoginIdList', 'targetGroupNoList', 'inAutoScalingGroupServerInstanceList', 
-                        'suspendedProcessList', 'accessControlGroupNoList', 'secondaryIpList', 
-                        'loadBalancerIpList', 'subnetNoList', 'loadBalancerListenerNoList']:
-                src[i] = ','.join(src[i])
-            elif i == 'inAutoScalingGroupServerInstanceList':
-                src[i] = "" + json.dumps(src[i]).replace('\'', '"') + ""
-            elif i in ['targetGroupNoList', 'suspendedProcessList', 'accessControlGroupNoList']:
-                src[i] = '[' + ', '.join(map(str, src[i])) + ']'
+            elif self.table_name != 'autoscalinggroup' and i in ['networkInterfaceNoList', 'sharedLoginIdList', 'targetGroupNoList', 
+                        'inAutoScalingGroupServerInstanceList', 'suspendedProcessList', 'accessControlGroupNoList', 'secondaryIpList', 
+                        'loadBalancerIpList', 'subnetNoList', 'loadBalancerListenerNoList', 'loadBalancerSubnetList', 'ipList']:
+                pass
             elif self.table_name not in ['vpc', 'accesscontrolgroup'] and i == 'vpcNo':
                 _temp[i] = self.get_id('vpc', 'vpcno', src[i])
             elif self.table_name != 'product' and i == 'serverProductCode':
@@ -159,8 +155,6 @@ class Read2Insert():
                 _temp[i] = src[i]
             elif i == 'productItemKind':
                 _temp[i] = src[i]['code']
-            elif i == 'loadBalancerSubnetList':
-                src[i] = ','.join([x['subnetNo'] for x in src[i]]) if 'subnetNo' in src[i][0] else ''
         
         dict1 = {}
         for k, v in _temp.items():
@@ -184,7 +178,7 @@ class Read2Insert():
         for key in src:
             if (key not in out_field) and (key not in dict1):
                 dict1[key] = src[key]
-
+        
         self.insert_db(dict1)
 
     def insert_special(self, target):
@@ -230,7 +224,7 @@ class Read2Insert():
     def run(self):
         self.init_table()
 
-        #this = 'Zone'
+        # this = 'NetworkAclRule'
         for this in self.nc.keys():
             self.set_url(this, "read")
             with open("insert_query.log", "a") as file:
@@ -242,6 +236,3 @@ class Read2Insert():
             else:
                 read_data = self.read_api()
                 self.run_insert(read_data)
-
-
-        
