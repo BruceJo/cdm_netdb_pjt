@@ -394,10 +394,10 @@ def init_table_rows():
 def include_keys():
     return {
         ### step.3 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 요청 파라미터를 작성
+        # 단, regionCode와 responseFormatType는 제외한다
         'routetable' : ['vpcNo', 'routeTableName', 'supportedSubnetTypeCode', 'routeTableDescription'],
         'blockstorageinstance' : ['zoneCode', 'blockStorageName', 'blockStorageDiskDetailTypeCode', 'blockStorageVolumeTypeCode', 
                                   'serverInstanceNo', 'blockStorageSnapshotInstanceNo', 'blockStorageSize', 'blockStorageDescription', 'isReturnProtection'],
         'publicipinstance' : ['serverInstanceNo', 'publicIpDescription'],
-        # 단, regionCode와 responseFormatType는 제외한다
         'loadbalancerinstance' : ['loadBalancerTypeCode', 'loadBalancerName', 'loadBalancerNetworkTypeCode', 'throughputTypeCode', 'idleTimeout', 'vpcNo', 'loadBalancerDescription', 'subnetNoList.N', 'loadBalancerSubnetList.N.subnetNo', 'loadBalancerSubnetList.N.publicIpInstanceNo', 'loadBalancerListenerList.N.protocolTypeCode', 'loadBalancerListenerList.N.port', 'loadBalancerListenerList.N.targetGroupNo', 'loadBalancerListenerList.N.useHttp2', 'loadBalancerListenerList.N.sslCertificateNo', 'loadBalancerListenerList.N.tlsMinVersionTypeCode', 'loadBalancerListenerList.N.cipherSuiteList.N']
     }
