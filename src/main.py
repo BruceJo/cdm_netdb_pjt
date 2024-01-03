@@ -157,6 +157,7 @@ def update_vpc():
     #     },
     #     "update" : {
     #         "target" : "RouteTable",
+    #         "key" : "{some_your_key}", //If there are two or more update APIs, specify the API address
     #         "body" : {
     #             "routeTableNo" : "20247",
     #             "routeTableDescription" : "many thanks, Jo."
@@ -191,6 +192,7 @@ def delete_vpc():
     #     },
     #     "delete" : {
     #         "target" : "RouteTable",
+    #         "key" : "{some_your_key}", //If there are two or more delete APIs, specify the API address
     #         "body" : {
     #             "routeTableNo" : "20247"
     #         }

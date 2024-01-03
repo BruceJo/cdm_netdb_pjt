@@ -43,7 +43,7 @@ class Read2Insert():
         val_str = ', '.join(f"'{x}'" if isinstance(x, str) else str(x) for x in val_tuple)
         
         query = f'INSERT INTO {self.destination["schemaName"]}.{self.table_name} ({key_str}) VALUES ({val_str});'
-        print('3. query\n', query, '\n')
+        # print('3. query\n', query, '\n')
         with open("insert_query.log", "a") as file:
             file.write(query+'\n')
             file.close()
@@ -54,7 +54,6 @@ class Read2Insert():
         return None if len(result) == 0 else result[0]['id']
 
     def proc_special(self, src):
-        print('src\n', src)
         _temp = {}
         for i in src:   # instance
             if i in ['createDate', 'startTime', 'endTime']:
@@ -120,7 +119,6 @@ class Read2Insert():
         self.insert_db(dict1)
 
     def proc_normal(self, src):
-        print('src', src)
         _temp = {}
         for i in src:
             # Common
@@ -181,8 +179,6 @@ class Read2Insert():
             if (key not in out_field) and (key not in dict1):
                 dict1[key] = src[key]
         
-        print('dict1\n', dict1)
-
         self.insert_db(dict1)
 
     def insert_special(self, target):
@@ -193,7 +189,6 @@ class Read2Insert():
         condition_list = self.cc.query_db(query_body + where_body)
 
         for row in condition_list:
-            print(row)
             fetch_body = eval("{" + ", ".join([f"'{k}':{v}" for k, v in self.special_info[target]['fetch'].items()]) + "}")
             res = self.cc.request_api(self.api_url, self.sub_url, **fetch_body)
             source = res[self.sub_url+"Response"][self.special_info[target]['stage']]
@@ -210,9 +205,7 @@ class Read2Insert():
                     self.proc_special(src)
     
     def run_insert(self, res):
-        print('res', res)
         source = res[self.sub_url+"Response"][self.sub_url[3].lower()+self.sub_url[4:]]
-        print('source', source)
         
         for src in source:
             if self.table_name == 'inautoscalinggroupserverinstance':
@@ -229,20 +222,17 @@ class Read2Insert():
         for _dict in self.init_table_rows[self.table_name]: self.insert_db(_dict)
 
     def run(self):
-        # self.init_table()
+        self.init_table()
 
-        this = 'NetworkAclRule'
-        # for this in self.nc.keys():
-        self.set_url(this, "read")
-        with open("insert_query.log", "a") as file:
-            file.write('>>>> table_name : ' + self.table_name + '\n')
-            file.close()
-        
-        if self.table_name in self.special_table:
-            self.insert_special(self.table_name)
-        else:
-            read_data = self.read_api()
-            self.run_insert(read_data)
-
-
-        
+        # this = 'NetworkAclRule'
+        for this in self.nc.keys():
+            self.set_url(this, "read")
+            with open("insert_query.log", "a") as file:
+                file.write('>>>> table_name : ' + self.table_name + '\n')
+                file.close()
+            
+            if self.table_name in self.special_table:
+                self.insert_special(self.table_name)
+            else:
+                read_data = self.read_api()
+                self.run_insert(read_data)
