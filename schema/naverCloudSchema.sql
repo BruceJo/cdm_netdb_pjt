@@ -709,7 +709,7 @@ CREATE TABLE networkinterface (
 	ip VARCHAR(255) NOT NULL,
 	macaddress VARCHAR(255) NOT NULL,
 	accesscontrolgroupnolist JSONB NULL,
-	networkinterfacedescription JSONB NULL,
+	networkinterfacedescription VARCHAR(255) NULL,
 	secondaryiplist JSONB NULL,
 	CONSTRAINT networkinterface_pkey PRIMARY KEY (id ASC),
 	CONSTRAINT networkinterface_subnetid_fkey FOREIGN KEY (subnetid) REFERENCES subnet(id)
