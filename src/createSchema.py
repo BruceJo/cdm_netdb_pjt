@@ -21,9 +21,8 @@ class Create():
             sql = file.read()
         
         sql = sql.replace("CREATE TABLE ", f"CREATE TABLE {self.destination['schemaName']}.")
+        sql = sql.replace("CREATE SEQUENCE IF NOT EXISTS ", f"CREATE SEQUENCE IF NOT EXISTS {self.destination['schemaName']}.")
         cur.execute(f"set schema {self.destination['schemaName']};")
         cur.execute(sql)
-        # for s in sql.split(';')[:-1]:
-        #     cur.execute(s+';')
         cur.close()
         conn.close()
