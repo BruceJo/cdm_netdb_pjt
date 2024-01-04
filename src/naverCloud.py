@@ -35,7 +35,9 @@ def url_info():
         },
         "Vpc" : {
             "api_url" : "vpc/v2",
-            "read" : "getVpcList"
+            "read" : "getVpcList",
+            "create" : "createVpc",
+            "delete" : "deleteVpc"
         },
         "AccessControlGroup" : {
             "api_url" : "vserver/v2",
@@ -403,5 +405,6 @@ def include_keys():
         'loadbalancerinstance' : ['loadBalancerTypeCode', 'loadBalancerName', 'loadBalancerNetworkTypeCode', 'throughputTypeCode', 'idleTimeout', 'vpcNo', 'loadBalancerDescription', 'subnetNoList.N', 'loadBalancerSubnetList.N.subnetNo', 'loadBalancerSubnetList.N.publicIpInstanceNo', 'loadBalancerListenerList.N.protocolTypeCode', 'loadBalancerListenerList.N.port', 'loadBalancerListenerList.N.targetGroupNo', 'loadBalancerListenerList.N.useHttp2', 'loadBalancerListenerList.N.sslCertificateNo', 'loadBalancerListenerList.N.tlsMinVersionTypeCode', 'loadBalancerListenerList.N.cipherSuiteList.N'],
         'blockstoragesnapshotinstance' : ['originalBlockStorageInstanceNo','blockStorageSnapshotName','blockStorageSnapshotDescription','snapshotTypeCode'],
         'vpcpeeringinstance':['vpcPeeringName','sourceVpcNo','targetVpcNo','targetVpcName','targetVpcLoginId','vpcPeeringDescription'],
-        'networkinterface' : ['vpcNo','subnetNo','networkInterfaceName','accessControlGroupNoList.N','serverInstanceNo','ip','secondaryIpList.N','secondaryIpCount','networkInterfaceDescription']
+        'networkinterface' : ['vpcNo','subnetNo','networkInterfaceName','accessControlGroupNoList','serverInstanceNo','ip','secondaryIpList.N','secondaryIpCount','networkInterfaceDescription'],
+        'vpc' : ['vpcName','ipv4CidrBlock']
     }
