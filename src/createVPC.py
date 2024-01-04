@@ -56,7 +56,17 @@ class Create():
             elif key[-4:] == 'Name':      # 테스트 환경에서 Naver Cloud가 하나뿐이므로, 중복이름인경우 생성이 불가하기에 예외처리
                 value = row_dict[key.lower()] + '-dr'
             elif key == 'vpcNo':
-                value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
+                try:
+                    value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
+                except: # networkinterface 부분
+                    value = self.get_value('vpcid', 'subnet', **{'id' : row_dict['subnetid']})
+                    value = self.get_value('vpcno', 'vpc', **{'id' : value})
+            elif key == 'serverInstanceNo' or key == 'secondaryIpList.N' or key == 'secondaryIpCount': # networkinterface만 해당
+                value = None
+            elif key == 'subnetNo':  # 나중에 한번에 묶어 처리 'Code'
+                value = self.get_value('subnetno', 'subnet', **{'id' : row_dict['subnetid']})
+            elif key == 'serverinstanceno':  # 나중에 한번에 묶어 처리 'Code'
+                value = self.get_value('subnetno', 'subnet', **{'id' : row_dict['subnetid']})
             elif key == 'supportedSubnetTypeCode':  # 나중에 한번에 묶어 처리 'Code'
                 value = row_dict['supportedsubnettype']
             elif key == 'zoneCode':
@@ -94,6 +104,10 @@ class Create():
                 # else:
                 #     ...
                 continue
+            elif key == 'accessControlGroupNoList':
+                key = "accessControlGroupNoList.1"
+                value = ''.join(row_dict['accesscontrolgroupnolist'])
+                print(key, value)
             else:
                 value = row_dict[key.lower()]
 
