@@ -35,7 +35,9 @@ def url_info():
         },
         "Vpc" : {
             "api_url" : "vpc/v2",
-            "read" : "getVpcList"
+            "read" : "getVpcList",
+            "create" : "createVpc",
+            "delete" : "deleteVpc"
         },
         "AccessControlGroup" : {
             "api_url" : "vserver/v2",
@@ -95,7 +97,9 @@ def url_info():
         },
         "Subnet" : {
             "api_url" : "vpc/v2",
-            "read" : "getSubnetList"
+            "read" : "getSubnetList",
+            "create" : "createSubnet",
+            "delete" : "deleteSubnet"
         },
         "LoadBalancerListener" : {
             "api_url" : "vloadbalancer/v2",
@@ -178,11 +182,17 @@ def url_info():
         },
         "ScalingPolicy" : {
             "api_url" : "vautoscaling/v2",
-            "read" : "getAutoScalingPolicyList"
+            "read" : "getAutoScalingPolicyList",
+            "create" : "putScalingPolicy",
+            "delete" : "deleteScalingPolicy",
+            "update" : "putScalingPolicy"
         },
         "ScheduledUpdateGroupAction" : {
             "api_url" : "vautoscaling/v2",
-            "read" : "getScheduledActionList"
+            "read" : "getScheduledActionList",
+            "create" : "putScheduledUpdateGroupAction",
+            "delete" : "deleteScheduledAction",
+            "update" : "putScheduledUpdateGroupAction"
         }
     }
 
@@ -399,5 +409,7 @@ def include_keys():
         'blockstorageinstance' : ['zoneCode', 'blockStorageName', 'blockStorageDiskDetailTypeCode', 'blockStorageVolumeTypeCode', 
                                   'serverInstanceNo', 'blockStorageSnapshotInstanceNo', 'blockStorageSize', 'blockStorageDescription', 'isReturnProtection'],
         'publicipinstance' : ['serverInstanceNo', 'publicIpDescription'],
-        'loadbalancerinstance' : ['loadBalancerTypeCode', 'loadBalancerName', 'loadBalancerNetworkTypeCode', 'throughputTypeCode', 'idleTimeout', 'vpcNo', 'loadBalancerDescription', 'subnetNoList.N', 'loadBalancerSubnetList.N.subnetNo', 'loadBalancerSubnetList.N.publicIpInstanceNo', 'loadBalancerListenerList.N.protocolTypeCode', 'loadBalancerListenerList.N.port', 'loadBalancerListenerList.N.targetGroupNo', 'loadBalancerListenerList.N.useHttp2', 'loadBalancerListenerList.N.sslCertificateNo', 'loadBalancerListenerList.N.tlsMinVersionTypeCode', 'loadBalancerListenerList.N.cipherSuiteList.N']
+        'loadbalancerinstance' : ['loadBalancerTypeCode', 'loadBalancerName', 'loadBalancerNetworkTypeCode', 'throughputTypeCode', 'idleTimeout', 'vpcNo', 'loadBalancerDescription', 'subnetNoList.N', 'loadBalancerSubnetList.N.subnetNo', 'loadBalancerSubnetList.N.publicIpInstanceNo', 'loadBalancerListenerList.N.protocolTypeCode', 'loadBalancerListenerList.N.port', 'loadBalancerListenerList.N.targetGroupNo', 'loadBalancerListenerList.N.useHttp2', 'loadBalancerListenerList.N.sslCertificateNo', 'loadBalancerListenerList.N.tlsMinVersionTypeCode', 'loadBalancerListenerList.N.cipherSuiteList.N'],
+        'vpc' : ['vpcName','ipv4CidrBlock'],
+        'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName']
     }
