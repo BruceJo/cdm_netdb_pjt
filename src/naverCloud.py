@@ -103,7 +103,10 @@ def url_info():
         },
         "LoadBalancerListener" : {
             "api_url" : "vloadbalancer/v2",
-            "read" : "getLoadBalancerListenerList"
+            "read" : "getLoadBalancerListenerList",
+            "create" : "createLoadBalancerListener",
+            "delete" : "deleteLoadBalancerListeners",
+            "update" : "changeLoadBalancerListenerConfiguration"
         },
         "PublicIpInstance" : {
             "api_url" : "vserver/v2",
