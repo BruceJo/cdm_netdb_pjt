@@ -1,6 +1,6 @@
 from flask import Flask, request
 from flask_cors import CORS
-import getConfig as gcf
+import getConfig as gcf #getConfig라는 모듈을 gcf라는 이름으로 import
 import createSchema
 import readVPC2InsertDB as rv2
 import createVPC
@@ -11,7 +11,7 @@ app = Flask(__name__)
 CORS(app)
 
 # function
-def change_default(req, obj, req_key):
+def change_default(req, obj, req_key): #그러니깐 req 딕셔너리의 key중에 req_key가 존재한다면 req_key에 해당하는 item()을 꺼내서 obj딕셔너리에 복사해주는 느낌임
     if req_key in req.keys():
         for k, v in req[req_key].items():
             obj[k] = v
@@ -37,7 +37,7 @@ def create_db():
     for k, v in req.items():
         source[k] = v
     
-    cock_create = createSchema.Create(source)
+    cock_create = createSchema.Create(source) #createSchema.Create 클래스의 인스턴스를 생성합니다.
     cock_create.create_schema()
     cock_create.create_table()
     cock_create.create_sequence() #240102 cdh
@@ -72,8 +72,8 @@ def read2insert():
     api = app_conf['API-SOURCE-NAVER-CLOUD'].copy()
     source = app_conf['DATABASE-SOURCE'].copy()
     
-    api = change_default(req, api, 'apiSource')
-    source = change_default(req, source, 'dbSource')
+    api = change_default(req, api, 'apiSource') # 이 작업이 필요한 이유는 요청을 보낼때 기본값과 변경된 값이 있다면 원래 값과 변경된 값의 병합을 위해서 필요함
+    source = change_default(req, source, 'dbSource') #위와 이유 같음
     
     ri = rv2.Read2Insert(api, source)
     ri.run()
@@ -100,7 +100,7 @@ def create_vpc():
     #     }
     # }
     req = request.get_json()
-    if 'dbSource' not in req: 
+    if 'dbSource' not in req:
         return 'fail, need key ["dbSource"]', 400
     elif 'schemaName' not in req['dbSource']:
         return 'fail, need key ["dbSource"]["schemaName"]', 400
@@ -166,7 +166,7 @@ def update_vpc():
     #     }
     # }
     req = request.get_json()
-    if 'update' not in req: 
+    if 'update' not in req:
         return 'fail, need key ["update"]', 400
     elif 'target' not in req['update']:
         return 'fail, need key ["update"]["target"]', 400
