@@ -98,15 +98,21 @@ class Read2Insert():
 
         if self.table_name == 'loadbalancerruleaction':
             dict1['redirectionaction'] = '' # 이 예제에서는 redirectionaction에 대한 데이터가 JSON에 없으므로 빈 문자열 사용
+            dict1['targetGroupAction'] = json.dumps(src['targetGroupAction'])
 
         if self.table_name == 'loadbalancerrulecondition':
             dict1['hostheadercondition'] = '' # 이 예제에서는 redirectionaction에 대한 데이터가 JSON에 없으므로 빈 문자열 사용
-            dict1['pathpatterncondition'] = '' # 이 예제에서는 redirectionaction에 대한 데이터가 JSON에 없으므로 빈 문자열 사용
+            if 'pathPatternCondition' in src:
+                dict1['pathpatterncondition'] = json.dumps(src['pathPatternCondition'])
+            else:
+                dict1['pathpatterncondition'] = ''
+
 
 
         for key in src:
             if self.table_name != 'loadbalancerlistener':
-                out_candidate = ['routeTableNo', 'autoScalingGroupNo', 'regionCode', 'networkAclNo', 'protocolType', 'autoScalingGroupNo', 'accessControlGroupNo', 'loadBalancerListenerNo']
+                out_candidate = ['routeTableNo', 'autoScalingGroupNo', 'regionCode', 'networkAclNo', 'protocolType', 'autoScalingGroupNo', 'accessControlGroupNo', 'loadBalancerListenerNo',
+                                 'pathPatternCondition', 'targetGroupAction']
             else:
                 out_candidate = ['loadBalancerInstanceNo']
             
