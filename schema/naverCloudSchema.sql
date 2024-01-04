@@ -75,7 +75,7 @@ CREATE TABLE loadbalancerruleaction (
 	id INTEGER NOT NULL DEFAULT NEXTVAL ('loadbalancerruleaction_seq'),
 	ruleactiontype VARCHAR(255) NOT NULL,
 	targetgroupaction JSONB NULL,
-	redirectionaction VARCHAR(255) NULL,
+	redirectionaction JSONB NULL,
 	CONSTRAINT loadbalancerruleaction_pkey PRIMARY KEY (id ASC)
 );
 
