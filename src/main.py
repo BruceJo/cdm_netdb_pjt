@@ -6,6 +6,7 @@ import readVPC2InsertDB as rv2
 import createVPC
 import vudVPC
 
+#test0104
 #Flask init
 app = Flask(__name__)
 CORS(app)
