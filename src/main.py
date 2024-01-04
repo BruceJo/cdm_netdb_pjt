@@ -6,6 +6,7 @@ import readVPC2InsertDB as rv2
 import createVPC
 import vudVPC
 
+#test0104
 #Flask init
 app = Flask(__name__)
 CORS(app)
@@ -40,7 +41,6 @@ def create_db():
     cock_create = createSchema.Create(source)
     cock_create.create_schema()
     cock_create.create_table()
-
     return 'success'
 
 
@@ -158,6 +158,7 @@ def update_vpc():
     #     },
     #     "update" : {
     #         "target" : "RouteTable",
+    #         "key" : "{some_your_key}", //If there are two or more update APIs, specify the API address
     #         "body" : {
     #             "routeTableNo" : "20247",
     #             "routeTableDescription" : "many thanks, Jo."
@@ -192,6 +193,7 @@ def delete_vpc():
     #     },
     #     "delete" : {
     #         "target" : "RouteTable",
+    #         "key" : "{some_your_key}", //If there are two or more delete APIs, specify the API address
     #         "body" : {
     #             "routeTableNo" : "20247"
     #         }

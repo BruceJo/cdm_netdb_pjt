@@ -5,6 +5,14 @@
 def url_info():
     return {
         ### step.2 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 주소를 작성
+        "Region" : {
+            "api_url" : "vserver/v2",
+            "read" : "getRegionList"
+        },
+        "Zone" : {
+            "api_url" : "vserver/v2",
+            "read" : "getZoneList"
+        },        
         "AdjustmentType" : {
             "api_url" : "vautoscaling/v2",
             "read" : "getAdjustmentTypeList"
@@ -55,7 +63,6 @@ def url_info():
             "create" : "createLoadBalancerInstance",
             "delete" : "deleteLoadBalancerInstances",
             "update" : ["changeLoadBalancerInstanceConfiguration", "setLoadBalancerInstanceSubnet"]
-
         },
         "RouteTable" : {
             "api_url" : "vpc/v2",
@@ -327,6 +334,8 @@ def code_candidate():
 
 def out_candidate():
     return dict(
+        region = ['zoneName', 'zoneDescription'],
+        zone = ['regionCode'],
         routetable = ['vpcNo', 'regionCode'],
         launchconfiguration = ['regionCode', 'serverProductCode', 'loginKeyName'],
         inautoscalinggroupserverinstance = ['regionCode', 'serverProductCode', 'loginKeyName'],
@@ -370,12 +379,6 @@ def col_name_mapper():
 
 def init_table_rows():
     return {
-        'region' : [
-            {'regioncode' : 'KR', 'regionname' : 'KR'}
-        ],
-        'zone' : [
-            {'zonename' : 'KR-1', 'zonecode' : 'KR-1', 'zonedescription' : 'KR-1'}
-        ],
         'protocoltype' : [
             {'code' : 'err', 'codename' : 'err', 'codenumber' : 0},
             {'code' : 'tcp', 'codename' : 'tcp', 'codenumber' : 1},
@@ -391,6 +394,7 @@ def init_table_rows():
 def include_keys():
     return {
         ### step.3 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 요청 파라미터를 작성
+        # 단, regionCode와 responseFormatType는 제외한다
         'routetable' : ['vpcNo', 'routeTableName', 'supportedSubnetTypeCode', 'routeTableDescription'],
         'blockstorageinstance' : ['zoneCode', 'blockStorageName', 'blockStorageDiskDetailTypeCode', 'blockStorageVolumeTypeCode', 
                                   'serverInstanceNo', 'blockStorageSnapshotInstanceNo', 'blockStorageSize', 'blockStorageDescription', 'isReturnProtection'],
