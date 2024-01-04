@@ -117,7 +117,7 @@ CREATE SEQUENCE IF NOT EXISTS activitylog_seq;
 
 
 CREATE TABLE IF NOT EXISTS accesscontrolgroup (
-	id INT8 NOT NULL DEFAULT NEXTVAL('accesscontrolgroup_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('accesscontrolgroup_seq'),
 	accesscontrolgroupno VARCHAR(255) NOT NULL,
 	accesscontrolgroupname VARCHAR(255) NOT NULL,
 	isdefault BOOL NOT NULL,
@@ -129,7 +129,7 @@ CREATE TABLE IF NOT EXISTS accesscontrolgroup (
 );
 
 CREATE TABLE IF NOT EXISTS adjustmenttype (
-	id INT8 NOT NULL DEFAULT NEXTVAL('adjustmenttype_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('adjustmenttype_seq'),
 	code VARCHAR(255) NOT NULL,
 	codename VARCHAR(255) NOT NULL,
 	CONSTRAINT adjustmenttype_pkey PRIMARY KEY (id ASC),
@@ -139,17 +139,17 @@ CREATE TABLE IF NOT EXISTS adjustmenttype (
 
 
 CREATE TABLE IF NOT EXISTS inautoscalinggroupserverinstance (
-	id INT8 NOT NULL DEFAULT NEXTVAL('inautoscalinggroupserverinstance_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('inautoscalinggroupserverinstance_seq'),
 	serverinstanceno VARCHAR(255) NULL,
 	healthstatus VARCHAR(255) NULL,
 	lifecyclestate VARCHAR(255) NULL,
 	CONSTRAINT inautoscalinggroupserverinstance_pkey PRIMARY KEY (id ASC),
-    CONSTRAINT inautoscalinggroupserverinstance_pkey UNIQUE (serverinstanceno, healthstatus, lifecyclestate)
+    CONSTRAINT inautoscalinggroupserverinstance_ukey UNIQUE (serverinstanceno, healthstatus, lifecyclestate)	-- PKEY 가 아니라 UKEY 로 변경
 );
 
 
 CREATE TABLE IF NOT EXISTS initscript (
-	id INT8 NOT NULL DEFAULT NEXTVAL('initscript_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('initscript_seq'),
 	initscriptno VARCHAR(255) NOT NULL,
 	initscriptname VARCHAR(255) NOT NULL,
 	createdate TIMESTAMP NOT NULL,
@@ -162,7 +162,7 @@ CREATE TABLE IF NOT EXISTS initscript (
 
 
 CREATE TABLE IF NOT EXISTS loadbalancerruleaction (
-	id INT8 NOT NULL DEFAULT NEXTVAL('loadbalancerruleaction_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('loadbalancerruleaction_seq'),
 	ruleactiontype VARCHAR(255) NOT NULL,
 	targetgroupaction VARCHAR(255) NULL,
 	redirectionaction VARCHAR(255) NULL,
@@ -172,7 +172,7 @@ CREATE TABLE IF NOT EXISTS loadbalancerruleaction (
 
 
 CREATE TABLE IF NOT EXISTS loadbalancerrulecondition (
-	id INT8 NOT NULL DEFAULT NEXTVAL('loadbalancerrulecondition_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('loadbalancerrulecondition_seq'),
 	ruleconditiontype VARCHAR(255) NOT NULL,
 	hostheadercondition VARCHAR(255) NULL,
 	pathpatterncondition VARCHAR(255) NULL,
@@ -182,7 +182,7 @@ CREATE TABLE IF NOT EXISTS loadbalancerrulecondition (
 
 
 CREATE TABLE IF NOT EXISTS loginkey (
-	id INT8 NOT NULL DEFAULT NEXTVAL('loginkey_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('loginkey_seq'),
 	fingerprint VARCHAR(255) NOT NULL,
 	keyname VARCHAR(255) NOT NULL,
 	createdate TIMESTAMP NOT NULL,
@@ -191,7 +191,7 @@ CREATE TABLE IF NOT EXISTS loginkey (
 );
 
 CREATE TABLE IF NOT EXISTS memberserverimageinstance (
-	id INT8 NOT NULL DEFAULT NEXTVAL('memberserverimageinstance_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('memberserverimageinstance_seq'),
 	originalserverinstanceid INT8 NOT NULL,
 	memberserverimageinstanceno VARCHAR(255) NOT NULL,
 	memberserverimagename VARCHAR(255) NOT NULL,
@@ -203,13 +203,13 @@ CREATE TABLE IF NOT EXISTS memberserverimageinstance (
 	memberserverimageblockstoragetotalrows INT8 NOT NULL,
 	memberserverimageblockstoragetotalsize INT8 NOT NULL,
 	sharestatus VARCHAR(255) NOT NULL,
-	sharedloginidlist JSONB NOT NULL,
+	sharedloginidlist JSONB NOT NULL, -- LIST 구조는 JSONB 형식으로 INSERT
 	CONSTRAINT memberserverimageinstance_pkey PRIMARY KEY (id ASC),
     CONSTRAINT memberserverimageinstance_ukey UNIQUE (memberserverimageinstanceno)
 );
 
 CREATE TABLE IF NOT EXISTS placementgroup (
-	id INT8 NOT NULL DEFAULT NEXTVAL('placementgroup_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('placementgroup_seq'),
 	placementgroupno VARCHAR(255) NOT NULL,
 	placementgroupname VARCHAR(255) NOT NULL,
 	placementgrouptype VARCHAR(255) NOT NULL,
@@ -219,7 +219,7 @@ CREATE TABLE IF NOT EXISTS placementgroup (
 
 
 CREATE TABLE IF NOT EXISTS product (
-	id INT8 NOT NULL DEFAULT NEXTVAL('product_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('product_seq'),
 	productcode VARCHAR(255) NOT NULL,
 	productname VARCHAR(255) NOT NULL,
 	producttype VARCHAR(255) NOT NULL,
@@ -236,12 +236,12 @@ CREATE TABLE IF NOT EXISTS product (
 	addblockstoragesize INT8 NULL,
 	generationcode VARCHAR(255) NULL,
 	CONSTRAINT product_pkey PRIMARY KEY (id ASC),
-    CONSTRAINT product_pkey UNIQUE (productcode)
+    CONSTRAINT product_ukey UNIQUE (productcode)	-- PKEY 가 아니라 UKEY 로 변경
 );
 
 
 CREATE TABLE IF NOT EXISTS protocoltype (
-	id INT8 NOT NULL DEFAULT NEXTVAL('protocoltype_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('protocoltype_seq'),
 	code VARCHAR(255) NOT NULL,
 	codename VARCHAR(255) NOT NULL,
 	codenumber INT8 NOT NULL,
@@ -250,7 +250,7 @@ CREATE TABLE IF NOT EXISTS protocoltype (
 );
 
 CREATE TABLE IF NOT EXISTS publicipinstance (
-	id INT8 NOT NULL DEFAULT NEXTVAL('publicipinstance_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('publicipinstance_seq'),
 	publicipinstanceno VARCHAR(255) NOT NULL,
 	publicip VARCHAR(255) NOT NULL,
 	createdate TIMESTAMP NOT NULL,
@@ -267,7 +267,7 @@ CREATE TABLE IF NOT EXISTS publicipinstance (
 );
 
 CREATE TABLE IF NOT EXISTS region (
-	id INT8 NOT NULL DEFAULT NEXTVAL('region_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('region_seq'),
 	regioncode VARCHAR(255) NOT NULL,
 	regionname VARCHAR(255) NOT NULL,
 	CONSTRAINT region_pkey PRIMARY KEY (id ASC),
@@ -275,7 +275,7 @@ CREATE TABLE IF NOT EXISTS region (
 );
 
 CREATE TABLE IF NOT EXISTS accesscontrolgrouprule (
-	id INT8 NOT NULL DEFAULT NEXTVAL('accesscontrolgrouprule_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('accesscontrolgrouprule_seq'),
 	accesscontrolgroupid INT8 NOT NULL,
 	protocoltypeid INT8 NOT NULL,
 	ipblock VARCHAR(255) NULL,
@@ -290,7 +290,7 @@ CREATE TABLE IF NOT EXISTS accesscontrolgrouprule (
 );
 
 CREATE TABLE IF NOT EXISTS launchconfiguration (
-	id INT8 NOT NULL DEFAULT NEXTVAL('launchconfiguration_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('launchconfiguration_seq'),
 	regionid INT8 NOT NULL,
 	serverproductid INT8 NOT NULL,
 	loginkeyid INT8 NOT NULL,
@@ -310,7 +310,7 @@ CREATE TABLE IF NOT EXISTS launchconfiguration (
 );
 
 CREATE TABLE IF NOT EXISTS vpc (
-	id INT8 NOT NULL DEFAULT NEXTVAL('vpc_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('vpc_seq'),
 	regionid INT8 NOT NULL,
 	vpcno VARCHAR(255) NOT NULL,
 	vpcname VARCHAR(255) NOT NULL,
@@ -323,7 +323,7 @@ CREATE TABLE IF NOT EXISTS vpc (
 );
 
 CREATE TABLE IF NOT EXISTS vpcpeeringinstance (
-	id INT8 NOT NULL DEFAULT NEXTVAL('vpcpeeringinstance_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('vpcpeeringinstance_seq'),
 	regionid INT8 NOT NULL,
 	sourcevpcid INT8 NOT NULL,
 	targetvpcid INT8 NOT NULL,
@@ -349,7 +349,7 @@ CREATE TABLE IF NOT EXISTS vpcpeeringinstance (
 );
 
 CREATE TABLE IF NOT EXISTS zone (
-	id INT8 NOT NULL DEFAULT NEXTVAL('zone_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('zone_seq'),
 	regionid INT8 NOT NULL,
 	zonename VARCHAR(255) NOT NULL,
 	zonecode VARCHAR(255) NOT NULL,
@@ -361,7 +361,7 @@ CREATE TABLE IF NOT EXISTS zone (
 
 
 CREATE TABLE IF NOT EXISTS blockstorageinstance (
-	id INT8 NOT NULL DEFAULT NEXTVAL('blockstorageinstance_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('blockstorageinstance_seq'),
 	zoneid INT8 NOT NULL,
 	regionid INT8 NOT NULL,
 	blockstorageinstanceno VARCHAR(255) NOT NULL,
@@ -388,7 +388,7 @@ CREATE TABLE IF NOT EXISTS blockstorageinstance (
 );
 
 CREATE TABLE IF NOT EXISTS blockstoragesnapshotinstance (
-	id INT8 NOT NULL DEFAULT NEXTVAL('blockstoragesnapshotinstance_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('blockstoragesnapshotinstance_seq'),
 	blockstorageinstanceid INT8 NOT NULL,
 	blockstoragesnapshotinstanceno VARCHAR(255) NOT NULL,
 	blockstoragesnapshotname VARCHAR(255) NOT NULL,
@@ -408,7 +408,7 @@ CREATE TABLE IF NOT EXISTS blockstoragesnapshotinstance (
 );
 
 CREATE TABLE IF NOT EXISTS loadbalancerinstance (
-	id INT8 NOT NULL DEFAULT NEXTVAL('loadbalancerinstance_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('loadbalancerinstance_seq'),
 	vpcid INT8 NOT NULL,
 	regionid INT8 NOT NULL,
 	loadbalancerinstanceno VARCHAR(255) NOT NULL,
@@ -419,14 +419,14 @@ CREATE TABLE IF NOT EXISTS loadbalancerinstance (
 	createdate TIMESTAMP NOT NULL,
 	loadbalancername VARCHAR(255) NOT NULL,
 	loadbalancerdomain VARCHAR(255) NOT NULL,
-	loadbalanceriplist JSONB NULL,
+	loadbalanceriplist JSONB NULL, 	-- LIST 구조는 JSONB 형식으로 INSERT
 	loadbalancertype VARCHAR(255) NOT NULL,
 	loadbalancernetworktype VARCHAR(255) NOT NULL,
 	throughputtype VARCHAR(255) NOT NULL,
 	idletimeout INT8 NULL,
-	subnetnolist JSONB NOT NULL,
-	loadbalancersubnetlist JSONB NOT NULL,
-	loadbalancerlistenernolist JSONB NULL,
+	subnetnolist JSONB NOT NULL, 	-- LIST 구조는 JSONB 형식으로 INSERT
+	loadbalancersubnetlist JSONB NOT NULL, 	-- LIST 구조는 JSONB 형식으로 INSERT
+	loadbalancerlistenernolist JSONB NULL, 	-- LIST 구조는 JSONB 형식으로 INSERT
 	CONSTRAINT loadbalancerinstance_pkey PRIMARY KEY (id ASC),
     CONSTRAINT loadbalancerinstance_ukey UNIQUE (vpcid, regionid, loadbalancerinstanceno),
 	CONSTRAINT loadbalancerinstance_vpcid_fkey FOREIGN KEY (vpcid) REFERENCES vpc(id),
@@ -434,7 +434,7 @@ CREATE TABLE IF NOT EXISTS loadbalancerinstance (
 );
 
 CREATE TABLE IF NOT EXISTS loadbalancerlistener (
-	id INT8 NOT NULL DEFAULT NEXTVAL('loadbalancerlistener_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('loadbalancerlistener_seq'),
 	loadbalancerinstanceid INT8 NOT NULL,
 	loadbalancerlistenerno VARCHAR(255) NOT NULL,
 	protocoltype VARCHAR(50) NOT NULL,
@@ -442,8 +442,8 @@ CREATE TABLE IF NOT EXISTS loadbalancerlistener (
 	usehttp2 BOOL NOT NULL,
 	sslcertificateno VARCHAR(255) NULL,
 	tlsminversiontype VARCHAR(50) NULL,
-	loadbalancerrulenolist JSONB NOT NULL,
-	ciphersuitelist JSONB NOT NULL,
+	loadbalancerrulenolist JSONB NOT NULL,	-- LIST 구조는 JSONB 형식으로 INSERT
+	ciphersuitelist JSONB NOT NULL,			-- LIST 구조는 JSONB 형식으로 INSERT
 	CONSTRAINT loadbalancerlistener_pkey PRIMARY KEY (id ASC),
     CONSTRAINT loadbalancerlistener_ukey UNIQUE (loadbalancerinstanceid, loadbalancerlistenerno),
 	CONSTRAINT loadbalancerlistener_loadbalancerinstanceid_fkey FOREIGN KEY (loadbalancerinstanceid) REFERENCES loadbalancerinstance(id)
@@ -451,12 +451,12 @@ CREATE TABLE IF NOT EXISTS loadbalancerlistener (
 
 
 CREATE TABLE IF NOT EXISTS loadbalancerrule (
-	id INT8 NOT NULL DEFAULT NEXTVAL('loadbalancerrule_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('loadbalancerrule_seq'),
 	loadbalancerlistenerid INT8 NOT NULL,
 	loadbalancerruleno VARCHAR(255) NOT NULL,
 	priority INT8 NOT NULL,
-	loadbalancerruleconditionlist JSONB NOT NULL,
-	loadbalancerruleactionlist JSONB NOT NULL,
+	loadbalancerruleconditionlist JSONB NOT NULL,	-- LIST 구조는 JSONB 형식으로 INSERT
+	loadbalancerruleactionlist JSONB NOT NULL,		-- LIST 구조는 JSONB 형식으로 INSERT
 	CONSTRAINT loadbalancerrule_pkey PRIMARY KEY (id ASC),
     CONSTRAINT loadbalancerrule_ukey UNIQUE (loadbalancerlistenerid, loadbalancerruleno),
 	CONSTRAINT loadbalancerrule_loadbalancerlistenerid_fkey FOREIGN KEY (loadbalancerlistenerid) REFERENCES loadbalancerlistener(id)
@@ -464,7 +464,7 @@ CREATE TABLE IF NOT EXISTS loadbalancerrule (
 
 
 CREATE TABLE IF NOT EXISTS memberserverimage (
-	id INT8 NOT NULL DEFAULT NEXTVAL('memberserverimage_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('memberserverimage_seq'),
 	originalserverinstanceid INT8 NOT NULL,
 	zoneid INT8 NOT NULL,
 	memberserverimageno VARCHAR(255) NOT NULL,
@@ -483,7 +483,7 @@ CREATE TABLE IF NOT EXISTS memberserverimage (
 );
 
 CREATE TABLE IF NOT EXISTS networkacl (
-	id INT8 NOT NULL DEFAULT NEXTVAL('networkacl_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('networkacl_seq'),
 	vpcid INT8 NOT NULL,
 	networkaclno VARCHAR(255) NOT NULL,
 	networkaclname VARCHAR(255) NOT NULL,
@@ -497,12 +497,12 @@ CREATE TABLE IF NOT EXISTS networkacl (
 );
 
 CREATE TABLE IF NOT EXISTS networkacldenyallowgroup (
-	id INT8 NOT NULL DEFAULT NEXTVAL('networkacldenyallowgroup_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('networkacldenyallowgroup_seq'),
 	vpcid INT8 NOT NULL,
 	networkacldenyallowgroupno VARCHAR(255) NOT NULL,
 	networkacldenyallowgroupname VARCHAR(255) NOT NULL,
 	networkacldenyallowgroupstatus VARCHAR(255) NOT NULL,
-	iplist JSONB NULL,
+	iplist JSONB NULL,	-- LIST 구조는 JSONB 형식으로 INSERT
 	networkacldenyallowgroupdescription VARCHAR(255) NULL,
 	createdate TIMESTAMP NOT NULL,
 	isapplied BOOL NOT NULL,
@@ -512,7 +512,7 @@ CREATE TABLE IF NOT EXISTS networkacldenyallowgroup (
 );
 
 CREATE TABLE IF NOT EXISTS networkaclrule (
-	id INT8 NOT NULL DEFAULT NEXTVAL('networkaclrule_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('networkaclrule_seq'),
 	networkaclid INT8 NOT NULL,
 	protocolid INT8 NOT NULL,
 	priority INT8 NOT NULL,
@@ -530,7 +530,7 @@ CREATE TABLE IF NOT EXISTS networkaclrule (
 );
 
 CREATE TABLE IF NOT EXISTS routetable (
-	id INT8 NOT NULL DEFAULT NEXTVAL('routetable_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('routetable_seq'),
 	regionid INT8 NOT NULL,
 	vpcid INT8 NOT NULL,
 	routetableno VARCHAR(255) NOT NULL,
@@ -546,7 +546,7 @@ CREATE TABLE IF NOT EXISTS routetable (
 );
 
 CREATE TABLE IF NOT EXISTS subnet (
-	id INT8 NOT NULL DEFAULT NEXTVAL('subnet_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('subnet_seq'),
 	vpcid INT8 NOT NULL,
 	zoneid INT8 NOT NULL,
 	networkaclid INT8 NOT NULL,
@@ -566,7 +566,7 @@ CREATE TABLE IF NOT EXISTS subnet (
 );
 
 CREATE TABLE IF NOT EXISTS autoscalinggroup (
-	id INT8 NOT NULL DEFAULT NEXTVAL('autoscalinggroup_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('autoscalinggroup_seq'),
 	vpcid INT8 NOT NULL,
 	subnetid INT8 NOT NULL,
 	servernameprefix VARCHAR(255) NULL,
@@ -581,10 +581,10 @@ CREATE TABLE IF NOT EXISTS autoscalinggroup (
 	healthchecktype VARCHAR(255) NOT NULL,
 	createdate TIMESTAMP NOT NULL,
 	autoscalinggroupstatus VARCHAR(255) NOT NULL,
-	inautoscalinggroupserverinstancelist JSONB NULL,
-	targetgroupnolist JSONB NULL,
-	accesscontrolgroupnolist JSONB NOT NULL,
-	suspendedprocesslist JSONB NULL,
+	inautoscalinggroupserverinstancelist JSONB NULL,	-- LIST 구조는 JSONB 형식으로 INSERT
+	targetgroupnolist JSONB NULL,						-- LIST 구조는 JSONB 형식으로 INSERT
+	accesscontrolgroupnolist JSONB NOT NULL,			-- LIST 구조는 JSONB 형식으로 INSERT
+	suspendedprocesslist JSONB NULL,					-- LIST 구조는 JSONB 형식으로 INSERT
 	CONSTRAINT autoscalinggroup_pkey PRIMARY KEY (id ASC),
     CONSTRAINT autoscalinggroup_ukey UNIQUE (vpcid, subnetid, autoscalinggroupno),
 	CONSTRAINT autoscalinggroup_vpcid_fkey FOREIGN KEY (vpcid) REFERENCES vpc(id),
@@ -592,7 +592,7 @@ CREATE TABLE IF NOT EXISTS autoscalinggroup (
 );
 
 CREATE TABLE IF NOT EXISTS loadbalancersubnet (
-	id INT8 NOT NULL DEFAULT NEXTVAL('loadbalancersubnet_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('loadbalancersubnet_seq'),
 	zoneid INT8 NOT NULL,
 	subnetid INT8 NOT NULL,
 	publicipinstanceid INT8 NULL,
@@ -605,7 +605,7 @@ CREATE TABLE IF NOT EXISTS loadbalancersubnet (
 
 
 CREATE TABLE IF NOT EXISTS natgatewayinstance (
-	id INT8 NOT NULL DEFAULT NEXTVAL('natgatewayinstance_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('natgatewayinstance_seq'),
 	vpcid INT8 NOT NULL,
 	subnetid INT8 NOT NULL,
 	natgatewayinstanceno VARCHAR(255) NOT NULL,
@@ -626,7 +626,7 @@ CREATE TABLE IF NOT EXISTS natgatewayinstance (
 );
 
 CREATE TABLE IF NOT EXISTS networkinterface (
-	id INT8 NOT NULL DEFAULT NEXTVAL('networkinterface_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('networkinterface_seq'),
 	subnetid INT8 NOT NULL,
 	networkinterfaceno VARCHAR(255) NOT NULL,
 	networkinterfacename VARCHAR(255) NOT NULL,
@@ -638,9 +638,9 @@ CREATE TABLE IF NOT EXISTS networkinterface (
 	instanceno VARCHAR(255) NULL,
 	ip VARCHAR(255) NOT NULL,
 	macaddress VARCHAR(255) NOT NULL,
-	accesscontrolgroupnolist JSONB NULL,
+	accesscontrolgroupnolist JSONB NULL,			-- LIST 구조는 JSONB 형식으로 INSERT
 	networkinterfacedescription VARCHAR(255) NULL,
-	secondaryiplist JSONB NULL,
+	secondaryiplist JSONB NULL,						-- LIST 구조는 JSONB 형식으로 INSERT
 	CONSTRAINT networkinterface_pkey PRIMARY KEY (id ASC),
     CONSTRAINT networkinterface_ukey UNIQUE (subnetid, networkinterfaceno),
 	CONSTRAINT networkinterface_subnetid_fkey FOREIGN KEY (subnetid) REFERENCES subnet(id)
@@ -648,7 +648,9 @@ CREATE TABLE IF NOT EXISTS networkinterface (
 
 
 CREATE TABLE IF NOT EXISTS route (
-	id INT8 NOT NULL DEFAULT NEXTVAL('route_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('route_seq'),
+	subnetid INT8 NOT NULL,						-- 추가된 부분
+	networkinterfaceno VARCHAR(255) NOT NULL, 	-- 추가된 부분
 	routetableid INT8 NOT NULL,
 	destinationcidrblock VARCHAR(255) NOT NULL,
 	targetname VARCHAR(255) NOT NULL,
@@ -656,12 +658,12 @@ CREATE TABLE IF NOT EXISTS route (
 	targetno VARCHAR(255) NOT NULL,
 	isdefault BOOL NOT NULL,
 	CONSTRAINT route_pkey PRIMARY KEY (id ASC),
-    CONSTRAINT route_ukey UNIQUE (subnetid, networkinterfaceno),
+    CONSTRAINT route_ukey UNIQUE (subnetid, networkinterfaceno),	-- 위의 UNIQUE 한 정보가 없어서 추가함.
 	CONSTRAINT route_routetableid_fkey FOREIGN KEY (routetableid) REFERENCES routetable(id)
 );
 
 CREATE TABLE IF NOT EXISTS scalingpolicy (
-	id INT8 NOT NULL DEFAULT NEXTVAL('scalingpolicy_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('scalingpolicy_seq'),
 	autoscalinggroupid INT8 NOT NULL,
 	policyno VARCHAR(255) NOT NULL,
 	policyname VARCHAR(255) NOT NULL,
@@ -675,7 +677,7 @@ CREATE TABLE IF NOT EXISTS scalingpolicy (
 );
 
 CREATE TABLE IF NOT EXISTS scheduledupdategroupaction (
-	id INT8 NOT NULL DEFAULT NEXTVAL('scheduledupdategroupaction_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('scheduledupdategroupaction_seq'),
 	autoscalinggroupid INT8 NOT NULL,
 	scheduledactionno VARCHAR(255) NOT NULL,
 	scheduledactionname VARCHAR(255) NOT NULL,
@@ -692,7 +694,7 @@ CREATE TABLE IF NOT EXISTS scheduledupdategroupaction (
 );
 
 CREATE TABLE IF NOT EXISTS serverinstance (
-	id INT8 NOT NULL DEFAULT NEXTVAL('serverinstance_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('serverinstance_seq'),
 	serverproductcodeid INT8 NOT NULL,
 	zoneid INT8 NOT NULL,
 	regionid INT8 NOT NULL,
@@ -714,7 +716,7 @@ CREATE TABLE IF NOT EXISTS serverinstance (
 	uptime TIMESTAMP NOT NULL,
 	serverimageproductcode VARCHAR(255) NOT NULL,
 	isprotectservertermination BOOL NOT NULL,
-	networkinterfacenolist JSONB NOT NULL,
+	networkinterfacenolist JSONB NOT NULL,	-- LIST 구조는 JSONB 형식으로 INSERT
 	initscriptno VARCHAR(255) NULL,
 	serverinstancetype VARCHAR(255) NOT NULL,
 	baseblockstoragedisktype VARCHAR(255) NOT NULL,
@@ -722,7 +724,7 @@ CREATE TABLE IF NOT EXISTS serverinstance (
 	placementgroupno VARCHAR(255) NULL,
 	placementgroupname VARCHAR(255) NULL,
 	memberserverimageinstanceno VARCHAR(255) NULL,
-	blockdevicepartitionlist JSONB NULL,
+	blockdevicepartitionlist JSONB NULL,	-- LIST 구조는 JSONB 형식으로 INSERT
 	CONSTRAINT serverinstance_pkey PRIMARY KEY (id ASC),
     CONSTRAINT serverinstance_ukey UNIQUE (serverproductcodeid, zoneid, regionid, vpcid, subnetid, serverinstanceno),
 	CONSTRAINT serverinstance_serverproductcodeid_fkey FOREIGN KEY (serverproductcodeid) REFERENCES product(id),
@@ -733,7 +735,7 @@ CREATE TABLE IF NOT EXISTS serverinstance (
 );
 
 CREATE TABLE IF NOT EXISTS activitylog (
-	id INT8 NOT NULL DEFAULT NEXTVAL('activitylog_seq'),
+	id INTEGER NOT NULL DEFAULT NEXTVAL('activitylog_seq'),
 	zoneid INT8 NOT NULL,
 	serverinstanceid INT8 NOT NULL,
 	autoscalinggroupid INT8 NOT NULL,
