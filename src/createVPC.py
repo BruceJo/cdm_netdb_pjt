@@ -51,8 +51,11 @@ class Create():
         dict1 = {}
         for key in self.include_keys[self.table_name]:
             ### step.4 Source 테이블에서 가져온 정보를 알맞게 변환
-            if key == 'blockStorageSnapshotInstanceNo' or key =='snapshotTypeCode' or key == 'targetVpcName':
+            if key == 'blockStorageSnapshotInstanceNo' or key =='snapshotTypeCode':
                 value = None
+            elif key == 'targetVpcName':
+                value = self.get_value('vpcname', 'vpc', **{'id' : row_dict['targetvpcid']})
+                print(value)
             elif key[-4:] == 'Name':      # 테스트 환경에서 Naver Cloud가 하나뿐이므로, 중복이름인경우 생성이 불가하기에 예외처리
                 value = row_dict[key.lower()] + '-dr'
             elif key == 'vpcNo':
@@ -82,10 +85,10 @@ class Create():
                 value = row_dict['blockstoragesnapshotinstanceno']
             elif key == 'sourceVpcNo':
                 value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['sourcevpcid']})
-                print(value)
+                # print(value)
             elif key == 'targetVpcNo':
                 value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['targetvpcid']})
-                print(value)
+                # print(value)
             # 나중에 한번에 묶어 처리 'Code'
             elif key == 'loadBalancerTypeCode':
                 value = 'APPLICATION'   # 이 예제에서 db의 정보가 Code가 아닌 값으로 저장되어있어 예외처리
