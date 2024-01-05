@@ -118,7 +118,7 @@ CREATE TABLE loginkey (
 CREATE SEQUENCE IF NOT EXISTS memberserverimageinstance_seq;
 CREATE TABLE memberserverimageinstance (
 	id INTEGER NOT NULL DEFAULT NEXTVAL ('memberserverimageinstance_seq'),
-	originalserverinstanceid INT8 NOT NULL,
+	originalserverinstanceid VARCHAR(255)  NOT NULL,
 	memberserverimageinstanceno VARCHAR(255) NOT NULL,
 	memberserverimagename VARCHAR(255) NOT NULL,
 	memberserverimagedescription VARCHAR(255) NULL,
