@@ -1,188 +1,191 @@
 ############################################
 # Common Info                              #
 ############################################
-
 def url_info():
     return {
         ### step.2 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 주소를 작성
-        "Region" : {
-            "api_url" : "vserver/v2",
-            "read" : "getRegionList"
+        "Region": {
+            "api_url": "vserver/v2",
+            "read": "getRegionList"
         },
-        "Zone" : {
-            "api_url" : "vserver/v2",
-            "read" : "getZoneList"
-        },        
-        "AdjustmentType" : {
-            "api_url" : "vautoscaling/v2",
-            "read" : "getAdjustmentTypeList"
+        "Zone": {
+            "api_url": "vserver/v2",
+            "read": "getZoneList"
         },
-        "InAutoScalingGroupServerInstance" : {
-            "api_url" : "vautoscaling/v2",
-            "read" : "getAutoScalingGroupList"
+        "AdjustmentType": {
+            "api_url": "vautoscaling/v2",
+            "read": "getAdjustmentTypeList"
         },
-        "InitScript" : {
-            "api_url" : "vserver/v2",
-            "read" : "getInitScriptList"
+        "InAutoScalingGroupServerInstance": {
+            "api_url": "vautoscaling/v2",
+            "read": "getAutoScalingGroupList"
         },
-        "LoadBalancerRuleAction" : {
-            "api_url" : "vloadbalancer/v2",
-            "read" : "getLoadBalancerRuleList"
+        "InitScript": {
+            "api_url": "vserver/v2",
+            "read": "getInitScriptList"
         },
-        "LoadBalancerRuleCondition" : {
-            "api_url" : "vloadbalancer/v2",
-            "read" : "getLoadBalancerRuleList"
+        "LoadBalancerRuleAction": {
+            "api_url": "vloadbalancer/v2",
+            "read": "getLoadBalancerRuleList"
         },
-        "Vpc" : {
-            "api_url" : "vpc/v2",
-            "read" : "getVpcList"
+        "LoadBalancerRuleCondition": {
+            "api_url": "vloadbalancer/v2",
+            "read": "getLoadBalancerRuleList"
         },
-        "AccessControlGroup" : {
-            "api_url" : "vserver/v2",
-            "read" : "getAccessControlGroupList"
+        "Vpc": {
+            "api_url": "vpc/v2",
+            "read": "getVpcList"
         },
-        "VpcPeeringInstance" : {
-            "api_url" : "vpc/v2",
-            "read" : "getVpcPeeringInstanceList",
-            "create" : "createVpcPeeringInstance",
-            "delete" : "deleteVpcPeeringInstance",
-            "acOrRe" : "acceptOrRejectVpcPeering",
-            "set" : "setVpcPeeringDescription"
+        "AccessControlGroup": {
+            "api_url": "vserver/v2",
+            "read": "getAccessControlGroupList"
         },
-        "NetworkAclDenyAllowGroup" : {
-            "api_url" : "vpc/v2",
-            "read" : "getNetworkAclDenyAllowGroupList"
+        "VpcPeeringInstance": {
+            "api_url": "vpc/v2",
+            "read": "getVpcPeeringInstanceList",
+            "create": "createVpcPeeringInstance",
+            "delete": "deleteVpcPeeringInstance",
+            "acOrRe": "acceptOrRejectVpcPeering",
+            "set": "setVpcPeeringDescription"
         },
-        "NetworkAcl" : {
-            "api_url" : "vpc/v2",
-            "read" : "getNetworkAclList"
+        "NetworkAclDenyAllowGroup": {
+            "api_url": "vpc/v2",
+            "read": "getNetworkAclDenyAllowGroupList"
         },
-        "LoadBalancerInstance" : {
-            "api_url" : "vloadbalancer/v2",
-            "read" : "getLoadBalancerInstanceList",
-            "create" : "createLoadBalancerInstance",
-            "delete" : "deleteLoadBalancerInstances",
-            "update" : ["changeLoadBalancerInstanceConfiguration", "setLoadBalancerInstanceSubnet"]
+        "NetworkAcl": {
+            "api_url": "vpc/v2",
+            "read": "getNetworkAclList"
         },
-        "RouteTable" : {
-            "api_url" : "vpc/v2",
-            "create" : "createRouteTable",
-            "read" : "getRouteTableList",
-            "update" : "setRouteTableDescription",
-            "delete" : "deleteRouteTable"
+        "LoadBalancerInstance": {
+            "api_url": "vloadbalancer/v2",
+            "read": "getLoadBalancerInstanceList",
+            "create": "createLoadBalancerInstance",
+            "delete": "deleteLoadBalancerInstances",
+            "update": ["changeLoadBalancerInstanceConfiguration", "setLoadBalancerInstanceSubnet"]
         },
-        "LoginKey" : {
-            "api_url" : "vserver/v2",
-            "read" : "getLoginKeyList"
+        "RouteTable": {
+            "api_url": "vpc/v2",
+            "create": "createRouteTable",
+            "read": "getRouteTableList",
+            "update": "setRouteTableDescription",
+            "delete": "deleteRouteTable"
         },
-        "AccessControlGroupRule" : {
-            "api_url" : "vserver/v2",
-            "read" : "getAccessControlGroupRuleList"
-        },        
-        "Product" : {
-            "api_url" : "billing/v1/product",
-            "read" : "getProductList"
+        "LoginKey": {
+            "api_url": "vserver/v2",
+            "read": "getLoginKeyList",
+            "create": "createLoginKey",
+            "delete": "deleteLoginKeys"
         },
-        "NetworkAclRule" : {
-            "api_url" : "vpc/v2",
-            "read" : "getNetworkAclRuleList"
+        "AccessControlGroupRule": {
+            "api_url": "vserver/v2",
+            "read": "getAccessControlGroupRuleList"
         },
-        "PlacementGroup" : {
-            "api_url" : "vserver/v2",
-            "create" : "createPlacementGroup",
-            "read" : "getPlacementGroupList",
-            "delete" : "deletePlacementGroup"
+        "Product": {
+            "api_url": "billing/v1/product",
+            "read": "getProductList"
         },
-        "Subnet" : {
-            "api_url" : "vpc/v2",
-            "read" : "getSubnetList"
+        "NetworkAclRule": {
+            "api_url": "vpc/v2",
+            "read": "getNetworkAclRuleList"
         },
-        "LoadBalancerListener" : {
-            "api_url" : "vloadbalancer/v2",
-            "read" : "getLoadBalancerListenerList"
+        "PlacementGroup": {
+            "api_url": "vserver/v2",
+            "create": "createPlacementGroup",
+            "read": "getPlacementGroupList",
+            "delete": "deletePlacementGroup"
         },
-        "PublicIpInstance" : {
-            "api_url" : "vserver/v2",
-            "read" : "getPublicIpInstanceList",
-            "create" : "createPublicIpInstance",
-            "associate" : "associatePublicIpWithServerInstance",
-            "disassociate" : "disassociatePublicIpFromServerInstance",
-            "delete" : "deletePublicIpInstances"
+        "Subnet": {
+            "api_url": "vpc/v2",
+            "read": "getSubnetList"
         },
-        "Route" : {
-            "api_url" : "vpc/v2", 
-            "create" : "addRoute",
-            "read" : "getRouteList"
+        "LoadBalancerListener": {
+            "api_url": "vloadbalancer/v2",
+            "read": "getLoadBalancerListenerList"
         },
-        "BlockStorageInstance" : {
-            "api_url" : "vserver/v2",
-            "read" : "getBlockStorageInstanceList",
-            "create" : "createBlockStorageInstance",
-            "changeBDI" : "createBlockStorageInstance",
-            "changeVolumeSize" : "changeBlockStorageVolumeSize",
-            "attach" : "attachBlockStorageInstance",
-            "detach" : "detachBlockStorageInstances",
-            "setProtection" : "setBlockStorageReturnProtection",
-            "delete" : "deleteBlockStorageInstances"
+        "PublicIpInstance": {
+            "api_url": "vserver/v2",
+            "read": "getPublicIpInstanceList",
+            "create": "createPublicIpInstance",
+            "associate": "associatePublicIpWithServerInstance",
+            "disassociate": "disassociatePublicIpFromServerInstance",
+            "delete": "deletePublicIpInstances"
         },
-        "LaunchConfiguration" : {
-            "api_url" : "vautoscaling/v2",
-            "create" : "createLaunchConfiguration",
-            "read" : "getLaunchConfigurationList",
-            "delete" : "deleteLaunchConfiguration"
+        "Route": {
+            "api_url": "vpc/v2",
+            "create": "addRoute",
+            "read": "getRouteList"
         },
-        "ServerInstance" : {
-            "api_url" : "vserver/v2",
-            "read" : "getServerInstanceList"
+        "BlockStorageInstance": {
+            "api_url": "vserver/v2",
+            "read": "getBlockStorageInstanceList",
+            "create": "createBlockStorageInstance",
+            "changeBDI": "createBlockStorageInstance",
+            "changeVolumeSize": "changeBlockStorageVolumeSize",
+            "attach": "attachBlockStorageInstance",
+            "detach": "detachBlockStorageInstances",
+            "setProtection": "setBlockStorageReturnProtection",
+            "delete": "deleteBlockStorageInstances"
         },
-        "AutoScalingGroup" : {
-            "api_url" : "vautoscaling/v2",
-            "read" : "getAutoScalingGroupList"
+        "LaunchConfiguration": {
+            "api_url": "vautoscaling/v2",
+            "create": "createLaunchConfiguration",
+            "read": "getLaunchConfigurationList",
+            "delete": "deleteLaunchConfiguration"
         },
-        "MemberServerImageInstance" : {
-            "api_url" : "vserver/v2",
-            "read" : "getMemberServerImageInstanceList"
+        "ServerInstance": {
+            "api_url": "vserver/v2",
+            "read": "getServerInstanceList",
+            "create": "createServerInstances"
         },
-        "NetworkInterface" : {
-            "api_url" : "vserver/v2",
-            "read" : "getNetworkInterfaceList",
-            "create" : "createNetworkInterface",
-            "delete" : "deleteNetworkInterface",
-            "attach" : "attachNetworkInterface",
-            "detach" : "detachNetworkInterface",
-            "add" : "addNetworkInterfaceAccessControlGroup",
-            "remove" : "removeNetworkInterfaceAccessControlGroup"
-            
+        "AutoScalingGroup": {
+            "api_url": "vautoscaling/v2",
+            "read": "getAutoScalingGroupList"
         },
-        "NatGatewayInstance" : {
-            "api_url" : "vpc/v2",
-            "read" : "getNatGatewayInstanceList"
+        "MemberServerImageInstance": {
+            "api_url": "vserver/v2",
+            "read": "getMemberServerImageInstanceList",
+            "create": "createMemberServerImageInstance"
         },
-        "LoadBalancerSubnet" : {
-            "api_url" : "vloadbalancer/v2",
-            "read" : "getLoadBalancerInstanceList"
+        "NetworkInterface": {
+            "api_url": "vserver/v2",
+            "read": "getNetworkInterfaceList",
+            "create": "createNetworkInterface",
+            "delete": "deleteNetworkInterface",
+            "attach": "attachNetworkInterface",
+            "detach": "detachNetworkInterface",
+            "add": "addNetworkInterfaceAccessControlGroup",
+            "remove": "removeNetworkInterfaceAccessControlGroup"
+
         },
-        "LoadBalancerRule" : {
-            "api_url" : "vloadbalancer/v2",
-            "read" : "getLoadBalancerRuleList"
+        "NatGatewayInstance": {
+            "api_url": "vpc/v2",
+            "read": "getNatGatewayInstanceList"
         },
-        "BlockStorageSnapshotInstance" : {
-            "api_url" : "vserver/v2",
-            "read" : "getBlockStorageSnapshotInstanceList",
-            "create" : "createBlockStorageSnapshotInstance",
-            "delete" : "deleteBlockStorageSnapshotInstances"
+        "LoadBalancerSubnet": {
+            "api_url": "vloadbalancer/v2",
+            "read": "getLoadBalancerInstanceList"
         },
-        "ActivityLog" : {
-            "api_url" : "vautoscaling/v2",
-            "read" : "getAutoScalingActivityLogList"
+        "LoadBalancerRule": {
+            "api_url": "vloadbalancer/v2",
+            "read": "getLoadBalancerRuleList"
         },
-        "ScalingPolicy" : {
-            "api_url" : "vautoscaling/v2",
-            "read" : "getAutoScalingPolicyList"
+        "BlockStorageSnapshotInstance": {
+            "api_url": "vserver/v2",
+            "read": "getBlockStorageSnapshotInstanceList",
+            "create": "createBlockStorageSnapshotInstance",
+            "delete": "deleteBlockStorageSnapshotInstances"
         },
-        "ScheduledUpdateGroupAction" : {
-            "api_url" : "vautoscaling/v2",
-            "read" : "getScheduledActionList"
+        "ActivityLog": {
+            "api_url": "vautoscaling/v2",
+            "read": "getAutoScalingActivityLogList"
+        },
+        "ScalingPolicy": {
+            "api_url": "vautoscaling/v2",
+            "read": "getAutoScalingPolicyList"
+        },
+        "ScheduledUpdateGroupAction": {
+            "api_url": "vautoscaling/v2",
+            "read": "getScheduledActionList"
         }
     }
 
@@ -395,6 +398,9 @@ def include_keys():
     return {
         ### step.3 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 요청 파라미터를 작성
         # 단, regionCode와 responseFormatType는 제외한다
+        'loginkey' : [],
+        'serverinstance' : ['serverProductCode','serverImageProductCode','vpcNo','subnetNo','networkInterfaceNoList'],
+        'memberserverimageinstance' : ['memberServerImageInstanceNo', ''],
         'routetable' : ['vpcNo', 'routeTableName', 'supportedSubnetTypeCode', 'routeTableDescription'],
         'blockstorageinstance' : ['zoneCode', 'blockStorageName', 'blockStorageDiskDetailTypeCode', 'blockStorageVolumeTypeCode', 
                                   'serverInstanceNo', 'blockStorageSnapshotInstanceNo', 'blockStorageSize', 'blockStorageDescription', 'isReturnProtection'],
