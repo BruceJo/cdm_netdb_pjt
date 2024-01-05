@@ -1,6 +1,7 @@
 ############################################
 # Common Info                              #
 ############################################
+
 def url_info():
     return {
         ### step.2 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 주소를 작성
