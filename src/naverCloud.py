@@ -48,8 +48,7 @@ def url_info():
             "read" : "getVpcPeeringInstanceList",
             "create" : "createVpcPeeringInstance",
             "delete" : "deleteVpcPeeringInstance",
-            "acOrRe" : "acceptOrRejectVpcPeering",
-            "set" : "setVpcPeeringDescription"
+            "update" : ["acceptOrRejectVpcPeering","setVpcPeeringDescription"]
         },
         "NetworkAclDenyAllowGroup" : {
             "api_url" : "vpc/v2",
@@ -107,8 +106,7 @@ def url_info():
             "api_url" : "vserver/v2",
             "read" : "getPublicIpInstanceList",
             "create" : "createPublicIpInstance",
-            "associate" : "associatePublicIpWithServerInstance",
-            "disassociate" : "disassociatePublicIpFromServerInstance",
+            "update" : ["associatePublicIpWithServerInstance","disassociatePublicIpFromServerInstance"],
             "delete" : "deletePublicIpInstance"
         },
         "Route" : {
@@ -120,11 +118,8 @@ def url_info():
             "api_url" : "vserver/v2",
             "read" : "getBlockStorageInstanceList",
             "create" : "createBlockStorageInstance",
-            "changeBDI" : "createBlockStorageInstance",
-            "changeVolumeSize" : "changeBlockStorageVolumeSize",
-            "attach" : "attachBlockStorageInstance",
-            "detach" : "detachBlockStorageInstances",
-            "setProtection" : "setBlockStorageReturnProtection",
+            "update": ["changeBlockStorageVolumeSize","attachBlockStorageInstance",
+                       "detachBlockStorageInstances","setBlockStorageReturnProtection"],
             "delete" : "deleteBlockStorageInstances"
         },
         "LaunchConfiguration" : {
@@ -150,11 +145,7 @@ def url_info():
             "read" : "getNetworkInterfaceList",
             "create" : "createNetworkInterface",
             "delete" : "deleteNetworkInterface",
-            "attach" : "attachNetworkInterface",
-            "detach" : "detachNetworkInterface",
-            "add" : "addNetworkInterfaceAccessControlGroup",
-            "remove" : "removeNetworkInterfaceAccessControlGroup"
-            
+            "update" : ["attachNetworkInterface", "detachNetworkInterface","addNetworkInterfaceAccessControlGroup","removeNetworkInterfaceAccessControlGroup"]  
         },
         "NatGatewayInstance" : {
             "api_url" : "vpc/v2",
