@@ -25,7 +25,6 @@ class Read2Insert():
 
     def read_api(self):
         res = self.cc.request_api(self.api_url, self.sub_url)
-        
         return res
     
     def insert_db(self, dict1):
