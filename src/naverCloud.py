@@ -154,7 +154,9 @@ def url_info():
         },
         "NatGatewayInstance" : {
             "api_url" : "vpc/v2",
-            "read" : "getNatGatewayInstanceList"
+            "read" : "getNatGatewayInstanceList",
+            "create" : "createNatGatewayInstance",
+            "delete" : "deleteNatGatewayInstances"
         },
         "LoadBalancerSubnet" : {
             "api_url" : "vloadbalancer/v2",
@@ -419,5 +421,7 @@ def include_keys():
         'blockstoragesnapshotinstance' : ['originalBlockStorageInstanceNo','blockStorageSnapshotName','blockStorageSnapshotDescription','snapshotTypeCode'],
         'vpcpeeringinstance':['vpcPeeringName','sourceVpcNo','targetVpcNo','targetVpcName','targetVpcLoginId','vpcPeeringDescription'],
         'networkinterface' : ['vpcNo','subnetNo','networkInterfaceName','accessControlGroupNoList','serverInstanceNo','ip','secondaryIpList.N','secondaryIpCount','networkInterfaceDescription'],
+        'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName'],
+        'natgatewayinstance' : ['zoneCode', 'vpcNo','natGatewayName','natGatewayInstanceNo'],
         'vpc' : ['vpcName','ipv4CidrBlock']
     }
