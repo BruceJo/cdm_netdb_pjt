@@ -88,7 +88,7 @@ class Create():
             elif key == 'supportedSubnetTypeCode':  # 나중에 한번에 묶어 처리 'Code'
                 value = row_dict['supportedsubnettype']
             elif key == 'zoneCode':
-                value = self.get_value('zonecode', 'zone', **{'id' : row_dict['zoneid']})
+                value = self.get_value('zonecode', 'zone', **{'id' : row_dict['id']})
             elif key == 'blockStorageDiskDetailTypeCode':
                 value = row_dict['blockstoragediskdetailtype']
             elif key == 'blockStorageVolumeTypeCode':
@@ -170,7 +170,7 @@ class Create():
 
     def run(self):
         ### for this in self.nc.keys():
-        this = 'vpc' ### step.1 본인 Table을 기입
+        this = 'natgatewayinstance' ### step.1 본인 Table을 기입
         try:
             self.set_url(this, "create")
         except KeyError:
