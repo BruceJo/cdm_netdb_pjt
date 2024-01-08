@@ -380,6 +380,11 @@ def col_name_mapper():
             'productItemKind' : 'producttype',
             'targetVpcNo' : 'targetvpcid',
             'sourceVpcNo' : 'sourcevpcid',
+            'targetType': 'targetType',
+            'targetGroupProtocolType': 'targetGroupProtocolType',
+            'algorithmType': 'algorithmType',
+            'healthCheckProtocolType': 'healthCheckProtocolType',
+            'healthCheckHttpMethodType': 'healthCheckHttpMethodType',
             'publicIpInstanceNo' : 'publicipinstanceid'
         },
         'launchconfiguration' : {
@@ -387,6 +392,9 @@ def col_name_mapper():
         },
         'serverinstance' : {
             'serverProductCode' : 'serverproductcodeid'
+        },
+        'targetgroup': {
+            'serverProductCode': 'serverproductcodeid'
         }
     }
 
@@ -408,6 +416,9 @@ def include_keys():
     return {
         ### step.3 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 요청 파라미터를 작성
         # 단, regionCode와 responseFormatType는 제외한다
+        'loginkey' : [],
+        'serverinstance' : ['serverProductCode','serverImageProductCode','vpcNo','subnetNo','networkInterfaceNoList'],
+        'memberserverimageinstance' : ['memberServerImageInstanceNo', ''],
         'routetable' : ['vpcNo', 'routeTableName', 'supportedSubnetTypeCode', 'routeTableDescription'],
         'blockstorageinstance' : ['zoneCode', 'blockStorageName', 'blockStorageDiskDetailTypeCode', 'blockStorageVolumeTypeCode', 
                                   'serverInstanceNo', 'blockStorageSnapshotInstanceNo', 'blockStorageSize', 'blockStorageDescription', 'isReturnProtection'],
@@ -416,3 +427,4 @@ def include_keys():
         'vpc' : ['vpcName','ipv4CidrBlock'],
         'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName']
     }
+
