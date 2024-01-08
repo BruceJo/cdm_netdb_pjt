@@ -53,6 +53,8 @@ class Create():
             ### step.4 Source 테이블에서 가져온 정보를 알맞게 변환
             if key == 'blockStorageSnapshotInstanceNo' or key =='snapshotTypeCode':
                 value = None
+            # if key == 'ip' or key == 'networkinterfacename': # networkinterface 생성 시 필요
+            #     value = None
             elif key == 'targetVpcName':
                 value = self.get_value('vpcname', 'vpc', **{'id' : row_dict['targetvpcid']})
                 print(value)
