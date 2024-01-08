@@ -36,7 +36,7 @@ class Read2Insert():
         dict1 = {k: v for k, v in dict1.items() if v is not None}   # None -> null from (TBL)loadbalancersubnet/(COL)publicipinstanceid
         dict1 = {k: (json.dumps(v) if (type(v)==list) else v) for k, v in dict1.items()}       # list(dict()) -> str() w/ ' string
         dict1 = {k: (v.replace("'", "''") if (type(v)==str and "'" in v) else v) for k, v in dict1.items()}     # escape ' -> ''
-        
+
         key_list = list(dict1.keys())
         key_str = (', '.join(key_list)).lower()
         val_tuple = tuple(dict1.values())
@@ -97,16 +97,29 @@ class Read2Insert():
             dict1['loadbalancerlistenerid'] = _temp['loadBalancerListenerNo']
 
         if self.table_name == 'loadbalancerruleaction':
-            dict1['redirectionaction'] = '' # 이 예제에서는 redirectionaction에 대한 데이터가 JSON에 없으므로 빈 문자열 사용
+            if 'redirectionAction' in src:
+                dict1['redirectionAction'] = json.dumps(src['redirectionAction'])
+            else:
+                dict1['redirectionAction'] = None
+
+            if 'targetGroupAction' in src:
+                dict1['targetGroupAction'] = json.dumps(src['targetGroupAction'])
+            else:
+                dict1['targetGroupAction'] = None
 
         if self.table_name == 'loadbalancerrulecondition':
             dict1['hostheadercondition'] = '' # 이 예제에서는 redirectionaction에 대한 데이터가 JSON에 없으므로 빈 문자열 사용
-            dict1['pathpatterncondition'] = '' # 이 예제에서는 redirectionaction에 대한 데이터가 JSON에 없으므로 빈 문자열 사용
+            if 'pathPatternCondition' in src:
+                dict1['pathpatterncondition'] = json.dumps(src['pathPatternCondition'])
+            else:
+                dict1['pathpatterncondition'] = None
+
 
 
         for key in src:
             if self.table_name != 'loadbalancerlistener':
-                out_candidate = ['routeTableNo', 'autoScalingGroupNo', 'regionCode', 'networkAclNo', 'protocolType', 'autoScalingGroupNo', 'accessControlGroupNo', 'loadBalancerListenerNo']
+                out_candidate = ['routeTableNo', 'autoScalingGroupNo', 'regionCode', 'networkAclNo', 'protocolType', 'autoScalingGroupNo', 'accessControlGroupNo', 'loadBalancerListenerNo',
+                                 'pathPatternCondition', 'targetGroupAction', 'redirectionAction']
             else:
                 out_candidate = ['loadBalancerInstanceNo']
             
@@ -145,15 +158,16 @@ class Read2Insert():
             elif self.table_name != 'networkacl' and i == 'networkAclNo':
                 _temp[i] = self.get_id('networkacl', 'networkaclno', src[i])
             elif i == 'originalBlockStorageInstanceNo':
-                _temp[i] = self.get_id('blockstorageinstance', 'blockstorageinstanceno', src[i])
-                if _temp[i] == None: self.continue_flag = True
+                _temp[i] = src[i]
+            #    _temp[i] = self.get_id('blockstorageinstance', 'blockstorageinstanceno', src[i])
+            #    if _temp[i] == None: self.continue_flag = True
             elif i in ['targetVpcNo', 'sourceVpcNo']:
                 _temp[i] = self.get_id('vpc', 'vpcno', src[i])
             elif self.table_name not in ['publicipinstance', 'serverinstance', 'natgatewayinstance'] and i == 'publicIpInstanceNo':
                 _temp[i] = self.get_id('publicipinstance', 'publicipinstanceno', src[i])
             elif i == 'originalServerInstanceNo':
                 _temp[i] = src[i]
-            elif i == 'productItemKind':
+            elif i in ['productItemKind', 'targetType', 'targetGroupProtocolType', 'algorithmType', 'healthCheckProtocolType', 'healthCheckHttpMethodType']:
                 _temp[i] = src[i]['code']
         
         dict1 = {}

@@ -74,8 +74,8 @@ CREATE SEQUENCE IF NOT EXISTS loadbalancerruleaction_seq;
 CREATE TABLE loadbalancerruleaction (
 	id INTEGER NOT NULL DEFAULT NEXTVAL ('loadbalancerruleaction_seq'),
 	ruleactiontype VARCHAR(255) NOT NULL,
-	targetgroupaction VARCHAR(255) NULL,
-	redirectionaction VARCHAR(255) NULL,
+	targetgroupaction JSONB NULL,
+	redirectionaction JSONB NULL,
 	CONSTRAINT loadbalancerruleaction_pkey PRIMARY KEY (id ASC)
 );
 
@@ -118,7 +118,7 @@ CREATE TABLE loginkey (
 CREATE SEQUENCE IF NOT EXISTS memberserverimageinstance_seq;
 CREATE TABLE memberserverimageinstance (
 	id INTEGER NOT NULL DEFAULT NEXTVAL ('memberserverimageinstance_seq'),
-	originalserverinstanceid INT8 NOT NULL,
+	originalserverinstanceid VARCHAR(255)  NOT NULL,
 	memberserverimageinstanceno VARCHAR(255) NOT NULL,
 	memberserverimagename VARCHAR(255) NOT NULL,
 	memberserverimagedescription VARCHAR(255) NULL,
@@ -384,7 +384,7 @@ CREATE TABLE blockstorageinstance (
 CREATE SEQUENCE IF NOT EXISTS blockstoragesnapshotinstance_seq;
 CREATE TABLE blockstoragesnapshotinstance (
 	id INTEGER NOT NULL DEFAULT NEXTVAL ('blockstoragesnapshotinstance_seq'),
-	blockstorageinstanceid INT8 NOT NULL,
+	blockstorageinstanceid VARCHAR(255) NULL, --LHB FIX 0104
 	blockstoragesnapshotinstanceno VARCHAR(255) NOT NULL,
 	blockstoragesnapshotname VARCHAR(255) NOT NULL,
 	blockstoragesnapshotvolumesize INT8 NOT NULL,
@@ -397,8 +397,8 @@ CREATE TABLE blockstoragesnapshotinstance (
 	snapshottype VARCHAR(255) NOT NULL,
 	basesnapshotinstanceno VARCHAR(255) NULL,
 	snapshotchaindepth INT8 NOT NULL,
-	CONSTRAINT blockstoragesnapshotinstance_pkey PRIMARY KEY (id ASC),
-	CONSTRAINT blockstoragesnapshotinstance_blockstoragenstanceid_fkey FOREIGN KEY (blockstorageinstanceid) REFERENCES blockstorageinstance(id)
+	CONSTRAINT blockstoragesnapshotinstance_pkey PRIMARY KEY (id ASC)
+	--LHB FIX 0104 --CONSTRAINT blockstoragesnapshotinstance_blockstoragenstanceid_fkey FOREIGN KEY (blockstorageinstanceid) REFERENCES blockstorageinstance(id)
 );
 
 
