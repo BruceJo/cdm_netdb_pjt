@@ -184,6 +184,10 @@ def url_info():
             "api_url": "vautoscaling/v2",
             "read": "getAutoScalingPolicyList"
         },
+        "TargetGroup": {
+            "api_url": "vloadbalancer/v2",
+            "read": "getTargetGroupList"
+        },
         "ScheduledUpdateGroupAction": {
             "api_url": "vautoscaling/v2",
             "read": "getScheduledActionList"
@@ -371,6 +375,11 @@ def col_name_mapper():
             'productItemKind' : 'producttype',
             'targetVpcNo' : 'targetvpcid',
             'sourceVpcNo' : 'sourcevpcid',
+            'targetType': 'targetType',
+            'targetGroupProtocolType': 'targetGroupProtocolType',
+            'algorithmType': 'algorithmType',
+            'healthCheckProtocolType': 'healthCheckProtocolType',
+            'healthCheckHttpMethodType': 'healthCheckHttpMethodType',
             'publicIpInstanceNo' : 'publicipinstanceid'
         },
         'launchconfiguration' : {
@@ -378,6 +387,9 @@ def col_name_mapper():
         },
         'serverinstance' : {
             'serverProductCode' : 'serverproductcodeid'
+        },
+        'targetgroup': {
+            'serverProductCode': 'serverproductcodeid'
         }
     }
 
