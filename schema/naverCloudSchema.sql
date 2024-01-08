@@ -75,7 +75,7 @@ CREATE TABLE loadbalancerruleaction (
 	id INTEGER NOT NULL DEFAULT NEXTVAL ('loadbalancerruleaction_seq'),
 	ruleactiontype VARCHAR(255) NOT NULL,
 	targetgroupaction JSONB NULL,
-	redirectionaction VARCHAR(255) NULL,
+	redirectionaction JSONB NULL,
 	CONSTRAINT loadbalancerruleaction_pkey PRIMARY KEY (id ASC)
 );
 
@@ -118,7 +118,7 @@ CREATE TABLE loginkey (
 CREATE SEQUENCE IF NOT EXISTS memberserverimageinstance_seq;
 CREATE TABLE memberserverimageinstance (
 	id INTEGER NOT NULL DEFAULT NEXTVAL ('memberserverimageinstance_seq'),
-	originalserverinstanceid INT8 NOT NULL,
+	originalserverinstanceid VARCHAR(255)  NOT NULL,
 	memberserverimageinstanceno VARCHAR(255) NOT NULL,
 	memberserverimagename VARCHAR(255) NOT NULL,
 	memberserverimagedescription VARCHAR(255) NULL,
@@ -384,7 +384,7 @@ CREATE TABLE blockstorageinstance (
 CREATE SEQUENCE IF NOT EXISTS blockstoragesnapshotinstance_seq;
 CREATE TABLE blockstoragesnapshotinstance (
 	id INTEGER NOT NULL DEFAULT NEXTVAL ('blockstoragesnapshotinstance_seq'),
-	blockstorageinstanceid INT8 NULL, --LHB FIX 0104
+	blockstorageinstanceid VARCHAR(255) NULL, --LHB FIX 0104
 	blockstoragesnapshotinstanceno VARCHAR(255) NOT NULL,
 	blockstoragesnapshotname VARCHAR(255) NOT NULL,
 	blockstoragesnapshotvolumesize INT8 NOT NULL,
