@@ -51,7 +51,14 @@ class Create():
         dict1 = {}
         for key in self.include_keys[self.table_name]:
             ### step.4 Source 테이블에서 가져온 정보를 알맞게 변환
-            if key[-4:] == 'Name':      # 테스트 환경에서 Naver Cloud가 하나뿐이므로, 중복이름인경우 생성이 불가하기에 예외처리
+            if key == 'blockStorageSnapshotInstanceNo' or key =='snapshotTypeCode':
+                value = None
+            # if key == 'ip' or key == 'networkinterfacename': # networkinterface 생성 시 필요
+            #     value = None
+            elif key == 'targetVpcName':
+                value = self.get_value('vpcname', 'vpc', **{'id' : row_dict['targetvpcid']})
+                print(value)
+            elif key[-4:] == 'Name':      # 테스트 환경에서 Naver Cloud가 하나뿐이므로, 중복이름인경우 생성이 불가하기에 예외처리
                 value = row_dict[key.lower()] + '-dr'
             elif key == 'serverImageProductCode':#서버 인스턴스 생성시 serverImageProductCode 혹은 memberServerImageInstanceNo 중 하나만 선택하여 생성함
                 value = row_dict['serverimageproductcode']
@@ -67,8 +74,16 @@ class Create():
             elif key == 'serverInstanceNo':
                 value = self.get_value('originalserverinstanceid', 'memberserverimageinstance', **{'id': row_dict['originalserverinstanceid']})
             elif key == 'vpcNo':
-                value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
-            elif key == 'subnetNo':
+                try:
+                    value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
+                except: # networkinterface 부분
+                    value = self.get_value('vpcid', 'subnet', **{'id' : row_dict['subnetid']})
+                    value = self.get_value('vpcno', 'vpc', **{'id' : value})
+            elif key == 'serverInstanceNo' or key == 'secondaryIpList.N' or key == 'secondaryIpCount': # networkinterface만 해당
+                value = None
+            elif key == 'subnetNo':  # 나중에 한번에 묶어 처리 'Code'
+                value = self.get_value('subnetno', 'subnet', **{'id' : row_dict['subnetid']})
+            elif key == 'serverinstanceno':  # 나중에 한번에 묶어 처리 'Code'
                 value = self.get_value('subnetno', 'subnet', **{'id' : row_dict['subnetid']})
             elif key == 'supportedSubnetTypeCode':  # 나중에 한번에 묶어 처리 'Code'
                 value = row_dict['supportedsubnettype']
@@ -78,8 +93,17 @@ class Create():
                 value = row_dict['blockstoragediskdetailtype']
             elif key == 'blockStorageVolumeTypeCode':
                 pass
-            elif key == 'blockStorageSnapshotInstanceNo':
-                value = None
+            elif key == 'blockStorageSize':
+                value = row_dict['blockstoragesize']
+                value = round(value/(1024**3))
+            elif key == 'originalBlockStorageInstanceNo':
+                value = row_dict['blockstoragesnapshotinstanceno']
+            elif key == 'sourceVpcNo':
+                value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['sourcevpcid']})
+                # print(value)
+            elif key == 'targetVpcNo':
+                value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['targetvpcid']})
+                # print(value)
             # 나중에 한번에 묶어 처리 'Code'
             elif key == 'loadBalancerTypeCode':
                 value = 'APPLICATION'   # 이 예제에서 db의 정보가 Code가 아닌 값으로 저장되어있어 예외처리
@@ -125,6 +149,10 @@ class Create():
                 # else:
                 #     ...
                 continue
+            elif key == 'accessControlGroupNoList':
+                key = "accessControlGroupNoList.1"
+                value = ''.join(row_dict['accesscontrolgroupnolist'])
+                print(key, value)
             else:
                 value = row_dict[key.lower()]
 
@@ -142,10 +170,7 @@ class Create():
 
     def run(self):
         ### for this in self.nc.keys():
-        #this = 'loginkey' ### step.1 본인 Table을 기입 #OK-loginkey
-        #this = 'MemberServerImageInstance'  ### step.1 본인 Table을 기입 #OK-memberserverimageinstance
-        this = 'ServerInstance'  ### step.1 본인 Table을 기입 #OK-memberserverimageinstance
-
+        this = 'vpc' ### step.1 본인 Table을 기입
         try:
             self.set_url(this, "create")
         except KeyError:
