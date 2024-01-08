@@ -142,10 +142,7 @@ class Create():
 
     def run(self):
         ### for this in self.nc.keys():
-        #this = 'loginkey' ### step.1 본인 Table을 기입 #OK-loginkey
-        #this = 'MemberServerImageInstance'  ### step.1 본인 Table을 기입 #OK-memberserverimageinstance
-        this = 'ServerInstance'  ### step.1 본인 Table을 기입 #OK-memberserverimageinstance
-
+        this = 'vpc' ### step.1 본인 Table을 기입
         try:
             self.set_url(this, "create")
         except KeyError:
