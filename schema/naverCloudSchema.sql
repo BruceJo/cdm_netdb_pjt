@@ -846,3 +846,32 @@ CREATE TABLE activitylog (
 	CONSTRAINT activitylog_pkey PRIMARY KEY (id ASC),
 	CONSTRAINT activitylog_autoscalinggroupid_fkey FOREIGN KEY (autoscalinggroupid) REFERENCES autoscalinggroup(id)
 );
+
+CREATE SEQUENCE IF NOT EXISTS targetgroup_seq;
+CREATE TABLE targetgroup (
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('targetgroup_seq'),
+    targetGroupNo VARCHAR(255) NOT NULL,
+    targetGroupName VARCHAR(255) NOT NULL,
+    targetType VARCHAR(255) NOT NULL,
+    vpcid INT8 NOT NULL,
+    targetGroupProtocolType VARCHAR(255) NOT NULL,
+    targetGroupPort VARCHAR(255) NOT NULL,
+    targetGroupDescription VARCHAR(255) NULL,
+    useStickySession BOOL NOT NULL,
+    useProxyProtocol BOOL NOT NULL,
+    algorithmType VARCHAR(255) NOT NULL,
+    createDate TIMESTAMP NOT NULL,
+    regionid INT8 NOT NULL,
+    loadBalancerInstanceNo VARCHAR(255) NULL,
+    healthCheckProtocolType VARCHAR(255) NOT NULL,
+    healthCheckPort VARCHAR(255) NOT NULL,
+    healthCheckUrlPath VARCHAR(255) NULL,
+    healthCheckHttpMethodType VARCHAR(255) NULL,
+    healthCheckCycle VARCHAR(255) NOT NULL,
+    healthCheckUpThreshold VARCHAR(255) NOT NULL,
+    healthCheckDownThreshold VARCHAR(255) NOT NULL,
+    targetNoList VARCHAR(255) NULL,
+	CONSTRAINT targetgroup_pkey PRIMARY KEY (id ASC),
+	CONSTRAINT targetgroup_regionid_fkey FOREIGN KEY (regionid) REFERENCES region(id),
+	CONSTRAINT targetgroup_vpcid_fkey FOREIGN KEY (vpcid) REFERENCES vpc(id)
+);
