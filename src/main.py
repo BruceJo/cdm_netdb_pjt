@@ -58,7 +58,7 @@ def read2insert():
     #         "dbName": "cdm_fix",
     #         "schemaName": "{your_schema_name}",
     #         "schemaPath": "../schema/naverCloudSchema.sql",
-    #         "host": "211.188.69.4",
+    #         "host": "223.130.173.142",
     #         "port": "26257",
     #         "user": "root"
     #     }
