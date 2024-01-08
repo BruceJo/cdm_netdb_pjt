@@ -48,8 +48,7 @@ def url_info():
             "read" : "getVpcPeeringInstanceList",
             "create" : "createVpcPeeringInstance",
             "delete" : "deleteVpcPeeringInstance",
-            "acOrRe" : "acceptOrRejectVpcPeering",
-            "set" : "setVpcPeeringDescription"
+            "update" : ["acceptOrRejectVpcPeering","setVpcPeeringDescription"]
         },
         "NetworkAclDenyAllowGroup" : {
             "api_url" : "vpc/v2",
@@ -112,9 +111,8 @@ def url_info():
             "api_url" : "vserver/v2",
             "read" : "getPublicIpInstanceList",
             "create" : "createPublicIpInstance",
-            "associate" : "associatePublicIpWithServerInstance",
-            "disassociate" : "disassociatePublicIpFromServerInstance",
-            "delete" : "deletePublicIpInstances"
+            "update" : ["associatePublicIpWithServerInstance","disassociatePublicIpFromServerInstance"],
+            "delete" : "deletePublicIpInstance"
         },
         "Route" : {
             "api_url" : "vpc/v2", 
@@ -125,11 +123,8 @@ def url_info():
             "api_url" : "vserver/v2",
             "read" : "getBlockStorageInstanceList",
             "create" : "createBlockStorageInstance",
-            "changeBDI" : "createBlockStorageInstance",
-            "changeVolumeSize" : "changeBlockStorageVolumeSize",
-            "attach" : "attachBlockStorageInstance",
-            "detach" : "detachBlockStorageInstances",
-            "setProtection" : "setBlockStorageReturnProtection",
+            "update": ["changeBlockStorageVolumeSize","attachBlockStorageInstance",
+                       "detachBlockStorageInstances","setBlockStorageReturnProtection"],
             "delete" : "deleteBlockStorageInstances"
         },
         "LaunchConfiguration" : {
@@ -155,11 +150,7 @@ def url_info():
             "read" : "getNetworkInterfaceList",
             "create" : "createNetworkInterface",
             "delete" : "deleteNetworkInterface",
-            "attach" : "attachNetworkInterface",
-            "detach" : "detachNetworkInterface",
-            "add" : "addNetworkInterfaceAccessControlGroup",
-            "remove" : "removeNetworkInterfaceAccessControlGroup"
-            
+            "update" : ["attachNetworkInterface", "detachNetworkInterface","addNetworkInterfaceAccessControlGroup","removeNetworkInterfaceAccessControlGroup"]  
         },
         "NatGatewayInstance" : {
             "api_url" : "vpc/v2",
@@ -423,8 +414,10 @@ def include_keys():
         'blockstorageinstance' : ['zoneCode', 'blockStorageName', 'blockStorageDiskDetailTypeCode', 'blockStorageVolumeTypeCode', 
                                   'serverInstanceNo', 'blockStorageSnapshotInstanceNo', 'blockStorageSize', 'blockStorageDescription', 'isReturnProtection'],
         'publicipinstance' : ['serverInstanceNo', 'publicIpDescription'],
+        # 단, regionCode와 responseFormatType는 제외한다
         'loadbalancerinstance' : ['loadBalancerTypeCode', 'loadBalancerName', 'loadBalancerNetworkTypeCode', 'throughputTypeCode', 'idleTimeout', 'vpcNo', 'loadBalancerDescription', 'subnetNoList.N', 'loadBalancerSubnetList.N.subnetNo', 'loadBalancerSubnetList.N.publicIpInstanceNo', 'loadBalancerListenerList.N.protocolTypeCode', 'loadBalancerListenerList.N.port', 'loadBalancerListenerList.N.targetGroupNo', 'loadBalancerListenerList.N.useHttp2', 'loadBalancerListenerList.N.sslCertificateNo', 'loadBalancerListenerList.N.tlsMinVersionTypeCode', 'loadBalancerListenerList.N.cipherSuiteList.N'],
-        'vpc' : ['vpcName','ipv4CidrBlock'],
-        'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName']
+        'blockstoragesnapshotinstance' : ['originalBlockStorageInstanceNo','blockStorageSnapshotName','blockStorageSnapshotDescription','snapshotTypeCode'],
+        'vpcpeeringinstance':['vpcPeeringName','sourceVpcNo','targetVpcNo','targetVpcName','targetVpcLoginId','vpcPeeringDescription'],
+        'networkinterface' : ['vpcNo','subnetNo','networkInterfaceName','accessControlGroupNoList','serverInstanceNo','ip','secondaryIpList.N','secondaryIpCount','networkInterfaceDescription'],
+        'vpc' : ['vpcName','ipv4CidrBlock']
     }
-
