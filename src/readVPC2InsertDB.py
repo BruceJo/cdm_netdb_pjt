@@ -36,7 +36,7 @@ class Read2Insert():
         dict1 = {k: v for k, v in dict1.items() if v is not None}   # None -> null from (TBL)loadbalancersubnet/(COL)publicipinstanceid
         dict1 = {k: (json.dumps(v) if (type(v)==list) else v) for k, v in dict1.items()}       # list(dict()) -> str() w/ ' string
         dict1 = {k: (v.replace("'", "''") if (type(v)==str and "'" in v) else v) for k, v in dict1.items()}     # escape ' -> ''
-        
+
         key_list = list(dict1.keys())
         key_str = (', '.join(key_list)).lower()
         val_tuple = tuple(dict1.values())
@@ -167,7 +167,7 @@ class Read2Insert():
                 _temp[i] = self.get_id('publicipinstance', 'publicipinstanceno', src[i])
             elif i == 'originalServerInstanceNo':
                 _temp[i] = src[i]
-            elif i == 'productItemKind':
+            elif i in ['productItemKind', 'targetType', 'targetGroupProtocolType', 'algorithmType', 'healthCheckProtocolType', 'healthCheckHttpMethodType']:
                 _temp[i] = src[i]['code']
         
         dict1 = {}
