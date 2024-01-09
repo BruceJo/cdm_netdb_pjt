@@ -6,6 +6,7 @@ import readVPC2InsertDB as rv2
 import createVPC
 import vudVPC
 
+#test0104
 #Flask init
 app = Flask(__name__)
 CORS(app)
@@ -40,7 +41,6 @@ def create_db():
     cock_create = createSchema.Create(source)
     cock_create.create_schema()
     cock_create.create_table()
-    cock_create.create_sequence() #240102 cdh
     return 'success'
 
 
@@ -58,7 +58,7 @@ def read2insert():
     #         "dbName": "cdm_fix",
     #         "schemaName": "{your_schema_name}",
     #         "schemaPath": "../schema/naverCloudSchema.sql",
-    #         "host": "211.188.69.4",
+    #         "host": "223.130.173.142",
     #         "port": "26257",
     #         "user": "root"
     #     }
@@ -158,6 +158,7 @@ def update_vpc():
     #     },
     #     "update" : {
     #         "target" : "RouteTable",
+    #         "key" : "{some_your_key}", //If there are two or more update APIs, specify the API address
     #         "body" : {
     #             "routeTableNo" : "20247",
     #             "routeTableDescription" : "many thanks, Jo."
@@ -192,6 +193,7 @@ def delete_vpc():
     #     },
     #     "delete" : {
     #         "target" : "RouteTable",
+    #         "key" : "{some_your_key}", //If there are two or more delete APIs, specify the API address
     #         "body" : {
     #             "routeTableNo" : "20247"
     #         }

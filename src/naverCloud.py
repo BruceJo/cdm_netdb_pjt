@@ -35,7 +35,9 @@ def url_info():
         },
         "Vpc" : {
             "api_url" : "vpc/v2",
-            "read" : "getVpcList"
+            "read" : "getVpcList",
+            "create" : "createVpc",
+            "delete" : "deleteVpc"
         },
         "AccessControlGroup" : {
             "api_url" : "vserver/v2",
@@ -46,8 +48,7 @@ def url_info():
             "read" : "getVpcPeeringInstanceList",
             "create" : "createVpcPeeringInstance",
             "delete" : "deleteVpcPeeringInstance",
-            "acOrRe" : "acceptOrRejectVpcPeering",
-            "set" : "setVpcPeeringDescription"
+            "update" : ["acceptOrRejectVpcPeering","setVpcPeeringDescription"]
         },
         "NetworkAclDenyAllowGroup" : {
             "api_url" : "vpc/v2",
@@ -63,7 +64,6 @@ def url_info():
             "create" : "createLoadBalancerInstance",
             "delete" : "deleteLoadBalancerInstances",
             "update" : ["changeLoadBalancerInstanceConfiguration", "setLoadBalancerInstanceSubnet"]
-
         },
         "RouteTable" : {
             "api_url" : "vpc/v2",
@@ -96,19 +96,23 @@ def url_info():
         },
         "Subnet" : {
             "api_url" : "vpc/v2",
-            "read" : "getSubnetList"
+            "read" : "getSubnetList",
+            "create" : "createSubnet",
+            "delete" : "deleteSubnet"
         },
         "LoadBalancerListener" : {
             "api_url" : "vloadbalancer/v2",
-            "read" : "getLoadBalancerListenerList"
+            "read" : "getLoadBalancerListenerList",
+            "create" : "createLoadBalancerListener",
+            "delete" : "deleteLoadBalancerListeners",
+            "update" : "changeLoadBalancerListenerConfiguration"
         },
         "PublicIpInstance" : {
             "api_url" : "vserver/v2",
             "read" : "getPublicIpInstanceList",
             "create" : "createPublicIpInstance",
-            "associate" : "associatePublicIpWithServerInstance",
-            "disassociate" : "disassociatePublicIpFromServerInstance",
-            "delete" : "deletePublicIpInstances"
+            "update" : ["associatePublicIpWithServerInstance","disassociatePublicIpFromServerInstance"],
+            "delete" : "deletePublicIpInstance"
         },
         "Route" : {
             "api_url" : "vpc/v2", 
@@ -119,11 +123,8 @@ def url_info():
             "api_url" : "vserver/v2",
             "read" : "getBlockStorageInstanceList",
             "create" : "createBlockStorageInstance",
-            "changeBDI" : "createBlockStorageInstance",
-            "changeVolumeSize" : "changeBlockStorageVolumeSize",
-            "attach" : "attachBlockStorageInstance",
-            "detach" : "detachBlockStorageInstances",
-            "setProtection" : "setBlockStorageReturnProtection",
+            "update": ["changeBlockStorageVolumeSize","attachBlockStorageInstance",
+                       "detachBlockStorageInstances","setBlockStorageReturnProtection"],
             "delete" : "deleteBlockStorageInstances"
         },
         "LaunchConfiguration" : {
@@ -149,15 +150,13 @@ def url_info():
             "read" : "getNetworkInterfaceList",
             "create" : "createNetworkInterface",
             "delete" : "deleteNetworkInterface",
-            "attach" : "attachNetworkInterface",
-            "detach" : "detachNetworkInterface",
-            "add" : "addNetworkInterfaceAccessControlGroup",
-            "remove" : "removeNetworkInterfaceAccessControlGroup"
-            
+            "update" : ["attachNetworkInterface", "detachNetworkInterface","addNetworkInterfaceAccessControlGroup","removeNetworkInterfaceAccessControlGroup"]  
         },
         "NatGatewayInstance" : {
             "api_url" : "vpc/v2",
-            "read" : "getNatGatewayInstanceList"
+            "read" : "getNatGatewayInstanceList",
+            "create" : "createNatGatewayInstance",
+            "delete" : "deleteNatGatewayInstance"
         },
         "LoadBalancerSubnet" : {
             "api_url" : "vloadbalancer/v2",
@@ -179,11 +178,17 @@ def url_info():
         },
         "ScalingPolicy" : {
             "api_url" : "vautoscaling/v2",
-            "read" : "getAutoScalingPolicyList"
+            "read" : "getAutoScalingPolicyList",
+            "create" : "putScalingPolicy",
+            "delete" : "deleteScalingPolicy",
+            "update" : "putScalingPolicy"
         },
         "ScheduledUpdateGroupAction" : {
             "api_url" : "vautoscaling/v2",
-            "read" : "getScheduledActionList"
+            "read" : "getScheduledActionList",
+            "create" : "putScheduledUpdateGroupAction",
+            "delete" : "deleteScheduledAction",
+            "update" : "putScheduledUpdateGroupAction"
         }
     }
 
@@ -368,6 +373,11 @@ def col_name_mapper():
             'productItemKind' : 'producttype',
             'targetVpcNo' : 'targetvpcid',
             'sourceVpcNo' : 'sourcevpcid',
+            'targetType': 'targetType',
+            'targetGroupProtocolType': 'targetGroupProtocolType',
+            'algorithmType': 'algorithmType',
+            'healthCheckProtocolType': 'healthCheckProtocolType',
+            'healthCheckHttpMethodType': 'healthCheckHttpMethodType',
             'publicIpInstanceNo' : 'publicipinstanceid'
         },
         'launchconfiguration' : {
@@ -375,6 +385,9 @@ def col_name_mapper():
         },
         'serverinstance' : {
             'serverProductCode' : 'serverproductcodeid'
+        },
+        'targetgroup': {
+            'serverProductCode': 'serverproductcodeid'
         }
     }
 
@@ -395,10 +408,20 @@ def init_table_rows():
 def include_keys():
     return {
         ### step.3 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 요청 파라미터를 작성
+        # 단, regionCode와 responseFormatType는 제외한다
+        'loginkey' : [],
+        'serverinstance' : ['serverProductCode','serverImageProductCode','vpcNo','subnetNo','networkInterfaceNoList'],
+        'memberserverimageinstance' : ['memberServerImageInstanceNo', ''],
         'routetable' : ['vpcNo', 'routeTableName', 'supportedSubnetTypeCode', 'routeTableDescription'],
         'blockstorageinstance' : ['zoneCode', 'blockStorageName', 'blockStorageDiskDetailTypeCode', 'blockStorageVolumeTypeCode', 
                                   'serverInstanceNo', 'blockStorageSnapshotInstanceNo', 'blockStorageSize', 'blockStorageDescription', 'isReturnProtection'],
         'publicipinstance' : ['serverInstanceNo', 'publicIpDescription'],
         # 단, regionCode와 responseFormatType는 제외한다
-        'loadbalancerinstance' : ['loadBalancerTypeCode', 'loadBalancerName', 'loadBalancerNetworkTypeCode', 'throughputTypeCode', 'idleTimeout', 'vpcNo', 'loadBalancerDescription', 'subnetNoList.N', 'loadBalancerSubnetList.N.subnetNo', 'loadBalancerSubnetList.N.publicIpInstanceNo', 'loadBalancerListenerList.N.protocolTypeCode', 'loadBalancerListenerList.N.port', 'loadBalancerListenerList.N.targetGroupNo', 'loadBalancerListenerList.N.useHttp2', 'loadBalancerListenerList.N.sslCertificateNo', 'loadBalancerListenerList.N.tlsMinVersionTypeCode', 'loadBalancerListenerList.N.cipherSuiteList.N']
+        'loadbalancerinstance' : ['loadBalancerTypeCode', 'loadBalancerName', 'loadBalancerNetworkTypeCode', 'throughputTypeCode', 'idleTimeout', 'vpcNo', 'loadBalancerDescription', 'subnetNoList.N', 'loadBalancerSubnetList.N.subnetNo', 'loadBalancerSubnetList.N.publicIpInstanceNo', 'loadBalancerListenerList.N.protocolTypeCode', 'loadBalancerListenerList.N.port', 'loadBalancerListenerList.N.targetGroupNo', 'loadBalancerListenerList.N.useHttp2', 'loadBalancerListenerList.N.sslCertificateNo', 'loadBalancerListenerList.N.tlsMinVersionTypeCode', 'loadBalancerListenerList.N.cipherSuiteList.N'],
+        'blockstoragesnapshotinstance' : ['originalBlockStorageInstanceNo','blockStorageSnapshotName','blockStorageSnapshotDescription','snapshotTypeCode'],
+        'vpcpeeringinstance':['vpcPeeringName','sourceVpcNo','targetVpcNo','targetVpcName','targetVpcLoginId','vpcPeeringDescription'],
+        'networkinterface' : ['vpcNo','subnetNo','networkInterfaceName','accessControlGroupNoList','serverInstanceNo','ip','secondaryIpList.N','secondaryIpCount','networkInterfaceDescription'],
+        'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName'],
+        'natgatewayinstance' : ['zoneCode', 'vpcNo','subnetNo'],
+        'vpc' : ['vpcName','ipv4CidrBlock']
     }
