@@ -422,6 +422,6 @@ def include_keys():
         'vpcpeeringinstance':['vpcPeeringName','sourceVpcNo','targetVpcNo','targetVpcName','targetVpcLoginId','vpcPeeringDescription'],
         'networkinterface' : ['vpcNo','subnetNo','networkInterfaceName','accessControlGroupNoList','serverInstanceNo','ip','secondaryIpList.N','secondaryIpCount','networkInterfaceDescription'],
         'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName'],
-        'natgatewayinstance' : ['zoneCode', 'vpcNo'],
+        'natgatewayinstance' : ['zoneCode', 'vpcNo','subnetNo'],
         'vpc' : ['vpcName','ipv4CidrBlock']
     }
