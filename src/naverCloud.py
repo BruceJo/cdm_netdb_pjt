@@ -56,7 +56,9 @@ def url_info():
         },
         "NetworkAcl" : {
             "api_url" : "vpc/v2",
-            "read" : "getNetworkAclList"
+            "read" : "getNetworkAclList",
+            "create" : "createNetworkAcl",
+            "delete" : "deleteNetworkAcl",
         },
         "LoadBalancerInstance" : {
             "api_url" : "vloadbalancer/v2",
@@ -423,5 +425,6 @@ def include_keys():
         'networkinterface' : ['vpcNo','subnetNo','networkInterfaceName','accessControlGroupNoList','serverInstanceNo','ip','secondaryIpList.N','secondaryIpCount','networkInterfaceDescription'],
         'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName'],
         'natgatewayinstance' : ['zoneCode', 'vpcNo','subnetNo'],
-        'vpc' : ['vpcName','ipv4CidrBlock']
+        'vpc' : ['vpcName','ipv4CidrBlock'],
+        'networkacl' : ['vpcNo','networkAclName'],
     }

@@ -170,7 +170,7 @@ class Create():
 
     def run(self):
         ### for this in self.nc.keys():
-        this = 'natgatewayinstance' ### step.1 본인 Table을 기입
+        this = 'networkacl' ### step.1 본인 Table을 기입
         try:
             self.set_url(this, "create")
         except KeyError:
