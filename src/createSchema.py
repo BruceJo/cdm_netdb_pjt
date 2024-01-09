@@ -20,7 +20,7 @@ class Create():
         with open(self.destination["schemaPath"], 'r') as file:
             sql = file.read()
         
-        sql = sql.replace("CREATE TABLE IF NOT EXISTS ", f"CREATE TABLE IF NOT EXISTS {self.destination['schemaName']}.")
+        sql = sql.replace("CREATE TABLE ", f"CREATE TABLE {self.destination['schemaName']}.")
         sql = sql.replace("CREATE SEQUENCE IF NOT EXISTS ", f"CREATE SEQUENCE IF NOT EXISTS {self.destination['schemaName']}.")
         cur.execute(f"set schema {self.destination['schemaName']};")
         cur.execute(sql)
