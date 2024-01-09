@@ -146,14 +146,18 @@ class Create():
                 _main_key, _sub_key = _temp_key[0], _temp_key[1] if _temp_key[1] else None
                 #obj = eval(row_dict[_main_key.lower()])
                 if _main_key == 'loadBalancerListenerList' and _sub_key == '.targetGroupNo' :
-                    value = self.get_value('targetgroupno', 'targetgroup', **{'vpcid' : row_dict['vpcid']})
-                    key = 'loadBalancerListenerList.1.targetGroupNo'
+                    _value = self.get_value('targetgroupno', 'targetgroup', **{'vpcid' : row_dict['vpcid']})
+                    _value = [_value]
+                    for index, value in enumerate(_value, start=1):
+                        key = f"loadBalancerListenerList.{index}.targetGroupNo"
                 elif _main_key == 'subnetNoList' and _sub_key == None :
                     _value = row_dict[_main_key.lower()]
                     for index, value in enumerate(_value, start=1):
                         key = f"subnetNoList.{index}"
                 else :
                     continue
+            elif key == 'loadBalancerNetworkTypeCode' :
+                value = row_dict['loadbalancernetworktype']
             elif key == 'accessControlGroupNoList':
                 key = "accessControlGroupNoList.1"
                 value = ''.join(row_dict['accesscontrolgroupnolist'])
@@ -180,7 +184,7 @@ class Create():
 
     def run(self):
         ### for this in self.nc.keys():
-        this = 'loadbalancerinstance' ### step.1 본인 Table을 기입
+        this = 'loadbalancerlistener' ### step.1 본인 Table을 기입
         try:
             self.set_url(this, "create")
         except KeyError:
