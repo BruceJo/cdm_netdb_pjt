@@ -135,11 +135,6 @@ class Read2Insert():
 
     def proc_normal(self, src):
         _temp = {}
-        # for debug
-        if self.table_name in ['natgatewayinstance']:
-            print('dbg')
-            #debug
-
         for i in src:
             # Common
             if i in list(set(sum([v for k,v in self.code_candidate.items()], []))):
