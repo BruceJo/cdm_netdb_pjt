@@ -100,12 +100,12 @@ def create_vpc():
     #     }
     # }
     req = request.get_json()
-<<<<<<< HEAD
+# <<<<<<< HEAD
     print(req)
-    if 'dbSource' not in req: 
-=======
+   # if 'dbSource' not in req:
+# =======
     if 'dbSource' not in req:
->>>>>>> b9b348e066201175cf803f1156ed890c16d40600
+# >>>>>>> b9b348e066201175cf803f1156ed890c16d40600
         return 'fail, need key ["dbSource"]', 400
     elif 'schemaName' not in req['dbSource']:
         return 'fail, need key ["dbSource"]["schemaName"]', 400
