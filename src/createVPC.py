@@ -61,6 +61,7 @@ class Create():
             elif key == 'loginKeyName':
                 value = self.get_value('keyname', 'loginkey', **{'id' : row_dict['loginkeyid']})
             elif key[-4:] == 'Name':      # 테스트 환경에서 Naver Cloud가 하나뿐이므로, 중복이름인경우 생성이 불가하기에 예외처리
+                # RouteTable, PlacementGroup
                 value = row_dict[key.lower()] + '-dr'
             elif self.table_name == 'launchconfiguration' and key == 'serverProductCode':
                 value = self.get_value('productcode', 'product', **{'id' : row_dict['serverproductid']})
@@ -81,20 +82,14 @@ class Create():
                 try:
                     value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
                 except: # networkinterface 부분
-                    value = self.get_value('vpcid', 'subnet', **{'id' : row_dict['subnetid']})
-                    value = self.get_value('vpcno', 'vpc', **{'id' : value})
+                    _value_temp = self.get_value('vpcid', 'subnet', **{'id' : row_dict['subnetid']})
+                    value = self.get_value('vpcno', 'vpc', **{'id' : _value_temp})
             elif key == 'serverInstanceNo' or key == 'secondaryIpList.N' or key == 'secondaryIpCount': # networkinterface만 해당
                 value = None
-            elif key == 'subnetNo':  # 나중에 한번에 묶어 처리 'Code'
+            elif key in ['subnetNo', 'serverinstanceno']:
                 value = self.get_value('subnetno', 'subnet', **{'id' : row_dict['subnetid']})
-            elif key == 'serverinstanceno':  # 나중에 한번에 묶어 처리 'Code'
-                value = self.get_value('subnetno', 'subnet', **{'id' : row_dict['subnetid']})
-            elif key == 'supportedSubnetTypeCode':  # 나중에 한번에 묶어 처리 'Code'
-                value = row_dict['supportedsubnettype']
             elif key == 'zoneCode':
                 value = self.get_value('zonecode', 'zone', **{'id' : row_dict['id']})
-            elif key == 'blockStorageDiskDetailTypeCode':
-                value = row_dict['blockstoragediskdetailtype']
             elif key == 'blockStorageVolumeTypeCode':
                 pass
             elif key == 'blockStorageSize':
@@ -114,7 +109,8 @@ class Create():
             elif key in ['loadBalancerNetworkTypeCode', 'throughputTypeCode']:
                 value = row_dict[key[:-4].lower()].upper() # 이 예제에서 db의 정보가 Code가 아닌 값으로 저장되어있어 예외처리
                 print('value', value)
-            elif key in ['supportedSubnetTypeCode', 'loadBalancerTypeCode', 'loadBalancerNetworkTypeCode', 'throughputTypeCode']:
+            elif key in ['supportedSubnetTypeCode', 'loadBalancerTypeCode', 'loadBalancerNetworkTypeCode', 'throughputTypeCode', 'placementGroupTypeCode', 
+                         'supportedSubnetTypeCode', 'blockStorageDiskDetailTypeCode']:
                 value = row_dict[key[:-4].lower()]
             elif key == 'networkInterfaceNoList':#양식이 조금 달라서 .N 에 넣지 않았음
                 # 만들어야하는 키 목록 1. networkInterfaceOrder, 2. accessControlGroupNoList
@@ -136,7 +132,6 @@ class Create():
                         dict1.update({k3: v3})
                     cnt += 1
                 continue
-                print("")
             # 'networkinterfacenolist'
                 # networkinterfacenolist
                 # for nicNo in
@@ -174,7 +169,7 @@ class Create():
 
     def run(self):
         ### for this in self.nc.keys():
-        this = 'launchconfiguration' ### step.1 본인 Table을 기입
+        this = 'placementgroup' ### step.1 본인 Table을 기입
         try:
             self.set_url(this, "create")
         except KeyError:
