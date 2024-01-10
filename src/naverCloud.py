@@ -192,7 +192,8 @@ def url_info():
         },
         "TargetGroup": {
             "api_url": "vloadbalancer/v2",
-            "read": "getTargetGroupList"
+            "read": "getTargetGroupList",
+            "create": "createTargetGroup"
         }
     }
 
@@ -427,5 +428,8 @@ def include_keys():
         'networkinterface' : ['vpcNo','subnetNo','networkInterfaceName','accessControlGroupNoList','serverInstanceNo','ip','secondaryIpList.N','secondaryIpCount','networkInterfaceDescription'],
         'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName'],
         'natgatewayinstance' : ['zoneCode', 'vpcNo','subnetNo'],
+        'targetgroup' : ["vpcNo", "targetGroupName", "targetTypeCode", "targetGroupProtocolTypeCode", "targetGroupPort", "targetGroupDescription",
+                         "healthCheckProtocolTypeCode", "healthCheckPort", "healthCheckUrlPath", "healthCheckHttpMethodTypeCode",
+                         "healthCheckCycle", "healthCheckUpThreshold", "healthCheckDownThreshold", "targetNoList.N"],
         'vpc' : ['vpcName','ipv4CidrBlock']
     }
