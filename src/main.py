@@ -24,12 +24,12 @@ def create_db():
     # {
     #     "dbName" : "cdm_fix",
     #     "schemaName" : "{your_schema_name}",
-    #     "host" : "211.188.69.4",
+    #     "host" : "223.130.173.142",
     #     "port" : "26257",
     #     "user" : "root"
     # }
     req = request.get_json()
-    if 'schemaName' not in req: 
+    if 'schemaName' not in req:
         return 'fail, need key ["schemaName"]', 400
     
     source = app_conf['DATABASE-SOURCE'].copy()
@@ -58,7 +58,7 @@ def read2insert():
     #         "dbName": "cdm_fix",
     #         "schemaName": "{your_schema_name}",
     #         "schemaPath": "../schema/naverCloudSchema.sql",
-    #         "host": "211.188.69.4",
+    #         "host": "223.130.173.142",
     #         "port": "26257",
     #         "user": "root"
     #     }
@@ -88,7 +88,7 @@ def create_vpc():
     #     "dbSource": {
     #         "dbName": "cdm_fix",
     #         "schemaName": "{your_schema_name}",
-    #         "host": "211.188.69.4",
+    #         "host": "223.130.173.142",
     #         "port": "26257",
     #         "user": "root"
     #     },
@@ -100,6 +100,7 @@ def create_vpc():
     #     }
     # }
     req = request.get_json()
+    print(req)
     if 'dbSource' not in req: 
         return 'fail, need key ["dbSource"]', 400
     elif 'schemaName' not in req['dbSource']:

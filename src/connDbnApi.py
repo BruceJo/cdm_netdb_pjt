@@ -39,7 +39,6 @@ class Connect():
         if 'error' in result.keys() and result['error']['errorCode'] == '300':
             response = requests.get(self.billingApiUrl + api_url, headers=http_header)
             result = json.loads(response.text)
-
         return result
 
     def request_api(self, api_url, sub_url, **params):
@@ -48,8 +47,11 @@ class Connect():
         api_url = (f"/{api_url}/{sub_url}"
                 "?regionCode=KR"
                 "&responseFormatType=json")
+        print("api: ",api_url)
         check_bool = lambda x: str(x).lower() if isinstance(x, bool) else str(x)
+        print("dhdhdhd:", check_bool)
         param_format = "".join([f"&{k}={urllib.parse.quote(check_bool(v))}" for k, v in params.items()])
+        print("parama: ", param_format)
 
         response = self.send_request(method, api_url+param_format, timestamp)
 

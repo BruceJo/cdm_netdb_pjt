@@ -120,10 +120,12 @@ class Read2Insert():
 
     def proc_normal(self, src):
         _temp = {}
+        # print("src: ",src)
         for i in src:
             # Common
             if i in list(set(sum([v for k,v in self.code_candidate.items()], []))):
                 src[i] = src[i]['code']
+                # print("src[i]: ",src[i])
             elif i in ['createDate', 'uptime']:
                 src[i] = src[i].replace('T',' ').replace('Z','')
             elif self.table_name != 'autoscalinggroup' and i in ['networkInterfaceNoList', 'sharedLoginIdList', 'targetGroupNoList', 'inAutoScalingGroupServerInstanceList', 
@@ -135,7 +137,9 @@ class Read2Insert():
             elif i in ['targetGroupNoList', 'suspendedProcessList', 'accessControlGroupNoList']:
                 src[i] = '[' + ', '.join(map(str, src[i])) + ']'
             elif self.table_name not in ['vpc', 'accesscontrolgroup'] and i == 'vpcNo':
+                # print("src[i]: ",src[i])
                 _temp[i] = self.get_id('vpc', 'vpcno', src[i])
+                
             elif self.table_name != 'product' and i == 'serverProductCode':
                 _temp[i] = self.get_id('product', 'productcode', src[i])
             elif self.table_name != 'serverinstance' and i == 'loginKeyName':
@@ -152,6 +156,7 @@ class Read2Insert():
                 _temp[i] = self.get_id('blockstorageinstance', 'blockstorageinstanceno', src[i])
                 if _temp[i] == None: self.continue_flag = True
             elif i in ['targetVpcNo', 'sourceVpcNo']:
+                # print("src[i]2: ",src[i])
                 _temp[i] = self.get_id('vpc', 'vpcno', src[i])
             elif self.table_name not in ['publicipinstance', 'serverinstance', 'natgatewayinstance'] and i == 'publicIpInstanceNo':
                 _temp[i] = self.get_id('publicipinstance', 'publicipinstanceno', src[i])
