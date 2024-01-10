@@ -430,5 +430,8 @@ def include_keys():
         'networkinterface' : ['vpcNo','subnetNo','networkInterfaceName','accessControlGroupNoList','serverInstanceNo','ip','secondaryIpList.N','secondaryIpCount','networkInterfaceDescription'],
         'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName'],
         'natgatewayinstance' : ['zoneCode', 'vpcNo','subnetNo'],
-        'vpc' : ['vpcName','ipv4CidrBlock']
+        'vpc' : ['vpcName','ipv4CidrBlock'],
+        'initscript' : ['initScriptName','initScriptContent','osTypeCode','initScriptDescription'],
+        'accesscontrolgroup' : ['vpcNo','accessControlGroupName','accessControlGroupDescription'],
+        'accesscontrolgrouprule' : ['vpcNo','accessControlGroupNo', 'accessControlGroupRuleList.N.protocolTypeCode','accessControlGroupRuleList.N.portRange','accessControlGroupRuleList.N.ipBlock','accessControlGroupRuleList.N.accessControlGroupSequence','accessControlGroupRuleList.N.accessControlGroupRuleDescription']
     }
