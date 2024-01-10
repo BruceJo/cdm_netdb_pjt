@@ -80,11 +80,14 @@ class Create():
             elif key == 'serverInstanceNo':
                 value = self.get_value('originalserverinstanceid', 'memberserverimageinstance', **{'id': row_dict['originalserverinstanceid']})
             elif key == 'vpcNo':
-                try:
-                    value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
-                except: # networkinterface 부분
-                    value = self.get_value('vpcid', 'subnet', **{'id' : row_dict['subnetid']})
-                    value = self.get_value('vpcno', 'vpc', **{'id' : value})
+                if key.lower() in row_dict :
+                    value = row_dict['vpcno']
+                else:
+                    try:
+                        value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
+                    except: # networkinterface 부분
+                        value = self.get_value('vpcid', 'subnet', **{'id' : row_dict['subnetid']})
+                        value = self.get_value('vpcno', 'vpc', **{'id' : value})
             elif key == 'serverInstanceNo' or key == 'secondaryIpList.N' or key == 'secondaryIpCount': # networkinterface만 해당
                 value = None
             elif key == 'subnetNo':  # 나중에 한번에 묶어 처리 'Code'
@@ -139,6 +142,20 @@ class Create():
                     cnt += 1
                 continue
                 print("")
+            elif key == 'accessControlGroupNo' :
+                value = self.get_value('accesscontrolgroupno', 'accesscontrolgroup', **{'id' : row_dict['accesscontrolgroupid']})
+                
+            elif key == 'accessControlGroupStatusCode':
+                value = row_dict['accesscontrolgroupstatus']
+                
+            elif key == 'osTypeCode':
+                value = row_dict['ostype']
+                
+            elif key == 'accessControlGroupDescription':
+                value = row_dict['accesscontrolgroupdescription']
+            
+            elif key == 'initScriptDescription':
+                value = row_dict['initscriptdescription']
             # 'networkinterfacenolist'
                 # networkinterfacenolist
                 # for nicNo in
@@ -177,6 +194,7 @@ class Create():
     def run(self):
         ### for this in self.nc.keys():
         this = 'scheduledupdategroupaction' ### step.1 본인 Table을 기입
+
         try:
             self.set_url(this, "create")
         except KeyError:
