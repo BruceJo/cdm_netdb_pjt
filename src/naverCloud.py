@@ -80,7 +80,8 @@ def url_info():
         },
         "AccessControlGroupRule" : {
             "api_url" : "vserver/v2",
-            "read" : "getAccessControlGroupRuleList"
+            "read" : "getAccessControlGroupRuleList",
+            "update" : ["addAccessControlGroupInboundRule", "addAccessControlGroupOutboundRule"]
         },        
         "Product" : {
             "api_url" : "billing/v1/product",
