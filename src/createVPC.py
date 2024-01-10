@@ -146,7 +146,7 @@ class Create():
                 _main_key, _sub_key = _temp_key[0], _temp_key[1] if _temp_key[1] else None
                 #obj = eval(row_dict[_main_key.lower()])
                 if _main_key == 'loadBalancerListenerList' and _sub_key == '.targetGroupNo' :
-                    _value = self.get_value('targetgroupno', 'targetgroup', **{'vpcid' : row_dict['vpcid']})
+                    _value = self.get_value('targetgroupno', 'targetgroup', **{'loadbalancerinstanceno' : row_dict['loadbalancerinstanceid']})
                     _value = [_value]
                     for index, value in enumerate(_value, start=1):
                         key = f"loadBalancerListenerList.{index}.targetGroupNo"
@@ -167,6 +167,8 @@ class Create():
             elif key == 'targetGroupNo' and self.table_name == 'loadbalancerlistener' :
                 _value = self.get_value('vpcid', 'loadbalancerinstance', **{'id' : row_dict['loadbalancerinstanceid']})
                 value = self.get_value('targetgroupno', 'targetgroup', **{'vpcid' : _value})
+            elif key == 'port':
+                value = 8080
             else:
                 value = row_dict[key.lower()]
 
