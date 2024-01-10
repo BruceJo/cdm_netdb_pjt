@@ -23,7 +23,8 @@ def url_info():
         },
         "InitScript" : {
             "api_url" : "vserver/v2",
-            "read" : "getInitScriptList"
+            "read" : "getInitScriptList",
+            "create" : "createInitScript"
         },
         "LoadBalancerRuleAction" : {
             "api_url" : "vloadbalancer/v2",
