@@ -74,11 +74,14 @@ class Create():
             elif key == 'serverInstanceNo':
                 value = self.get_value('originalserverinstanceid', 'memberserverimageinstance', **{'id': row_dict['originalserverinstanceid']})
             elif key == 'vpcNo':
-                try:
-                    value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
-                except: # networkinterface 부분
-                    value = self.get_value('vpcid', 'subnet', **{'id' : row_dict['subnetid']})
-                    value = self.get_value('vpcno', 'vpc', **{'id' : value})
+                if key.lower() in row_dict :
+                    value = row_dict['vpcno']
+                else:
+                    try:
+                        value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
+                    except: # networkinterface 부분
+                        value = self.get_value('vpcid', 'subnet', **{'id' : row_dict['subnetid']})
+                        value = self.get_value('vpcno', 'vpc', **{'id' : value})
             elif key == 'serverInstanceNo' or key == 'secondaryIpList.N' or key == 'secondaryIpCount': # networkinterface만 해당
                 value = None
             elif key == 'subnetNo':  # 나중에 한번에 묶어 처리 'Code'
