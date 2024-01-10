@@ -46,7 +46,10 @@ class Read2Insert():
         with open("insert_query.log", "a") as file:
             file.write(query+'\n')
             file.close()
-        self.cur.execute(query)
+        try:#lhb try-catch
+            self.cur.execute(query)
+        except Exception as e:
+            print(f"Error => {e}\n")
 
     def get_id(self, tbl, where, value):
         result = self.cc.query_db(f"SELECT id FROM {self.destination['schemaName']}.{tbl} where {where}='{value}';")

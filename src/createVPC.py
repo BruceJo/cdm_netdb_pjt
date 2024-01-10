@@ -85,6 +85,14 @@ class Create():
                 value = self.get_value('subnetno', 'subnet', **{'id' : row_dict['subnetid']})
             elif key == 'serverinstanceno':  # 나중에 한번에 묶어 처리 'Code'
                 value = self.get_value('subnetno', 'subnet', **{'id' : row_dict['subnetid']})
+            elif key == 'targetTypeCode':  # 타겟 유형 코드, targetTypeCode 단일 옵션 값 존재함 (VSVR)
+                value = row_dict['targettype']
+            elif key == 'targetGroupProtocolTypeCode':  # 코드
+                value = row_dict['targetgroupprotocoltype']
+            elif key == 'healthCheckProtocolTypeCode':  # 'Code'
+                value = row_dict['healthcheckprotocoltype']
+            elif key == 'healthCheckHttpMethodTypeCode':  # 'Code'
+                value = row_dict['healthcheckhttpmethodtype']
             elif key == 'supportedSubnetTypeCode':  # 나중에 한번에 묶어 처리 'Code'
                 value = row_dict['supportedsubnettype']
             elif key == 'zoneCode':
@@ -170,7 +178,7 @@ class Create():
 
     def run(self):
         ### for this in self.nc.keys():
-        this = 'natgatewayinstance' ### step.1 본인 Table을 기입
+        this = 'targetgroup' ### step.1 본인 Table을 기입
         try:
             self.set_url(this, "create")
         except KeyError:
