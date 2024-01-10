@@ -136,6 +136,9 @@ class Create():
             elif key == 'accessControlGroupNo' :
                 value = self.get_value('accesscontrolgroupno', 'accesscontrolgroup', **{'id' : row_dict['accesscontrolgroupid']})
                 
+            elif key == 'accessControlGroupStatusCode':
+                value = row_dict['accesscontrolgroupstatus']
+                
             elif key == 'osTypeCode':
                 value = row_dict['ostype']
                 
