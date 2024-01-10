@@ -426,5 +426,7 @@ def include_keys():
         'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName'],
         'natgatewayinstance' : ['zoneCode', 'vpcNo','subnetNo'],
         'vpc' : ['vpcName','ipv4CidrBlock'],
-        'networkacl' : ['vpcNo','networkAclName'],
+        'networkacl' : ['vpcNo','networkAclName'],,
+        'scheduledactionlist' : ['autoScalingGroupNo','scheduledActionName','minSize','maxSize','desiredCapacity','startTime','endTime','recurrence','timeZone']
+
     }
