@@ -133,6 +133,17 @@ class Create():
                     cnt += 1
                 continue
                 print("")
+            elif key == 'accessControlGroupNo' :
+                value = self.get_value('accesscontrolgroupno', 'accesscontrolgroup', **{'id' : row_dict['accesscontrolgroupid']})
+                
+            elif key == 'osTypeCode':
+                value = row_dict['ostype']
+                
+            elif key == 'accessControlGroupDescription':
+                value = row_dict['accesscontrolgroupdescription']
+            
+            elif key == 'initScriptDescription':
+                value = row_dict['initscriptdescription']
             # 'networkinterfacenolist'
                 # networkinterfacenolist
                 # for nicNo in
