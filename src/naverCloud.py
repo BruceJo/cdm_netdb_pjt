@@ -425,7 +425,7 @@ def include_keys():
         'blockstoragesnapshotinstance' : ['originalBlockStorageInstanceNo','blockStorageSnapshotName','blockStorageSnapshotDescription','snapshotTypeCode'],
         'vpcpeeringinstance':['vpcPeeringName','sourceVpcNo','targetVpcNo','targetVpcName','targetVpcLoginId','vpcPeeringDescription'],
         'networkinterface' : ['vpcNo','subnetNo','networkInterfaceName','accessControlGroupNoList','serverInstanceNo','ip','secondaryIpList.N','secondaryIpCount','networkInterfaceDescription'],
-        'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName'],
+        'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'serverProductCode', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName', 'loginKeyName'],
         'natgatewayinstance' : ['zoneCode', 'vpcNo','subnetNo'],
         'vpc' : ['vpcName','ipv4CidrBlock']
     }
