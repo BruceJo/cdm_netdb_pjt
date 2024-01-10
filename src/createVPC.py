@@ -1,6 +1,7 @@
 import connDbnApi as cda
 import naverCloud
 import json
+import main as m
 
 class Create():
     def __init__(self, source_db, target_api):
@@ -58,8 +59,13 @@ class Create():
             elif key == 'targetVpcName':
                 value = self.get_value('vpcname', 'vpc', **{'id' : row_dict['targetvpcid']})
                 print(value)
-            elif key[-4:] == 'Name':      # 테스트 환경에서 Naver Cloud가 하나뿐이므로, 중복이름인경우 생성이 불가하기에 예외처리
+            elif key[-4:] == 'Name' and key != 'scheduledActionName':      # 테스트 환경에서 Naver Cloud가 하나뿐이므로, 중복이름인경우 생성이 불가하기에 예외처리
                 value = row_dict[key.lower()] + '-dr'
+            elif key == 'scheduledActionName':
+                if 'update' in m.req:
+                    value = m.req['update']['body']['scheduledActionName'] + '-dr'
+                else:
+                    value = row_dict[key.lower()]
             elif key == 'serverImageProductCode':#서버 인스턴스 생성시 serverImageProductCode 혹은 memberServerImageInstanceNo 중 하나만 선택하여 생성함
                 value = row_dict['serverimageproductcode']
                 if value == None:#None일 때 serverImageProductCode를 가지고 생성한 것이 아니기 때문에 키를 삭제하고 멤버서버로 설정
@@ -187,7 +193,7 @@ class Create():
 
     def run(self):
         ### for this in self.nc.keys():
-        this = 'accesscontrolgroup' ### step.1 본인 Table을 기입
+        this = 'scheduledupdategroupaction' ### step.1 본인 Table을 기입
         try:
             self.set_url(this, "create")
         except KeyError:
@@ -196,6 +202,7 @@ class Create():
         # Unit test
         row = self.get_table()[0]
         self.create(row)
+        print("row is : ", row)
         self.set_url(this, "read")
         print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
         # try:
