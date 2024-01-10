@@ -23,7 +23,8 @@ def url_info():
         },
         "InitScript" : {
             "api_url" : "vserver/v2",
-            "read" : "getInitScriptList"
+            "read" : "getInitScriptList",
+            "create" : "createInitScript"
         },
         "LoadBalancerRuleAction" : {
             "api_url" : "vloadbalancer/v2",
@@ -41,7 +42,8 @@ def url_info():
         },
         "AccessControlGroup" : {
             "api_url" : "vserver/v2",
-            "read" : "getAccessControlGroupList"
+            "read" : "getAccessControlGroupList",
+            "create" : "createAccessControlGroup"
         },
         "VpcPeeringInstance" : {
             "api_url" : "vpc/v2",
@@ -52,11 +54,15 @@ def url_info():
         },
         "NetworkAclDenyAllowGroup" : {
             "api_url" : "vpc/v2",
-            "read" : "getNetworkAclDenyAllowGroupList"
+            "read" : "getNetworkAclDenyAllowGroupList",
+            "create" : "createNetworkAclDenyAllowGroup",
+            "delete" : "deleteNetworkAclDenyAllowGroup",
         },
         "NetworkAcl" : {
             "api_url" : "vpc/v2",
-            "read" : "getNetworkAclList"
+            "read" : "getNetworkAclList",
+            "create" : "createNetworkAcl",
+            "delete" : "deleteNetworkAcl",
         },
         "LoadBalancerInstance" : {
             "api_url" : "vloadbalancer/v2",
@@ -78,7 +84,8 @@ def url_info():
         },
         "AccessControlGroupRule" : {
             "api_url" : "vserver/v2",
-            "read" : "getAccessControlGroupRuleList"
+            "read" : "getAccessControlGroupRuleList",
+            "update" : ["addAccessControlGroupInboundRule", "addAccessControlGroupOutboundRule"]
         },        
         "Product" : {
             "api_url" : "billing/v1/product",
@@ -139,7 +146,10 @@ def url_info():
         },
         "AutoScalingGroup" : {
             "api_url" : "vautoscaling/v2",
-            "read" : "getAutoScalingGroupList"
+            "read" : "getAutoScalingGroupList",            
+            "create" : "createAutoScalingGroup",
+            "delete" : "deleteAutoScalingGroup",
+            "update" : "updateAutoScalingGroup",  
         },
         "MemberServerImageInstance" : {
             "api_url" : "vserver/v2",
@@ -428,4 +438,12 @@ def include_keys():
         'natgatewayinstance' : ['zoneCode', 'vpcNo','subnetNo'],
         'vpc' : ['vpcName','ipv4CidrBlock'],
         'placementgroup' : ['placementGroupName', 'placementGroupTypeCode']
+        'networkacl' : ['vpcNo','networkAclName'],
+        'scheduledactionlist' : ['autoScalingGroupNo','scheduledActionName','minSize','maxSize','desiredCapacity','startTime','endTime','recurrence','timeZone'],
+        'networkacldenyallowgroup' : ['vpcNo','networkAclDenyAllowGroupName'],
+        'initscript' : ['initScriptName','initScriptContent','osTypeCode','initScriptDescription'],
+        'accesscontrolgroup' : ['vpcNo','accessControlGroupName','accessControlGroupDescription'],
+        'accesscontrolgrouprule' : ['vpcNo','accessControlGroupNo', 'accessControlGroupRuleList.N.protocolTypeCode','accessControlGroupRuleList.N.portRange','accessControlGroupRuleList.N.ipBlock','accessControlGroupRuleList.N.accessControlGroupSequence','accessControlGroupRuleList.N.accessControlGroupRuleDescription'],        
+        #'autoscalinggroup' : ['launchConfigurationNo','autoScalingGroupName','serverNamePrefix','desiredCapacity','defaultCoolDown','healthCheckGracePeriod','healthCheckTypeCode','vpcNo','subnetNo','accessControlGroupNoList','minSize','maxSize'],
+        'autoscalinggroup' : ['launchConfigurationNo','vpcNo','subnetNo','accessControlGroupNoList','minSize','maxSize']
     }

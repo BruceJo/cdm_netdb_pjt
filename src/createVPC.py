@@ -1,6 +1,7 @@
 import connDbnApi as cda
 import naverCloud
 import json
+import main as m
 
 class Create():
     def __init__(self, source_db, target_api):
@@ -132,6 +133,23 @@ class Create():
                         dict1.update({k3: v3})
                     cnt += 1
                 continue
+
+                print("")
+            elif key == 'accessControlGroupNo' :
+                value = self.get_value('accesscontrolgroupno', 'accesscontrolgroup', **{'id' : row_dict['accesscontrolgroupid']})
+                
+            elif key == 'accessControlGroupStatusCode':
+                value = row_dict['accesscontrolgroupstatus']
+                
+            elif key == 'osTypeCode':
+                value = row_dict['ostype']
+                
+            elif key == 'accessControlGroupDescription':
+                value = row_dict['accesscontrolgroupdescription']
+            
+            elif key == 'initScriptDescription':
+                value = row_dict['initscriptdescription']
+
             # 'networkinterfacenolist'
                 # networkinterfacenolist
                 # for nicNo in
@@ -178,6 +196,7 @@ class Create():
         # Unit test
         row = self.get_table()[0]
         self.create(row)
+        print("row is : ", row)
         self.set_url(this, "read")
         print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
         # try:
