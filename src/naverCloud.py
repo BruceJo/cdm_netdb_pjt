@@ -52,7 +52,9 @@ def url_info():
         },
         "NetworkAclDenyAllowGroup" : {
             "api_url" : "vpc/v2",
-            "read" : "getNetworkAclDenyAllowGroupList"
+            "read" : "getNetworkAclDenyAllowGroupList",
+            "create" : "createNetworkAclDenyAllowGroup",
+            "delete" : "deleteNetworkAclDenyAllowGroup",
         },
         "NetworkAcl" : {
             "api_url" : "vpc/v2",
@@ -428,5 +430,6 @@ def include_keys():
         'vpc' : ['vpcName','ipv4CidrBlock'],
         'networkacl' : ['vpcNo','networkAclName'],,
         'scheduledactionlist' : ['autoScalingGroupNo','scheduledActionName','minSize','maxSize','desiredCapacity','startTime','endTime','recurrence','timeZone']
+        'networkacldenyallowgroup' : ['vpcNo','networkAclDenyAllowGroupName'],
 
     }
