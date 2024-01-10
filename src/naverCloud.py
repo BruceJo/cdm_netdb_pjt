@@ -52,7 +52,9 @@ def url_info():
         },
         "NetworkAclDenyAllowGroup" : {
             "api_url" : "vpc/v2",
-            "read" : "getNetworkAclDenyAllowGroupList"
+            "read" : "getNetworkAclDenyAllowGroupList",
+            "create" : "createNetworkAclDenyAllowGroup",
+            "delete" : "deleteNetworkAclDenyAllowGroup",
         },
         "NetworkAcl" : {
             "api_url" : "vpc/v2",
@@ -427,4 +429,6 @@ def include_keys():
         'natgatewayinstance' : ['zoneCode', 'vpcNo','subnetNo'],
         'vpc' : ['vpcName','ipv4CidrBlock'],
         'networkacl' : ['vpcNo','networkAclName'],
+        'networkacldenyallowgroup' : ['vpcNo','networkAclDenyAllowGroupName'],
+
     }
