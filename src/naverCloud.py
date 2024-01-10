@@ -193,6 +193,10 @@ def url_info():
             "create" : "putScheduledUpdateGroupAction",
             "delete" : "deleteScheduledAction",
             "update" : "putScheduledUpdateGroupAction"
+        },
+        "TargetGroup": {
+            "api_url": "vloadbalancer/v2",
+            "read": "getTargetGroupList"
         }
     }
 
