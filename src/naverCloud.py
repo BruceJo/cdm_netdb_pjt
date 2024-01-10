@@ -437,7 +437,7 @@ def include_keys():
         'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'serverProductCode', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName', 'loginKeyName'],
         'natgatewayinstance' : ['zoneCode', 'vpcNo','subnetNo'],
         'vpc' : ['vpcName','ipv4CidrBlock'],
-        'placementgroup' : ['placementGroupName', 'placementGroupTypeCode']
+        'placementgroup' : ['placementGroupName', 'placementGroupTypeCode'],
         'networkacl' : ['vpcNo','networkAclName'],
         'scheduledactionlist' : ['autoScalingGroupNo','scheduledActionName','minSize','maxSize','desiredCapacity','startTime','endTime','recurrence','timeZone'],
         'networkacldenyallowgroup' : ['vpcNo','networkAclDenyAllowGroupName'],
