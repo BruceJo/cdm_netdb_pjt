@@ -25,7 +25,7 @@ def create_db():
     # {
     #     "dbName" : "cdm_fix",
     #     "schemaName" : "{your_schema_name}",
-    #     "host" : "211.188.69.4",
+    #     "host" : "223.130.173.142",
     #     "port" : "26257",
     #     "user" : "root"
     # }
@@ -88,7 +88,7 @@ def create_vpc():
     #     "dbSource": {
     #         "dbName": "cdm_fix",
     #         "schemaName": "{your_schema_name}",
-    #         "host": "211.188.69.4",
+    #         "host": "223.130.173.142",
     #         "port": "26257",
     #         "user": "root"
     #     },
