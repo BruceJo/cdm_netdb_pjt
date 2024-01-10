@@ -132,6 +132,11 @@ class Read2Insert():
 
     def proc_normal(self, src):
         _temp = {}
+        # for debug
+        if self.table_name in ['natgatewayinstance']:
+            print('dbg')
+            #debug
+
         for i in src:
             # Common
             if i in list(set(sum([v for k,v in self.code_candidate.items()], []))):
@@ -167,7 +172,10 @@ class Read2Insert():
             elif i == 'originalServerInstanceNo':
                 _temp[i] = src[i]
             elif i in ['productItemKind', 'targetType', 'targetGroupProtocolType', 'algorithmType', 'healthCheckProtocolType', 'healthCheckHttpMethodType']:
-                _temp[i] = src[i]['code']
+                if 'code' not in src[i]:
+                    _temp[i] = 'null' #code가 비어있을 때 있음
+                else:
+                    _temp[i] = src[i]['code']                
         
         dict1 = {}
         for k, v in _temp.items():
