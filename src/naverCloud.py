@@ -143,7 +143,10 @@ def url_info():
         },
         "AutoScalingGroup" : {
             "api_url" : "vautoscaling/v2",
-            "read" : "getAutoScalingGroupList"
+            "read" : "getAutoScalingGroupList",            
+            "create" : "createAutoScalingGroup",
+            "delete" : "deleteAutoScalingGroup",
+            "update" : "updateAutoScalingGroup",  
         },
         "MemberServerImageInstance" : {
             "api_url" : "vserver/v2",
@@ -430,5 +433,6 @@ def include_keys():
         'vpc' : ['vpcName','ipv4CidrBlock'],
         'networkacl' : ['vpcNo','networkAclName'],
         'networkacldenyallowgroup' : ['vpcNo','networkAclDenyAllowGroupName'],
-
+        # 'autoscalinggroup' : ['launchConfigurationNo','autoScalingGroupName','serverNamePrefix','desiredCapacity','defaultCoolDown','healthCheckGracePeriod','healthCheckTypeCode','vpcNo','subnetNo','accessControlGroupNoList','minSize','maxSize'],
+        'autoscalinggroup' : ['launchConfigurationNo','vpcNo','subnetNo','accessControlGroupNoList','minSize','maxSize'],
     }
