@@ -41,7 +41,8 @@ def url_info():
         },
         "AccessControlGroup" : {
             "api_url" : "vserver/v2",
-            "read" : "getAccessControlGroupList"
+            "read" : "getAccessControlGroupList",
+            "create" : "createAccessControlGroup"
         },
         "VpcPeeringInstance" : {
             "api_url" : "vpc/v2",
