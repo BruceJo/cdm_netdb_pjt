@@ -24,7 +24,8 @@ def url_info():
         "InitScript" : {
             "api_url" : "vserver/v2",
             "read" : "getInitScriptList",
-            "create" : "createInitScript"
+            "create" : "createInitScript",
+            "delete" :"deleteInitScripts"
         },
         "LoadBalancerRuleAction" : {
             "api_url" : "vloadbalancer/v2",
@@ -43,7 +44,8 @@ def url_info():
         "AccessControlGroup" : {
             "api_url" : "vserver/v2",
             "read" : "getAccessControlGroupList",
-            "create" : "createAccessControlGroup"
+            "create" : "createAccessControlGroup",
+            "delete" : "deleteAccessControlGroup"
         },
         "VpcPeeringInstance" : {
             "api_url" : "vpc/v2",

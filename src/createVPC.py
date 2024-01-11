@@ -150,6 +150,9 @@ class Create():
             
             elif key == 'initScriptDescription':
                 value = row_dict['initscriptdescription']
+                
+            elif key == 'initScriptContent':
+                value = "#!/bin/bash"
             # 'networkinterfacenolist'
                 # networkinterfacenolist
                 # for nicNo in
@@ -187,7 +190,7 @@ class Create():
 
     def run(self):
         ### for this in self.nc.keys():
-        this = 'accesscontrolgroup' ### step.1 본인 Table을 기입
+        this = 'initscript' ### step.1 본인 Table을 기입
         try:
             self.set_url(this, "create")
         except KeyError:
