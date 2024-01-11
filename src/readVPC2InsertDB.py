@@ -75,7 +75,8 @@ class Read2Insert():
             elif i == 'autoScalingGroupNo':
                 _temp[i] = self.get_id('autoscalinggroup', 'autoscalinggroupno', src[i])
             # protocolType 으로 인하여 고의적 하단 위치
-            elif i in ['targetType', 'actionStatus', 'ruleAction', 'networkAclRuleType', 'adjustmentType', 'accessControlGroupRuleType', 'protocolType', 'ruleActionType', 'ruleConditionType']:
+            elif i in ['targetType', 'actionStatus', 'ruleAction', 'networkAclRuleType', 'adjustmentType', 
+                       'accessControlGroupRuleType', 'protocolType', 'ruleActionType', 'ruleConditionType']:
                 src[i] = src[i]['code']
             elif i in ['loadBalancerRuleNoList', 'cipherSuiteList']:
                 pass
@@ -97,31 +98,17 @@ class Read2Insert():
             dict1['loadbalancerinstanceid'] = _temp['loadBalancerInstanceNo']
         elif self.table_name == 'loadbalancerrule':
             dict1['loadbalancerlistenerid'] = _temp['loadBalancerListenerNo']
-
-        if self.table_name == 'loadbalancerruleaction':
-            if 'redirectionAction' in src:
-                dict1['redirectionAction'] = json.dumps(src['redirectionAction'])
-            else:
-                dict1['redirectionAction'] = None
-
-            if 'targetGroupAction' in src:
-                dict1['targetGroupAction'] = json.dumps(src['targetGroupAction'])
-            else:
-                dict1['targetGroupAction'] = None
-
-        if self.table_name == 'loadbalancerrulecondition':
+        elif self.table_name == 'loadbalancerruleaction':
+            dict1['redirectionAction'] = json.dumps(src['redirectionAction']) if 'redirectionAction' in src else None
+            dict1['targetGroupAction'] = json.dumps(src['targetGroupAction']) if 'targetGroupAction' in src else None
+        elif self.table_name == 'loadbalancerrulecondition':
             dict1['hostheadercondition'] = '' # 이 예제에서는 redirectionaction에 대한 데이터가 JSON에 없으므로 빈 문자열 사용
-            if 'pathPatternCondition' in src:
-                dict1['pathpatterncondition'] = json.dumps(src['pathPatternCondition'])
-            else:
-                dict1['pathpatterncondition'] = None
-
-
+            dict1['pathpatterncondition'] = json.dumps(src['pathPatternCondition']) if 'pathPatternCondition' in src else None
 
         for key in src:
             if self.table_name != 'loadbalancerlistener':
-                out_candidate = ['routeTableNo', 'autoScalingGroupNo', 'regionCode', 'networkAclNo', 'protocolType', 'autoScalingGroupNo', 'accessControlGroupNo', 'loadBalancerListenerNo',
-                                 'pathPatternCondition', 'targetGroupAction', 'redirectionAction']
+                out_candidate = ['routeTableNo', 'autoScalingGroupNo', 'regionCode', 'networkAclNo', 'protocolType', 'autoScalingGroupNo', 
+                                 'accessControlGroupNo', 'loadBalancerListenerNo', 'pathPatternCondition', 'targetGroupAction', 'redirectionAction']
             else:
                 out_candidate = ['loadBalancerInstanceNo']
             
@@ -161,8 +148,6 @@ class Read2Insert():
                 _temp[i] = self.get_id('networkacl', 'networkaclno', src[i])
             elif i == 'originalBlockStorageInstanceNo':
                 _temp[i] = src[i]
-            #    _temp[i] = self.get_id('blockstorageinstance', 'blockstorageinstanceno', src[i])
-            #    if _temp[i] == None: self.continue_flag = True
             elif i in ['targetVpcNo', 'sourceVpcNo']:
                 _temp[i] = self.get_id('vpc', 'vpcno', src[i])
             elif self.table_name not in ['publicipinstance', 'serverinstance', 'natgatewayinstance'] and i == 'publicIpInstanceNo':
@@ -170,10 +155,7 @@ class Read2Insert():
             elif i == 'originalServerInstanceNo':
                 _temp[i] = src[i]
             elif i in ['productItemKind', 'targetType', 'targetGroupProtocolType', 'algorithmType', 'healthCheckProtocolType', 'healthCheckHttpMethodType']:
-                if 'code' not in src[i]:
-                    _temp[i] = 'null' #code가 비어있을 때 있음
-                else:
-                    _temp[i] = src[i]['code']                
+                _temp[i] = 'null' if 'code' not in src[i] else src[i]['code']   # code가 비어있는 경우
         
         dict1 = {}
         for k, v in _temp.items():
@@ -213,7 +195,7 @@ class Read2Insert():
             source = res[self.sub_url+"Response"][self.special_info[target]['stage']]
 
             # loop
-            for src in source:  # loadBalancerRuleList
+            for src in source:
                 if self.table_name == 'loadbalancerruleaction':
                     for instance in src['loadBalancerRuleActionList']:
                         self.proc_special(instance)
