@@ -440,7 +440,6 @@ def include_keys():
         'targetgroup' : ["vpcNo", "targetGroupName", "targetTypeCode", "targetGroupProtocolTypeCode", "targetGroupPort", "targetGroupDescription",
                          "healthCheckProtocolTypeCode", "healthCheckPort", "healthCheckUrlPath", "healthCheckHttpMethodTypeCode",
                          "healthCheckCycle", "healthCheckUpThreshold", "healthCheckDownThreshold", "targetNoList.N"],
-
         'vpc' : ['vpcName','ipv4CidrBlock'],
         'placementgroup' : ['placementGroupName', 'placementGroupTypeCode'],
         'networkacl' : ['vpcNo','networkAclName'],
