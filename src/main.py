@@ -5,6 +5,7 @@ import createSchema
 import readVPC2InsertDB as rv2
 import createVPC
 import vudVPC
+import getHistory
 
 #test0104
 #Flask init
@@ -210,10 +211,20 @@ def delete_vpc():
     api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
     api_target = change_default(req, api_target, 'apiTarget')
     
-    ud = vudVPC.VUD(api_target, req['delete'], 'd')
+    dv = vudVPC.VUD(api_target, req['delete'], 'd')
     
-    return ud.run()
+    return dv.run()
 
+
+@app.route('/get_history', methods=['POST'])
+def get_history():
+    req = request.get_json()
+    api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
+    api_target = change_default(req, api_target, 'apiTarget')
+
+    gh = getHistory.History(api_target)
+
+    return gh.run()
 
 # Server Run
 if __name__ == '__main__':

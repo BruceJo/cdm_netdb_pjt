@@ -13,7 +13,7 @@ class Create():
         self.conn.autocommit = True
         self.cur = self.conn.cursor()
 
-    def read_db(self):
+    def request_api(self):
         res = self.cc.request_api(self.api_url, self.sub_url)
         
         return res
@@ -162,7 +162,7 @@ class Create():
 
     def run(self):
         ### for this in self.nc.keys():
-        this = 'targetgroup' ### step.1 본인 Table을 기입
+        this = 'placementgroup' ### step.1 본인 Table을 기입
         try:
             self.set_url(this, "create")
         except KeyError:
@@ -173,14 +173,14 @@ class Create():
         self.create(row)
         print("row is : ", row)
         self.set_url(this, "read")
-        print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+        print('5. api result\n', self.pretty_dict(self.request_api()), '\n')
         # try:
         #     self.create(row)
         # except Exception as e:
         #     print(e)
         # finally:
         #     self.set_url(this, "read")
-        #     print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+        #     print('5. api result\n', self.pretty_dict(self.request_api()), '\n')
             ### step.5 터미널에 출력되는 1~5를 확인
         
         # Integration test
@@ -192,4 +192,4 @@ class Create():
         #         print(e)
         #     finally:
         #         self.set_url(this, "read")
-        #         print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+        #         print('5. api result\n', self.pretty_dict(self.request_api()), '\n')
