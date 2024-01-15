@@ -88,8 +88,8 @@ class CreateAll:
             except KeyError:
                 print(f"No read operation defined for {resource_type}")
 
-        self.handle_dependencies()
-        self.log_creation_outcomes()
+        # self.handle_dependencies()
+        # self.log_creation_outcomes()
 
 # Usage Example
 if __name__ == "__main__":
