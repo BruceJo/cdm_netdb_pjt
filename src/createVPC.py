@@ -74,11 +74,12 @@ class Create():
             elif key == 'serverInstanceNo':
                 value = self.get_value('originalserverinstanceid', 'memberserverimageinstance', **{'id': row_dict['originalserverinstanceid']})
             elif key == 'vpcNo':
-                try:
-                    value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
-                except: # networkinterface 부분
-                    value = self.get_value('vpcid', 'subnet', **{'id' : row_dict['subnetid']})
-                    value = self.get_value('vpcno', 'vpc', **{'id' : value})
+                value = '5121381'
+                # try:
+                #     value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
+                # except: # networkinterface 부분
+                #     value = self.get_value('vpcid', 'subnet', **{'id' : row_dict['subnetid']})
+                #     value = self.get_value('vpcno', 'vpc', **{'id' : value})
             elif key == 'serverInstanceNo' or key == 'secondaryIpList.N' or key == 'secondaryIpCount': # networkinterface만 해당
                 value = None
             elif key == 'subnetNo':  # 나중에 한번에 묶어 처리 'Code'
@@ -106,7 +107,7 @@ class Create():
                 # print(value)
             # 나중에 한번에 묶어 처리 'Code'
             elif key == 'loadBalancerTypeCode':
-                value = 'APPLICATION'   # 이 예제에서 db의 정보가 Code가 아닌 값으로 저장되어있어 예외처리
+                value = row_dict['loadbalancertype']  # 이 예제에서 db의 정보가 Code가 아닌 값으로 저장되어있어 예외처리
             elif key in ['loadBalancerNetworkTypeCode', 'throughputTypeCode']:
                 value = row_dict[key[:-4].lower()].upper() # 이 예제에서 db의 정보가 Code가 아닌 값으로 저장되어있어 예외처리
                 print('value', value)
@@ -145,15 +146,41 @@ class Create():
                 _temp_key = key.split('.N')
                 _main_key, _sub_key = _temp_key[0], _temp_key[1] if _temp_key[1] else None
                 #obj = eval(row_dict[_main_key.lower()])
-                if _main_key == 'loadBalancerListenerList' and _sub_key == '.targetGroupNo' :
-                    _value = self.get_value('targetgroupno', 'targetgroup', **{'loadbalancerinstanceno' : row_dict['loadbalancerinstanceid']})
-                    _value = [_value]
-                    for index, value in enumerate(_value, start=1):
-                        key = f"loadBalancerListenerList.{index}.targetGroupNo"
+                if _main_key == 'loadBalancerListenerList' and _sub_key == '.targetGroupNo':
+                    cnt = 0
+                    query = f"SELECT * FROM {self.source_db['schemaName']}.targetgroup WHERE loadbalancerinstanceno = '{row_dict['loadbalancerinstanceno']}'"
+                    self.cur.execute(query)
+                    results1 = self.cur.fetchall()
+                    print("result1 :",results1)
+                    query = f"SELECT * FROM {self.source_db['schemaName']}.targetgroup WHERE loadbalancerinstanceno = '' "
+                    self.cur.execute(query)
+                    results2 = self.cur.fetchall() #알고리즘 1번
+                    print("results2 :",results2)
+                    for i in results1 :
+                        for j in results2 :
+                            if i[3] == j[3] and i[5] == j[5] and i[6] == j[6] and i[8] == j[8] and i[9] == j[9] and i[10] == j[10] and i[14] == j[14] and i[15] == j[15] and i[16] == j[16] and i[17] == j[17] and i[18] == j[18] and i[19] == j[19] and i[20] == j[20] :
+                                key = f'loadBalancerListenerList.{cnt+1}.targetGroupNo'
+                                value = j[1]
+                                dict1.update({key: value})
+                                print("key, value :", key, value)
+                                cnt += 1
+                            else :
+                                pass
+                    continue
                 elif _main_key == 'subnetNoList' and _sub_key == None :
                     _value = row_dict[_main_key.lower()]
                     for index, value in enumerate(_value, start=1):
                         key = f"subnetNoList.{index}"
+                elif _main_key == 'loadBalancerListenerList' and _sub_key == '.protocolTypeCode' :
+                    _value = self.get_value('protocoltype', 'loadbalanerlistener', **{'loadbalancerinstanceid' : row_dict['id']})
+                    if _value == 'UDP':
+                        pass
+                    else :
+                        value = _value
+                elif _main_key == 'loadBalancerSubnetList' and _sub_key == '.publicIpInstanceNo' :
+                    _value_ = row_dict['loadbalancersubnetlist']
+                    _value = [item["publicIpInstanceNo"] for item in _value_ if "publicIpInstanceNo" in item]
+                    value = _value[0]
                 else :
                     continue
             elif key == 'loadBalancerNetworkTypeCode' :
