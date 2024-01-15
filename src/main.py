@@ -5,8 +5,8 @@ import createSchema
 import readVPC2InsertDB as rv2
 import createVPC
 import vudVPC
+import createALL
 
-#test0104
 #Flask init
 app = Flask(__name__)
 CORS(app)
@@ -117,6 +117,40 @@ def create_vpc():
 
     return 'success'
 
+@app.route('/create_all', methods=['POST'])
+def create_all():
+    # request format. Required ["dbSource"]["schemaName"]
+    # {
+    #     "dbSource": {
+    #         "dbName": "cdm_fix",
+    #         "schemaName": "{your_schema_name}",
+    #         "host": "223.130.173.142",
+    #         "port": "26257",
+    #         "user": "root"
+    #     },
+    #     "apiTarget": {
+    #         "accessKey": "mYUP1ZqESUOpjyOokWC8",
+    #         "secretKey": "31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM",
+    #         "ncloudUrl": "https://ncloud.apigw.gov-ntruss.com",
+    #         "billingApiUrl": "https://billingapi.apigw.gov-ntruss.com"
+    #     }
+    # }
+    req = request.get_json()
+    if 'dbSource' not in req:
+        return 'fail, need key ["dbSource"]', 400
+    elif 'schemaName' not in req['dbSource']:
+        return 'fail, need key ["dbSource"]["schemaName"]', 400
+    
+    db_source = app_conf['DATABASE-SOURCE'].copy()
+    api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
+
+    db_source = change_default(req, db_source, 'dbSource')
+    api_target = change_default(req, api_target, 'apiTarget')
+
+    cal = createALL.CreateAll(db_source, api_target)
+    cal.run()
+
+    return 'success'
 
 @app.route('/view_vpc', methods=['POST'])
 def view_vpc():
