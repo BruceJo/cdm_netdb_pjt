@@ -50,6 +50,7 @@ class Connect():
                 "&responseFormatType=json")
         check_bool = lambda x: str(x).lower() if isinstance(x, bool) else str(x)
         param_format = "".join([f"&{k}={urllib.parse.quote(check_bool(v))}" for k, v in params.items()])
+        print(param_format)
 
         response = self.send_request(method, api_url+param_format, timestamp)
 

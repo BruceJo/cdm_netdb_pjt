@@ -99,13 +99,15 @@ class Create():
             elif key == 'targetVpcNo':
                 value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['targetvpcid']})
             elif key == 'loadBalancerTypeCode':
-                value = 'APPLICATION'   # 이 예제에서 db의 정보가 Code가 아닌 값으로 저장되어있어 예외처리
+                value = row_dict['loadbalancertype']  # 이 예제에서 db의 정보가 Code가 아닌 값으로 저장되어있어 예외처리
             elif key in ['loadBalancerNetworkTypeCode', 'throughputTypeCode']:
                 value = row_dict[key[:-4].lower()].upper() # 이 예제에서 db의 정보가 Code가 아닌 값으로 저장되어있어 예외처리
                 print('value', value)
             elif key in ['supportedSubnetTypeCode', 'placementGroupTypeCode', 'blockStorageDiskDetailTypeCode', 'healthCheckHttpMethodTypeCode', 
                          'healthCheckProtocolTypeCode', 'targetGroupProtocolTypeCode', 'targetTypeCode', 'accessControlGroupStatusCode', 'osTypeCode']:
                 value = row_dict[key[:-4].lower()]
+            elif key == 'loadBalancerInstanceNo':
+                value = self.get_value('loadbalancerinstanceno', 'loadbalancerinstance', **{'id' : row_dict['loadbalancerinstanceid']})
             elif key == 'networkInterfaceNoList':#양식이 조금 달라서 .N 에 넣지 않았음
                 # 만들어야하는 키 목록 1. networkInterfaceOrder, 2. accessControlGroupNoList
                 # networkInterfaceList.N.networkInterfaceNo
@@ -132,19 +134,59 @@ class Create():
             elif '.N' in key:   # DB 컬럼명 중 'List'로 끝나는 컬럼 중점적으로 자료형 사전 통일 필요 from readVPC2InsertDB
                 # networkInterfaceList
                 # 만들어야하는 키 목록 1. networkInterfaceOrder, 2. accessControlGroupNoList
-                # _temp_key = key.split('.N')
-                # _main_key, _sub_key = _temp_key[0], _temp_key[1] if _temp_key[1] else None
-                # obj = eval(row_dict[_main_key.lower()])
-                
-                # if _sub_key:
-                #     ...
-                # else:
-                #     ...
-                continue
+                _temp_key = key.split('.N')
+                _main_key, _sub_key = _temp_key[0], _temp_key[1] if _temp_key[1] else None
+                #obj = eval(row_dict[_main_key.lower()])
+                if _main_key == 'loadBalancerListenerList' and _sub_key == '.targetGroupNo':
+                    cnt = 0
+                    query = f"SELECT * FROM {self.source_db['schemaName']}.targetgroup WHERE loadbalancerinstanceno = '{row_dict['loadbalancerinstanceno']}'"
+                    self.cur.execute(query)
+                    results1 = self.cur.fetchall()
+                    print("result1 :",results1)
+                    query = f"SELECT * FROM {self.source_db['schemaName']}.targetgroup WHERE loadbalancerinstanceno = '' "
+                    self.cur.execute(query)
+                    results2 = self.cur.fetchall() #알고리즘 1번
+                    print("results2 :",results2)
+                    for i in results1 :
+                        for j in results2 :
+                            if i[3] == j[3] and i[5] == j[5] and i[6] == j[6] and i[8] == j[8] and i[9] == j[9] and i[10] == j[10] and i[14] == j[14] and i[15] == j[15] and i[16] == j[16] and i[17] == j[17] and i[18] == j[18] and i[19] == j[19] and i[20] == j[20] :
+                                key = f'loadBalancerListenerList.{cnt+1}.targetGroupNo'
+                                value = j[1]
+                                dict1.update({key: value})
+                                print("key, value :", key, value)
+                                cnt += 1
+                            else :
+                                pass
+                    continue
+                elif _main_key == 'subnetNoList' and _sub_key == None :
+                    _value = row_dict[_main_key.lower()]
+                    for index, value in enumerate(_value, start=1):
+                        key = f"subnetNoList.{index}"
+                elif _main_key == 'loadBalancerListenerList' and _sub_key == '.protocolTypeCode' :
+                    _value = self.get_value('protocoltype', 'loadbalanerlistener', **{'loadbalancerinstanceid' : row_dict['id']})
+                    if _value == 'UDP':
+                        pass
+                    else :
+                        value = _value
+                elif _main_key == 'loadBalancerSubnetList' and _sub_key == '.publicIpInstanceNo' :
+                    _value_ = row_dict['loadbalancersubnetlist']
+                    _value = [item["publicIpInstanceNo"] for item in _value_ if "publicIpInstanceNo" in item]
+                    value = _value[0]
+                else :
+                    continue
+            elif key == 'loadBalancerNetworkTypeCode' :
+                value = row_dict['loadbalancernetworktype']
             elif key == 'accessControlGroupNoList':
                 key = "accessControlGroupNoList.1"
                 value = ''.join(row_dict['accesscontrolgroupnolist'])
                 print(key, value)
+            elif key == 'protocolTypeCode':
+                value = row_dict['protocoltype']
+            elif key == 'targetGroupNo' and self.table_name == 'loadbalancerlistener' :
+                _value = self.get_value('vpcid', 'loadbalancerinstance', **{'id' : row_dict['loadbalancerinstanceid']})
+                value = self.get_value('targetgroupno', 'targetgroup', **{'vpcid' : _value})
+            elif key == 'port':
+                value = 8080
             else:
                 value = row_dict[key.lower()]
 
@@ -162,7 +204,7 @@ class Create():
 
     def run(self):
         ### for this in self.nc.keys():
-        this = 'targetgroup' ### step.1 본인 Table을 기입
+        this = 'loadbalancerlistener' ### step.1 본인 Table을 기입
         try:
             self.set_url(this, "create")
         except KeyError:
