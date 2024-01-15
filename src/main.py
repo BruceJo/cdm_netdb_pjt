@@ -6,8 +6,9 @@ import readVPC2InsertDB as rv2
 import createVPC
 import vudVPC
 import getHistory
+import subprocess
 
-#test0104
+
 #Flask init
 app = Flask(__name__)
 CORS(app)
@@ -216,19 +217,12 @@ def delete_vpc():
     return dv.run()
 
 
-@app.route('/get_history', methods=['POST'])
-def get_history():
-    req = request.get_json()
-    api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
-    api_target = change_default(req, api_target, 'apiTarget')
-
-    gh = getHistory.History(api_target)
-
-    return gh.run()
-
 # Server Run
 if __name__ == '__main__':
     CONF_PATH = "../conf/app.conf"
     app_conf = gcf.Config(CONF_PATH).getConfig()
     
+    interpreter = "C:/Users/BruceJo/anaconda3/envs/pytest/python.exe"
+    # sub_proc = subprocess.run(args=[interpreter, "getHistory.py"], shell=True, capture_output=True)
+
     app.run(threaded=True, debug=True, host='0.0.0.0', port=9999)
