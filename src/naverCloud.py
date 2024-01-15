@@ -421,7 +421,7 @@ def include_keys():
                                   'serverInstanceNo', 'blockStorageSnapshotInstanceNo', 'blockStorageSize', 'blockStorageDescription', 'isReturnProtection'],
         'publicipinstance' : ['serverInstanceNo', 'publicIpDescription'],
         # 단, regionCode와 responseFormatType는 제외한다
-        'loadbalancerinstance' : ['loadBalancerTypeCode', 'loadBalancerName', 'loadBalancerNetworkTypeCode', 'throughputTypeCode', 'idleTimeout', 'vpcNo', 'loadBalancerDescription','subnetNoList.N', 'loadBalancerListenerList.N.targetGroupNo'],
+        'loadbalancerinstance' : ['loadBalancerTypeCode', 'loadBalancerName', 'loadBalancerNetworkTypeCode', 'throughputTypeCode', 'idleTimeout', 'vpcNo', 'subnetNoList.N', 'loadBalancerListenerList.N.targetGroupNo', 'loadBalancerSubnetList.N.publicIpInstanceNo'],
         'loadbalancerlistener' : ['loadBalancerInstanceNo', 'protocolTypeCode', 'port', 'targetGroupNo', 'useHttp2'],
         'blockstoragesnapshotinstance' : ['originalBlockStorageInstanceNo','blockStorageSnapshotName','blockStorageSnapshotDescription','snapshotTypeCode'],
         'vpcpeeringinstance':['vpcPeeringName','sourceVpcNo','targetVpcNo','targetVpcName','targetVpcLoginId','vpcPeeringDescription'],
