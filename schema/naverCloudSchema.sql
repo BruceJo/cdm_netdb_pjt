@@ -779,6 +779,7 @@ CREATE TABLE targetgroup (
     healthCheckDownThreshold VARCHAR(255) NOT NULL,
     targetNoList VARCHAR(255) NULL,
 	CONSTRAINT targetgroup_pkey PRIMARY KEY (id ASC),
+	CONSTRAINT targetgroup_ukey UNIQUE (targetGroupNo, vpcid, regionid),
 	CONSTRAINT targetgroup_regionid_fkey FOREIGN KEY (regionid) REFERENCES region(id),
 	CONSTRAINT targetgroup_vpcid_fkey FOREIGN KEY (vpcid) REFERENCES vpc(id)
 );
