@@ -145,11 +145,41 @@ class Create():
                 _temp_key = key.split('.N')
                 _main_key, _sub_key = _temp_key[0], _temp_key[1] if _temp_key[1] else None
                 #obj = eval(row_dict[_main_key.lower()])
-                if _main_key == 'loadBalancerListenerList' and _sub_key == '.targetGroupNo' :
-                    _value = self.get_value('targetgroupno', 'targetgroup', **{'loadbalancerinstanceno' : row_dict['loadbalancerinstanceid']})
-                    _value = [_value]
-                    for index, value in enumerate(_value, start=1):
-                        key = f"loadBalancerListenerList.{index}.targetGroupNo"
+                if _main_key == 'loadBalancerListenerList' and _sub_key == '.targetGroupNo':
+                    cnt = 0
+                    query = f"SELECT * FROM {self.source_db['schemaName']}.targetgroup WHERE loadbalancerinstanceno = '{row_dict['loadbalancerinstanceno']}'"
+                    self.cur.execute(query)
+                    results1 = self.cur.fetchall()
+                    print("result1 :",results1)
+                    query = f"SELECT * FROM {self.source_db['schemaName']}.targetgroup WHERE loadbalancerinstanceno = '' "
+                    self.cur.execute(query)
+                    results2 = self.cur.fetchall() #알고리즘 1번
+                    print("results2 :",results2)
+                    # for i in results1 :
+                    #     for j in results2 :
+                    #         if i[3] == j[3] and i[5] == j[5] and i[6] == j[6] and i[8] == j[8] and i[9] == j[9] and i[10] == j[10] and i[14] == j[14] and i[15] == j[15] and i[16] == j[16] and i[17] == j[17] and i[18] == j[18] and i[19] == j[19] and i[20] == j[20] :
+                    #             key = f'loadBalancerListenerList.{cnt+1}.targetGroupNo'
+                    #             value = j[1]
+                    #             dict1.update({key: value})
+                    #             print("key, value :", key, value)
+                    #             cnt += 1
+                    #         else :
+                    #             pass
+                    # continue
+                    if len(results1) == len(results2):
+                        for index in range(len(results1)):
+                            i = results1[index]
+                            j = results2[index]
+
+                            # i와 j의 특정 필드 비교
+                            if all(i[k] == j[k] for k in [3, 5, 6, 8, 9, 10, 14, 15, 16, 17, 18, 19, 20]):
+                                key = f'loadBalancerListenerList.{cnt+1}.targetGroupNo'
+                                value = j[1]
+                                dict1.update({key: value})
+                                print("key, value :", key, value)
+                                cnt += 1
+                    else:
+                        print("Error: results1 and results2 do not have the same length")         
                 elif _main_key == 'subnetNoList' and _sub_key == None :
                     _value = row_dict[_main_key.lower()]
                     for index, value in enumerate(_value, start=1):
@@ -168,7 +198,7 @@ class Create():
                 _value = self.get_value('vpcid', 'loadbalancerinstance', **{'id' : row_dict['loadbalancerinstanceid']})
                 value = self.get_value('targetgroupno', 'targetgroup', **{'vpcid' : _value})
             elif key == 'port':
-                value = 8080
+                value = self.get_value('port', 'loadbalancerlistener', **{'id' : row_dict['id']}) + 1
             else:
                 value = row_dict[key.lower()]
 
@@ -191,12 +221,24 @@ class Create():
             self.set_url(this, "create")
         except KeyError:
             pass    # continue
-        
         # Unit test
-        row = self.get_table()[0]
-        self.create(row)
-        self.set_url(this, "read")
-        print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+        if this == 'loadbalancerlistener':
+            tmp_query = f"SELECT * FROM {self.source_db['schemaName']}.loadbalancerinstance WHERE loadbalancerlistenernolist = '[]';"
+            self.cur.execute(tmp_query)
+            resultslllr = self.cur.fetchall()
+            print("len-------------",len(resultslllr))
+            for i in range(len(resultslllr)):
+                    row = resultslllr[i]
+                    self.create(row)
+                    print("row is : ", row)
+                    self.set_url(this, "read")
+                    print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+                    i+=1
+        else:
+            row = self.get_table()[0]
+            self.create(row)
+            self.set_url(this, "read")
+            print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
         # try:
         #     self.create(row)
         # except Exception as e:
