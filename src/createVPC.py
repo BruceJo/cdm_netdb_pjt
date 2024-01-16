@@ -147,9 +147,13 @@ class Create():
                     self.cur.execute(query)
                     results2 = self.cur.fetchall() #알고리즘 1번
                     print("results2 :",results2)
-                    for i in results1 :
-                        for j in results2 :
-                            if i[3] == j[3] and i[5] == j[5] and i[6] == j[6] and i[8] == j[8] and i[9] == j[9] and i[10] == j[10] and i[14] == j[14] and i[15] == j[15] and i[16] == j[16] and i[17] == j[17] and i[18] == j[18] and i[19] == j[19] and i[20] == j[20] :
+                    if len(results1) == len(results2):
+                        for index in range(len(results1)):
+                            i = results1[index]
+                            j = results2[index]
+
+                            # i와 j의 특정 필드 비교
+                            if all(i[k] == j[k] for k in [3, 5, 6, 8, 9, 10, 14, 15, 16, 17, 18, 19, 20]):
                                 key = f'loadBalancerListenerList.{cnt+1}.targetGroupNo'
                                 value = j[1]
                                 dict1.update({key: value})
@@ -209,13 +213,24 @@ class Create():
             self.set_url(this, "create")
         except KeyError:
             pass    # continue
-        
         # Unit test
-        row = self.get_table()[0]
-        self.create(row)
-        print("row is : ", row)
-        self.set_url(this, "read")
-        print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+        if this == 'loadbalancerlistener':
+            tmp_query = f"SELECT * FROM {self.source_db['schemaName']}.loadbalancerinstance WHERE loadbalancerlistenernolist = '[]';"
+            self.cur.execute(tmp_query)
+            resultslllr = self.cur.fetchall()
+            print("len-------------",len(resultslllr))
+            for i in range(len(resultslllr)):
+                    row = resultslllr[i]
+                    self.create(row)
+                    print("row is : ", row)
+                    self.set_url(this, "read")
+                    print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+                    i+=1
+        else:
+            row = self.get_table()[0]
+            self.create(row)
+            self.set_url(this, "read")
+            print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
         # try:
         #     self.create(row)
         # except Exception as e:
