@@ -53,44 +53,40 @@ class Create():
             ### step.4 Source 테이블에서 가져온 정보를 알맞게 변환
             if key == 'blockStorageSnapshotInstanceNo' or key =='snapshotTypeCode':
                 value = None
-            # if key == 'ip' or key == 'networkinterfacename': # networkinterface 생성 시 필요
-            #     value = None
             elif key == 'targetVpcName':
                 value = self.get_value('vpcname', 'vpc', **{'id' : row_dict['targetvpcid']})
                 print(value)
-            elif key[-4:] == 'Name':      # 테스트 환경에서 Naver Cloud가 하나뿐이므로, 중복이름인경우 생성이 불가하기에 예외처리
+            elif key == 'loginKeyName':
+                value = self.get_value('keyname', 'loginkey', **{'id' : row_dict['loginkeyid']})
+            elif key[-4:] == 'Name':    # 테스트 환경에서 Naver Cloud가 하나뿐이므로, 중복이름인경우 생성이 불가하기에 예외처리
+                # RouteTable, PlacementGroup
                 value = row_dict[key.lower()] + '-dr'
-            elif key == 'serverImageProductCode':#서버 인스턴스 생성시 serverImageProductCode 혹은 memberServerImageInstanceNo 중 하나만 선택하여 생성함
+            elif self.table_name == 'launchconfiguration' and key == 'serverProductCode':
+                value = self.get_value('productcode', 'product', **{'id' : row_dict['serverproductid']})
+            elif key == 'serverImageProductCode':   # 서버 인스턴스 생성시 serverImageProductCode 혹은 memberServerImageInstanceNo 중 하나만 선택하여 생성함
                 value = row_dict['serverimageproductcode']
-                if value == None:#None일 때 serverImageProductCode를 가지고 생성한 것이 아니기 때문에 키를 삭제하고 멤버서버로 설정
+                if value == None:   # None일 때 serverImageProductCode를 가지고 생성한 것이 아니기 때문에 키를 삭제하고 멤버서버로 설정
                     key = 'memberServerImageInstanceNo'
-            elif key == 'serverProductCode':#'serverinstanceno'
+            elif key == 'serverProductCode':
                 value = self.get_value('productcode', 'product', **{'id' : row_dict['serverproductcodeid']})
-                if value == None:#None일 때 serverImageProductCode를 가지고 생성한 것이 아니기 때문에 키를 삭제하고 멤버서버로 설정
+                if value == None:   # None일 때 serverImageProductCode를 가지고 생성한 것이 아니기 때문에 키를 삭제하고 멤버서버로 설정
                     key = 'memberServerImageInstanceNo'
             elif key == 'memberServerImageInstanceNo':#서버 인스턴스 생성시 serverImageProductCode 혹은 memberServerImageInstanceNo 중 하나만 선택하여 생성함
                 value = row_dict['memberserverimageinstanceno']
-                # value = self.get_value('memberserverimageinstanceno', 'memberserverimageinstance', **{'id': row_dict['memberserverimageinstanceno']})
-            elif key == 'serverInstanceNo':
+            elif self.table_name == 'memberserverimageinstance' and key == 'serverInstanceNo':
                 value = self.get_value('originalserverinstanceid', 'memberserverimageinstance', **{'id': row_dict['originalserverinstanceid']})
             elif key == 'vpcNo':
                 try:
                     value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
                 except: # networkinterface 부분
-                    value = self.get_value('vpcid', 'subnet', **{'id' : row_dict['subnetid']})
-                    value = self.get_value('vpcno', 'vpc', **{'id' : value})
-            elif key == 'serverInstanceNo' or key == 'secondaryIpList.N' or key == 'secondaryIpCount': # networkinterface만 해당
+                    _value_temp = self.get_value('vpcid', 'subnet', **{'id' : row_dict['subnetid']})
+                    value = self.get_value('vpcno', 'vpc', **{'id' : _value_temp})
+            elif key in ['secondaryIpList.N', 'secondaryIpCount']:
                 value = None
-            elif key == 'subnetNo':  # 나중에 한번에 묶어 처리 'Code'
+            elif key in ['subnetNo', 'serverInstanceNo']:
                 value = self.get_value('subnetno', 'subnet', **{'id' : row_dict['subnetid']})
-            elif key == 'serverinstanceno':  # 나중에 한번에 묶어 처리 'Code'
-                value = self.get_value('subnetno', 'subnet', **{'id' : row_dict['subnetid']})
-            elif key == 'supportedSubnetTypeCode':  # 나중에 한번에 묶어 처리 'Code'
-                value = row_dict['supportedsubnettype']
             elif key == 'zoneCode':
                 value = self.get_value('zonecode', 'zone', **{'id' : row_dict['id']})
-            elif key == 'blockStorageDiskDetailTypeCode':
-                value = row_dict['blockstoragediskdetailtype']
             elif key == 'blockStorageVolumeTypeCode':
                 pass
             elif key == 'blockStorageSize':
@@ -100,17 +96,15 @@ class Create():
                 value = row_dict['blockstoragesnapshotinstanceno']
             elif key == 'sourceVpcNo':
                 value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['sourcevpcid']})
-                # print(value)
             elif key == 'targetVpcNo':
                 value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['targetvpcid']})
-                # print(value)
-            # 나중에 한번에 묶어 처리 'Code'
             elif key == 'loadBalancerTypeCode':
-                value = 'APPLICATION'   # 이 예제에서 db의 정보가 Code가 아닌 값으로 저장되어있어 예외처리
+                value = row_dict['loadbalancertype']  # 이 예제에서 db의 정보가 Code가 아닌 값으로 저장되어있어 예외처리
             elif key in ['loadBalancerNetworkTypeCode', 'throughputTypeCode']:
                 value = row_dict[key[:-4].lower()].upper() # 이 예제에서 db의 정보가 Code가 아닌 값으로 저장되어있어 예외처리
                 print('value', value)
-            elif key in ['supportedSubnetTypeCode', 'loadBalancerTypeCode', 'loadBalancerNetworkTypeCode', 'throughputTypeCode']:
+            elif key in ['supportedSubnetTypeCode', 'placementGroupTypeCode', 'blockStorageDiskDetailTypeCode', 'healthCheckHttpMethodTypeCode', 
+                         'healthCheckProtocolTypeCode', 'targetGroupProtocolTypeCode', 'targetTypeCode', 'accessControlGroupStatusCode', 'osTypeCode']:
                 value = row_dict[key[:-4].lower()]
             elif key == 'loadBalancerInstanceNo':
                 value = self.get_value('loadbalancerinstanceno', 'loadbalancerinstance', **{'id' : row_dict['loadbalancerinstanceid']})
@@ -134,11 +128,9 @@ class Create():
                         dict1.update({k3: v3})
                     cnt += 1
                 continue
-                print("")
-            # 'networkinterfacenolist'
-                # networkinterfacenolist
-                # for nicNo in
-                # value = self.get_value('zonecode', 'zone', **{'id' : row_dict['zoneid']})
+
+            elif key == 'accessControlGroupNo' :
+                value = self.get_value('accesscontrolgroupno', 'accesscontrolgroup', **{'id' : row_dict['accesscontrolgroupid']})
             elif '.N' in key:   # DB 컬럼명 중 'List'로 끝나는 컬럼 중점적으로 자료형 사전 통일 필요 from readVPC2InsertDB
                 # networkInterfaceList
                 # 만들어야하는 키 목록 1. networkInterfaceOrder, 2. accessControlGroupNoList
@@ -155,17 +147,6 @@ class Create():
                     self.cur.execute(query)
                     results2 = self.cur.fetchall() #알고리즘 1번
                     print("results2 :",results2)
-                    # for i in results1 :
-                    #     for j in results2 :
-                    #         if i[3] == j[3] and i[5] == j[5] and i[6] == j[6] and i[8] == j[8] and i[9] == j[9] and i[10] == j[10] and i[14] == j[14] and i[15] == j[15] and i[16] == j[16] and i[17] == j[17] and i[18] == j[18] and i[19] == j[19] and i[20] == j[20] :
-                    #             key = f'loadBalancerListenerList.{cnt+1}.targetGroupNo'
-                    #             value = j[1]
-                    #             dict1.update({key: value})
-                    #             print("key, value :", key, value)
-                    #             cnt += 1
-                    #         else :
-                    #             pass
-                    # continue
                     if len(results1) == len(results2):
                         for index in range(len(results1)):
                             i = results1[index]
@@ -178,12 +159,23 @@ class Create():
                                 dict1.update({key: value})
                                 print("key, value :", key, value)
                                 cnt += 1
-                    else:
-                        print("Error: results1 and results2 do not have the same length")         
+                            else :
+                                pass
+                    continue
                 elif _main_key == 'subnetNoList' and _sub_key == None :
                     _value = row_dict[_main_key.lower()]
                     for index, value in enumerate(_value, start=1):
                         key = f"subnetNoList.{index}"
+                elif _main_key == 'loadBalancerListenerList' and _sub_key == '.protocolTypeCode' :
+                    _value = self.get_value('protocoltype', 'loadbalanerlistener', **{'loadbalancerinstanceid' : row_dict['id']})
+                    if _value == 'UDP':
+                        pass
+                    else :
+                        value = _value
+                elif _main_key == 'loadBalancerSubnetList' and _sub_key == '.publicIpInstanceNo' :
+                    _value_ = row_dict['loadbalancersubnetlist']
+                    _value = [item["publicIpInstanceNo"] for item in _value_ if "publicIpInstanceNo" in item]
+                    value = _value[0]
                 else :
                     continue
             elif key == 'loadBalancerNetworkTypeCode' :
@@ -198,7 +190,7 @@ class Create():
                 _value = self.get_value('vpcid', 'loadbalancerinstance', **{'id' : row_dict['loadbalancerinstanceid']})
                 value = self.get_value('targetgroupno', 'targetgroup', **{'vpcid' : _value})
             elif key == 'port':
-                value = self.get_value('port', 'loadbalancerlistener', **{'id' : row_dict['id']}) + 1
+                value = 8080
             else:
                 value = row_dict[key.lower()]
 
@@ -216,7 +208,7 @@ class Create():
 
     def run(self):
         ### for this in self.nc.keys():
-        this = 'natgatewayinstance' ### step.1 본인 Table을 기입
+        this = 'loadbalancerlistener' ### step.1 본인 Table을 기입
         try:
             self.set_url(this, "create")
         except KeyError:
