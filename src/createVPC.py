@@ -205,48 +205,97 @@ class Create():
             raise Exception("[ERR] " + str(result))
         else:
             return dict1
-
+        
+    # AUTHOR: 차동현 / cdh@cbnu.ac.kr
+    # DATE: 2024-01-29
+    # DESCRIPTION: 무료 자원에 대하여 모든 자원 생성 및 특정 자원에 대하여 생성
+    # TODO: 전체 자원에 대하여 생성 
+        
     def run(self):
         ### for this in self.nc.keys():
-        this = 'loadbalancerlistener' ### step.1 본인 Table을 기입
-        try:
-            self.set_url(this, "create")
-        except KeyError:
-            pass    # continue
-        # Unit test
-        if this == 'loadbalancerlistener':
-            tmp_query = f"SELECT * FROM {self.source_db['schemaName']}.loadbalancerinstance WHERE loadbalancerlistenernolist = '[]';"
-            self.cur.execute(tmp_query)
-            resultslllr = self.cur.fetchall()
-            print("len-------------",len(resultslllr))
-            for i in range(len(resultslllr)):
-                    row = resultslllr[i]
+        this = 'all' ### step.1 본인 Table을 기입, all로 설정시 전체 자원 생성
+        if this == 'all':
+            for this in naverCloud.include_keys():
+                try:
+                    self.set_url(this, "create")
+                except KeyError:
+                    pass    # continue
+                # Unit test
+                if this == 'loadbalancerlistener':
+                    tmp_query = f"SELECT * FROM {self.source_db['schemaName']}.loadbalancerinstance WHERE loadbalancerlistenernolist = '[]';"
+                    self.cur.execute(tmp_query)
+                    resultslllr = self.cur.fetchall()
+                    print("len-------------",len(resultslllr))
+                    for i in range(len(resultslllr)):
+                            row = resultslllr[i]
+                            self.create(row)
+                            print("row is : ", row)
+                            self.set_url(this, "read")
+                            print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+                            i+=1
+                else:
+                    row = self.get_table()[0]
                     self.create(row)
-                    print("row is : ", row)
                     self.set_url(this, "read")
                     print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
-                    i+=1
+                # try:
+                #     self.create(row)
+                # except Exception as e:
+                #     print(e)
+                # finally:
+                #     self.set_url(this, "read")
+                #     print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+                    ### step.5 터미널에 출력되는 1~5를 확인
+                
+                # Integration test
+                # rows = self.get_table()
+                # for row in rows:
+                #     try:
+                #         self.create(row)
+                #     except Exception as e:
+                #         print(e)
+                #     finally:
+                #         self.set_url(this, "read")
+                #         print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
         else:
-            row = self.get_table()[0]
-            self.create(row)
-            self.set_url(this, "read")
-            print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
-        # try:
-        #     self.create(row)
-        # except Exception as e:
-        #     print(e)
-        # finally:
-        #     self.set_url(this, "read")
-        #     print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
-            ### step.5 터미널에 출력되는 1~5를 확인
-        
-        # Integration test
-        # rows = self.get_table()
-        # for row in rows:
-        #     try:
-        #         self.create(row)
-        #     except Exception as e:
-        #         print(e)
-        #     finally:
-        #         self.set_url(this, "read")
-        #         print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+            try:
+                self.set_url(this, "create")
+            except KeyError:
+                pass    # continue
+            # Unit test
+            if this == 'loadbalancerlistener':
+                tmp_query = f"SELECT * FROM {self.source_db['schemaName']}.loadbalancerinstance WHERE loadbalancerlistenernolist = '[]';"
+                self.cur.execute(tmp_query)
+                resultslllr = self.cur.fetchall()
+                print("len-------------",len(resultslllr))
+                for i in range(len(resultslllr)):
+                        row = resultslllr[i]
+                        self.create(row)
+                        print("row is : ", row)
+                        self.set_url(this, "read")
+                        print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+                        i+=1
+            else:
+                row = self.get_table()[0]
+                self.create(row)
+                self.set_url(this, "read")
+                print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+            # try:
+            #     self.create(row)
+            # except Exception as e:
+            #     print(e)
+            # finally:
+            #     self.set_url(this, "read")
+            #     print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+                ### step.5 터미널에 출력되는 1~5를 확인
+            
+            # Integration test
+            # rows = self.get_table()
+            # for row in rows:
+            #     try:
+            #         self.create(row)
+            #     except Exception as e:
+            #         print(e)
+            #     finally:
+            #         self.set_url(this, "read")
+            #         print('5. api result\n', self.pretty_dict(self.read_db()), '\n')            
