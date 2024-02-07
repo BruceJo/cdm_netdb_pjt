@@ -75,12 +75,12 @@ class Create():
                 value = row_dict['memberserverimageinstanceno']
             elif self.table_name == 'memberserverimageinstance' and key == 'serverInstanceNo':
                 value = self.get_value('originalserverinstanceid', 'memberserverimageinstance', **{'id': row_dict['originalserverinstanceid']})
-            elif key == 'vpcNo':
-                try:
-                    value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
-                except: # networkinterface 부분
-                    _value_temp = self.get_value('vpcid', 'subnet', **{'id' : row_dict['subnetid']})
-                    value = self.get_value('vpcno', 'vpc', **{'id' : _value_temp})
+            # elif key == 'vpcNo':
+            #     try:
+            #         value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
+            #     except: # networkinterface 부분
+            #         _value_temp = self.get_value('vpcid', 'subnet', **{'id' : row_dict['subnetid']})
+            #         value = self.get_value('vpcno', 'vpc', **{'id' : _value_temp})
             elif key in ['secondaryIpList.N', 'secondaryIpCount']:
                 value = None
             elif key in ['subnetNo', 'serverInstanceNo']:
@@ -235,9 +235,39 @@ class Create():
                             i+=1
                 else:
                     row = self.get_table()[0]
-                    self.create(row)
-                    self.set_url(this, "read")
+                    for key in row.keys():
+                        try:
+                            if this != 'vpc':
+                                if key == 'vpcno':
+                                    row[key] =  tmp_vpcno
+                                elif key == 'accesscontrolgroupno':
+                                    row[key] =  tmp_acgno
+                                elif key ==  'memberserverimageinstanceno':
+                                    row[key] =  tmp_msiino
+                                elif key == 'launchconfigurationno':
+                                    row[key] =  tmp_lcno
+                                elif key == 'subnetno':
+                                    row[key] =  tmp_subnetno
+                        except:
+                            pass
+                    print("@@@@@@@@@@ row is : ", row)
+                    print('row is self.create(row) : ', row)
+                    try:
+                        self.create(row)
+                        self.set_url(this, "read")
+                    except:
+                        pass
                     print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+                    if this == 'vpc':
+                        tmp_vpcno = json.loads(self.pretty_dict(self.read_db()))['getVpcListResponse']['vpcList'][0]['vpcNo'] 
+                    elif this == 'accesscontrolgroup':
+                        tmp_acgno = json.loads(self.pretty_dict(self.read_db()))['getAccessControlGroupListResponse']['accessControlGroupList'][0]['accessControlGroupNo'] 
+                    elif this == 'memberserverimageinstance':
+                        tmp_msiino = json.loads(self.pretty_dict(self.read_db()))['getmemberServerImageInstanceListResponse']['memberServerImageInstanceList'][0]['memberServerImageInstanceNo'] 
+                    elif this == 'launchconfiguration':
+                        tmp_lcno = json.loads(self.pretty_dict(self.read_db()))['getlaunchConfigurationListResponse']['launchConfigurationList'][0]['launchConfigurationNo']
+                    elif this == 'subnet':
+                        tmp_subnetno = json.loads(self.pretty_dict(self.read_db()))['getsubnetListResponse']['subnetList'][0]['subnetNo']
                 # try:
                 #     self.create(row)
                 # except Exception as e:
