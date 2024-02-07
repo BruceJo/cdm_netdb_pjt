@@ -250,8 +250,6 @@ class Create():
                                     row[key] =  tmp_subnetno
                         except:
                             pass
-                    print("@@@@@@@@@@ row is : ", row)
-                    print('row is self.create(row) : ', row)
                     try:
                         self.create(row)
                         self.set_url(this, "read")
