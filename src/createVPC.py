@@ -278,7 +278,7 @@ class Create():
                         except Exception as e:
                             print(f"Error => {e}\n")                              
                     elif this == 'launchconfiguration':
-                        tmp_lcno = json.loads(self.pretty_dict(self.read_db()))['getlaunchConfigurationListResponse']['launchConfigurationList'][0]['launchConfigurationNo']                        query = f'INSERT INTO {self.destination["schemaName"+"_recov"]}.for_recovery vpcno VALUES ({tmp_msiino});'
+                        tmp_lcno = json.loads(self.pretty_dict(self.read_db()))['getlaunchConfigurationListResponse']['launchConfigurationList'][0]['launchConfigurationNo'] 
                         query = f'INSERT INTO {self.destination["schemaName"+"_recov"]}.for_recovery vpcno VALUES ({tmp_lcno});'
                         try:
                             self.cur.execute(query)
