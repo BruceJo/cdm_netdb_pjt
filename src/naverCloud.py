@@ -420,55 +420,55 @@ def init_table_rows():
 # Create Info                              #
 ############################################
 
-# def include_keys(): #전체 키
-#     return {
-#         ### step.3 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 요청 파라미터를 작성
-#         # 단, regionCode와 responseFormatType는 제외한다
-#         'loginkey' : [], #free
-#         'serverinstance' : ['serverProductCode','serverImageProductCode','vpcNo','subnetNo','networkInterfaceNoList'], #pay
-#         'memberserverimageinstance' : ['memberServerImageInstanceNo', ''], #pay
-#         'routetable' : ['vpcNo', 'routeTableName', 'supportedSubnetTypeCode', 'routeTableDescription'], 
-#         'blockstorageinstance' : ['zoneCode', 'blockStorageName', 'blockStorageDiskDetailTypeCode', 'blockStorageVolumeTypeCode', 
-#                                   'serverInstanceNo', 'blockStorageSnapshotInstanceNo', 'blockStorageSize', 'blockStorageDescription', 'isReturnProtection'],
-#         'publicipinstance' : ['serverInstanceNo', 'publicIpDescription'],
-#         # 단, regionCode와 responseFormatType는 제외한다
-#         'loadbalancerinstance' : ['loadBalancerTypeCode', 'loadBalancerName', 'loadBalancerNetworkTypeCode', 'throughputTypeCode', 'idleTimeout', 'vpcNo', 'subnetNoList.N', 'loadBalancerListenerList.N.targetGroupNo', 'loadBalancerSubnetList.N.publicIpInstanceNo'], #pay
-#         'loadbalancerlistener' : ['loadBalancerInstanceNo', 'protocolTypeCode', 'port', 'targetGroupNo', 'useHttp2'], #pay
-#         'blockstoragesnapshotinstance' : ['originalBlockStorageInstanceNo','blockStorageSnapshotName','blockStorageSnapshotDescription','snapshotTypeCode'],
-#         'vpcpeeringinstance':['vpcPeeringName','sourceVpcNo','targetVpcNo','targetVpcName','targetVpcLoginId','vpcPeeringDescription'], #pay
-#         'networkinterface' : ['vpcNo','subnetNo','networkInterfaceName','accessControlGroupNoList','serverInstanceNo','ip','secondaryIpList.N','secondaryIpCount','networkInterfaceDescription'],
-#         'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'serverProductCode', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName', 'loginKeyName'],
-#         'natgatewayinstance' : ['zoneCode', 'vpcNo','subnetNo'],
-#         'targetgroup' : ["vpcNo", "targetGroupName", "targetTypeCode", "targetGroupProtocolTypeCode", "targetGroupPort", "targetGroupDescription",
-#                          "healthCheckProtocolTypeCode", "healthCheckPort", "healthCheckUrlPath", "healthCheckHttpMethodTypeCode",
-#                          "healthCheckCycle", "healthCheckUpThreshold", "healthCheckDownThreshold", "targetNoList.N"],
-#         'vpc' : ['vpcName','ipv4CidrBlock'], #free
-#         'placementgroup' : ['placementGroupName', 'placementGroupTypeCode'],
-#         'networkacl' : ['vpcNo','networkAclName'],
-#         'scheduledactionlist' : ['autoScalingGroupNo','scheduledActionName','minSize','maxSize','desiredCapacity','startTime','endTime','recurrence','timeZone'],
-#         'networkacldenyallowgroup' : ['vpcNo','networkAclDenyAllowGroupName'],
-#         'initscript' : ['initScriptName','initScriptContent','osTypeCode','initScriptDescription'],
-#         'accesscontrolgroup' : ['vpcNo','accessControlGroupName','accessControlGroupDescription'], #free
-#         'accesscontrolgrouprule' : ['vpcNo','accessControlGroupNo', 'accessControlGroupRuleList.N.protocolTypeCode','accessControlGroupRuleList.N.portRange','accessControlGroupRuleList.N.ipBlock','accessControlGroupRuleList.N.accessControlGroupSequence','accessControlGroupRuleList.N.accessControlGroupRuleDescription'], #free       
-#         #'autoscalinggroup' : ['launchConfigurationNo','autoScalingGroupName','serverNamePrefix','desiredCapacity','defaultCoolDown','healthCheckGracePeriod','healthCheckTypeCode','vpcNo','subnetNo','accessControlGroupNoList','minSize','maxSize'],
-#         'autoscalinggroup' : ['launchConfigurationNo','vpcNo','subnetNo','accessControlGroupNoList','minSize','maxSize']
-#     }
-
-def include_keys(): # 무료 자원에 대한 키
+def include_keys(): #전체 키
     return {
-        'initscript': ['initScriptName','initScriptContent','osTypeCode','initScriptDescription'], #0
-        'vpc' : ['vpcName','ipv4CidrBlock'], #200 free
-        'accesscontrolgroup' : ['vpcNo','accessControlGroupName','accessControlGroupDescription'], #300 free
-        'networkacldenyallowgroup' : ['vpcNo','networkAclDenyAllowGroupName'], #303 free
-        'networkacl' : ['vpcNo','networkAclName'], #304 free
-        'routetable' : ['vpcNo', 'routeTableName', 'supportedSubnetTypeCode', 'routeTableDescription'], #306 free
-        'loginkey' : [], #400 free
-        'accesscontrolgrouprule': ['vpcNo','accessControlGroupNo', 'accessControlGroupRuleList.N.protocolTypeCode','accessControlGroupRuleList.N.portRange','accessControlGroupRuleList.N.ipBlock','accessControlGroupRuleList.N.accessControlGroupSequence','accessControlGroupRuleList.N.accessControlGroupRuleDescription'], #401 free
-        # 'networkaclrule' : ['networkAclNo','networkAclRuleList.N.protocolTypeCode','networkAclRuleList.N.portRange','networkAclRuleList.N.ipBlock','networkAclRuleList.N.networkAclRuleDescription'], #404 free
-        'placementgroup' : ['placementGroupName', 'placementGroupTypeCode'], #405 free
-        # 'subnet' : ['vpcNo', 'subnetName', 'subnet', 'subnetTypeCode', 'usageTypeCode', 'subnetDescription'], #406 free
-        # 'route' : ['vpcNo', 'routeTableNo', 'routeList.N.destinationCidrBlock', 'routeList.N.gatewayTypeCode', 'routeList.N.gatewayId', 'routeList.N.routeDescription'], #408 free
-        'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'serverProductCode', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName', 'loginKeyName'], #500 free
-        'autoscalinggroup' : ['launchConfigurationNo','vpcNo','subnetNo','accessControlGroupNoList','minSize','maxSize'], #502 free
-        # 'scalingpolicy' : ['autoScalingGroupNo','scalingPolicyName','adjustmentTypeCode','adjustmentValue','adjustmentCooldown','scalingPolicyAction','scalingPolicyStatus'], #601 free
+        ### step.3 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 요청 파라미터를 작성
+        # 단, regionCode와 responseFormatType는 제외한다
+        'loginkey' : [], #free
+        'serverinstance' : ['serverProductCode','serverImageProductCode','vpcNo','subnetNo','networkInterfaceNoList'], #pay
+        'memberserverimageinstance' : ['memberServerImageInstanceNo', ''], #pay
+        'routetable' : ['vpcNo', 'routeTableName', 'supportedSubnetTypeCode', 'routeTableDescription'], 
+        'blockstorageinstance' : ['zoneCode', 'blockStorageName', 'blockStorageDiskDetailTypeCode', 'blockStorageVolumeTypeCode', 
+                                  'serverInstanceNo', 'blockStorageSnapshotInstanceNo', 'blockStorageSize', 'blockStorageDescription', 'isReturnProtection'],
+        'publicipinstance' : ['serverInstanceNo', 'publicIpDescription'],
+        # 단, regionCode와 responseFormatType는 제외한다
+        'loadbalancerinstance' : ['loadBalancerTypeCode', 'loadBalancerName', 'loadBalancerNetworkTypeCode', 'throughputTypeCode', 'idleTimeout', 'vpcNo', 'subnetNoList.N', 'loadBalancerListenerList.N.targetGroupNo', 'loadBalancerSubnetList.N.publicIpInstanceNo'], #pay
+        'loadbalancerlistener' : ['loadBalancerInstanceNo', 'protocolTypeCode', 'port', 'targetGroupNo', 'useHttp2'], #pay
+        'blockstoragesnapshotinstance' : ['originalBlockStorageInstanceNo','blockStorageSnapshotName','blockStorageSnapshotDescription','snapshotTypeCode'],
+        'vpcpeeringinstance':['vpcPeeringName','sourceVpcNo','targetVpcNo','targetVpcName','targetVpcLoginId','vpcPeeringDescription'], #pay
+        'networkinterface' : ['vpcNo','subnetNo','networkInterfaceName','accessControlGroupNoList','serverInstanceNo','ip','secondaryIpList.N','secondaryIpCount','networkInterfaceDescription'],
+        'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'serverProductCode', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName', 'loginKeyName'],
+        'natgatewayinstance' : ['zoneCode', 'vpcNo','subnetNo'],
+        'targetgroup' : ["vpcNo", "targetGroupName", "targetTypeCode", "targetGroupProtocolTypeCode", "targetGroupPort", "targetGroupDescription",
+                         "healthCheckProtocolTypeCode", "healthCheckPort", "healthCheckUrlPath", "healthCheckHttpMethodTypeCode",
+                         "healthCheckCycle", "healthCheckUpThreshold", "healthCheckDownThreshold", "targetNoList.N"],
+        'vpc' : ['vpcName','ipv4CidrBlock'], #free
+        'placementgroup' : ['placementGroupName', 'placementGroupTypeCode'],
+        'networkacl' : ['vpcNo','networkAclName'],
+        'scheduledactionlist' : ['autoScalingGroupNo','scheduledActionName','minSize','maxSize','desiredCapacity','startTime','endTime','recurrence','timeZone'],
+        'networkacldenyallowgroup' : ['vpcNo','networkAclDenyAllowGroupName'],
+        'initscript' : ['initScriptName','initScriptContent','osTypeCode','initScriptDescription'],
+        'accesscontrolgroup' : ['vpcNo','accessControlGroupName','accessControlGroupDescription'], #free
+        'accesscontrolgrouprule' : ['vpcNo','accessControlGroupNo', 'accessControlGroupRuleList.N.protocolTypeCode','accessControlGroupRuleList.N.portRange','accessControlGroupRuleList.N.ipBlock','accessControlGroupRuleList.N.accessControlGroupSequence','accessControlGroupRuleList.N.accessControlGroupRuleDescription'], #free       
+        #'autoscalinggroup' : ['launchConfigurationNo','autoScalingGroupName','serverNamePrefix','desiredCapacity','defaultCoolDown','healthCheckGracePeriod','healthCheckTypeCode','vpcNo','subnetNo','accessControlGroupNoList','minSize','maxSize'],
+        'autoscalinggroup' : ['launchConfigurationNo','vpcNo','subnetNo','accessControlGroupNoList','minSize','maxSize']
     }
+
+# def include_keys(): # 무료 자원에 대한 키
+#     return {
+#         'initscript': ['initScriptName','initScriptContent','osTypeCode','initScriptDescription'], #0
+#         'vpc' : ['vpcName','ipv4CidrBlock'], #200 free
+#         'accesscontrolgroup' : ['vpcNo','accessControlGroupName','accessControlGroupDescription'], #300 free
+#         'networkacldenyallowgroup' : ['vpcNo','networkAclDenyAllowGroupName'], #303 free
+#         'networkacl' : ['vpcNo','networkAclName'], #304 free
+#         'routetable' : ['vpcNo', 'routeTableName', 'supportedSubnetTypeCode', 'routeTableDescription'], #306 free
+#         'loginkey' : [], #400 free
+#         'accesscontrolgrouprule': ['vpcNo','accessControlGroupNo', 'accessControlGroupRuleList.N.protocolTypeCode','accessControlGroupRuleList.N.portRange','accessControlGroupRuleList.N.ipBlock','accessControlGroupRuleList.N.accessControlGroupSequence','accessControlGroupRuleList.N.accessControlGroupRuleDescription'], #401 free
+#         # 'networkaclrule' : ['networkAclNo','networkAclRuleList.N.protocolTypeCode','networkAclRuleList.N.portRange','networkAclRuleList.N.ipBlock','networkAclRuleList.N.networkAclRuleDescription'], #404 free
+#         'placementgroup' : ['placementGroupName', 'placementGroupTypeCode'], #405 free
+#         # 'subnet' : ['vpcNo', 'subnetName', 'subnet', 'subnetTypeCode', 'usageTypeCode', 'subnetDescription'], #406 free
+#         # 'route' : ['vpcNo', 'routeTableNo', 'routeList.N.destinationCidrBlock', 'routeList.N.gatewayTypeCode', 'routeList.N.gatewayId', 'routeList.N.routeDescription'], #408 free
+#         'launchconfiguration' : ['serverImageProductCode', 'memberServerImageInstanceNo', 'serverProductCode', 'isEncryptedVolume', 'initScriptNo', 'launchConfigurationName', 'loginKeyName'], #500 free
+#         'autoscalinggroup' : ['launchConfigurationNo','vpcNo','subnetNo','accessControlGroupNoList','minSize','maxSize'], #502 free
+#         # 'scalingpolicy' : ['autoScalingGroupNo','scalingPolicyName','adjustmentTypeCode','adjustmentValue','adjustmentCooldown','scalingPolicyAction','scalingPolicyStatus'], #601 free
+#     }

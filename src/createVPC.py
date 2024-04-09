@@ -26,7 +26,7 @@ class Create():
         self.table_name, self.api_url, self.sub_url = naverCloud.set_url(name, action)
         
     def get_table(self):
-        result = self.cc.query_db(f"SELECT * FROM {self.source_db['schemaName']}.{self.table_name};")
+        result = self.cc.query_db(f"SELECT * FROM {self.source_db['schemaName']}.{self.table_name}")
         return None if len(result) == 0 else result
 
     def get_value(self, _value: str, _from: str, **_where: dict):
@@ -59,7 +59,6 @@ class Create():
             elif key == 'loginKeyName':
                 value = self.get_value('keyname', 'loginkey', **{'id' : row_dict['loginkeyid']})
             elif key[-4:] == 'Name':    # 테스트 환경에서 Naver Cloud가 하나뿐이므로, 중복이름인경우 생성이 불가하기에 예외처리
-                # RouteTable, PlacementGroup
                 value = row_dict[key.lower()] + '-dr'
             elif self.table_name == 'launchconfiguration' and key == 'serverProductCode':
                 value = self.get_value('productcode', 'product', **{'id' : row_dict['serverproductid']})
@@ -75,12 +74,12 @@ class Create():
                 value = row_dict['memberserverimageinstanceno']
             elif self.table_name == 'memberserverimageinstance' and key == 'serverInstanceNo':
                 value = self.get_value('originalserverinstanceid', 'memberserverimageinstance', **{'id': row_dict['originalserverinstanceid']})
-            # elif key == 'vpcNo':
-            #     try:
-            #         value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
-            #     except: # networkinterface 부분
-            #         _value_temp = self.get_value('vpcid', 'subnet', **{'id' : row_dict['subnetid']})
-            #         value = self.get_value('vpcno', 'vpc', **{'id' : _value_temp})
+            elif key == 'vpcNo':
+                try:
+                    value = self.get_value('vpcno', 'vpc', **{'id' : row_dict['vpcid']})
+                except: # networkinterface 부분
+                    _value_temp = self.get_value('vpcid', 'subnet', **{'id' : row_dict['subnetid']})
+                    value = self.get_value('vpcno', 'vpc', **{'id' : _value_temp})
             elif key in ['secondaryIpList.N', 'secondaryIpCount']:
                 value = None
             elif key in ['subnetNo', 'serverInstanceNo']:
@@ -213,7 +212,12 @@ class Create():
         
     def run(self):
         ### for this in self.nc.keys():
-        this = 'all' ### step.1 본인 Table을 기입, all로 설정시 전체 자원 생성
+        recoveryplan_query = f"SELECT * FROM {self.source_db['schemaName']}.recoveryplan WHERE completeflag=false;"
+        self.cur.execute(recoveryplan_query)
+        recoveryplan_table = self.cur.fetchall()
+        recoveryplan = list(recoveryplan_table[0])[2]
+        print(recoveryplan)
+        this = recoveryplan ### step.1 본인 Table을 기입, all로 설정시 전체 자원 생성
         if this == 'all':
             for this in naverCloud.include_keys():
                 try:
@@ -323,15 +327,20 @@ class Create():
                 print("len-------------",len(resultslllr))
                 for i in range(len(resultslllr)):
                         row = resultslllr[i]
+                        self.set_url(this, "read")
                         self.create(row)
                         print("row is : ", row)
-                        self.set_url(this, "read")
                         print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
                         i+=1
             else:
-                row = self.get_table()[0]
-                self.create(row)
+                tmp_res = f"SELECT sourcekey FROM {self.source_db['schemaName']}.recoveryplan ;"
+                self.cur.execute(tmp_res)
+                tmp_res = list(self.cur.fetchall())[0][0]
+                row = (f"SELECT * FROM {self.source_db['schemaName']}.{this} WHERE {this}no = '{tmp_res}';")
+                self.table_name = this
+                row = self.cc.query_db(row)[0]
                 self.set_url(this, "read")
+                self.create(row)
                 print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
             # try:
             #     self.create(row)
