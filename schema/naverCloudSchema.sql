@@ -1,3 +1,4 @@
+--- recovery details
 DROP TABLE IF EXISTS accesscontrolgroup;
 DROP TABLE IF EXISTS adjustmenttype;
 DROP TABLE IF EXISTS inautoscalinggroupserverinstance;
@@ -36,6 +37,9 @@ DROP TABLE IF EXISTS scalingpolicy;
 DROP TABLE IF EXISTS scheduledupdategroupaction;
 DROP TABLE IF EXISTS serverinstance;
 DROP TABLE IF EXISTS activitylog;
+
+DROP TABLE IF EXISTS recoveryplan;
+DROP TABLE IF EXISTS recoveryresults;
 
 DROP SEQUENCE IF EXISTS accesscontrolgroup_seq;
 DROP SEQUENCE IF EXISTS adjustmenttype_seq;
@@ -76,6 +80,9 @@ DROP SEQUENCE IF EXISTS scheduledupdategroupaction_seq;
 DROP SEQUENCE IF EXISTS serverinstance_seq;
 DROP SEQUENCE IF EXISTS activitylog_seq;
 
+DROP SEQUENCE IF EXISTS recoveryplan_seq;
+DROP SEQUENCE IF EXISTS recoveryresults_seq;
+
 CREATE SEQUENCE IF NOT EXISTS accesscontrolgroup_seq;
 CREATE SEQUENCE IF NOT EXISTS adjustmenttype_seq;
 CREATE SEQUENCE IF NOT EXISTS inautoscalinggroupserverinstance_seq;
@@ -115,6 +122,9 @@ CREATE SEQUENCE IF NOT EXISTS scheduledupdategroupaction_seq;
 CREATE SEQUENCE IF NOT EXISTS serverinstance_seq;
 CREATE SEQUENCE IF NOT EXISTS activitylog_seq;
 CREATE SEQUENCE IF NOT EXISTS targetgroup_seq;
+
+CREATE SEQUENCE IF NOT EXISTS recoveryplan_seq;
+CREATE SEQUENCE IF NOT EXISTS recoveryresults_seq;
 
 CREATE TABLE IF NOT EXISTS accesscontrolgroup (
 	id INTEGER NOT NULL DEFAULT NEXTVAL('accesscontrolgroup_seq'),
@@ -782,4 +792,29 @@ CREATE TABLE targetgroup (
 	CONSTRAINT targetgroup_ukey UNIQUE (targetGroupNo, vpcid, regionid),
 	CONSTRAINT targetgroup_regionid_fkey FOREIGN KEY (regionid) REFERENCES region(id),
 	CONSTRAINT targetgroup_vpcid_fkey FOREIGN KEY (vpcid) REFERENCES vpc(id)
+);
+
+CREATE TABLE recoveryplan (
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('recoveryplan_seq'),
+	requestid VARCHAR(255) NOT NULL,
+	resourcetype VARCHAR(255) NOT NULL,
+	sourcekey VARCHAR(255) NOT NULL,
+	timestamp TIMESTAMP NOT NULL,
+	command VARCHAR(255) NOT NULL,
+	detail JSONB,
+	completeflag BOOLEAN NOT NULL,
+	CONSTRAINT recoveryplan_pkey PRIMARY KEY (id ASC)
+);
+
+CREATE TABLE recoveryresults (
+	id INTEGER NOT NULL DEFAULT NEXTVAL ('recoveryresults_seq'),
+	requestid VARCHAR(255) NOT NULL,
+	resourcetype VARCHAR(255) NOT NULL,
+	targetkey VARCHAR(255) NOT NULL,
+	sourcekey VARCHAR(255) NOT NULL,
+	timestamp TIMESTAMP NOT NULL,
+	status VARCHAR(255) NOT NULL,
+	detail JSONB,
+	CONSTRAINT recoveryresults_pkey PRIMARY KEY (id ASC)
+	--- CONSTRAINT recoveryresults_sourcekey_fkey FOREIGN KEY (sourcekey) REFERENCES recoveryplan(sourcekey)
 );
