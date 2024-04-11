@@ -142,7 +142,8 @@ def url_info():
         },
         "ServerInstance" : {
             "api_url" : "vserver/v2",
-            "read" : "getServerInstanceList"
+            "read" : "getServerInstanceList",
+            "create" : "createServerInstances",
         },
         "AutoScalingGroup" : {
             "api_url" : "vautoscaling/v2",
