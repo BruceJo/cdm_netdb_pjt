@@ -339,8 +339,8 @@ class Create():
                 row = (f"SELECT * FROM {self.source_db['schemaName']}.{this} WHERE {this}no = '{tmp_res}';")
                 self.table_name = this
                 row = self.cc.query_db(row)[0]
-                self.set_url(this, "read")
                 self.create(row)
+                self.set_url(this, "read")
                 print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
             # try:
             #     self.create(row)
