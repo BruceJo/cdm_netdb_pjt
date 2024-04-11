@@ -92,6 +92,20 @@ class History():
     def to_sec(self, num, unit):
         from_utc, to_utc = self.trans_utc(num, unit)
         return (to_utc - from_utc) / 1e3
+    
+    def trigger_to_ns(self):
+        body = {}
+
+        # 비동기처럼 응답을 기다리지 않고 post
+        try:
+            requests.post("http://localhost:9999/some_url", 
+                          data=json.dumps({'Tagkey':body}), 
+                          headers={'Content-Type': 'application/json'}, 
+                          timeout=0.0000000001)
+        except requests.exceptions.ReadTimeout: 
+            pass
+
+        ...
 
     def run(self):
         _from, _to = self.trans_utc(self.period_time, self.period_unit)
