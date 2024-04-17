@@ -211,9 +211,13 @@ def url_info():
 def set_url(name, action, *choice):
     nc = url_info()
     nc = {k.lower() : v for k, v in nc.items()}
-    table_name = name.lower()
-    action = action[0].lower()
-
+    try:
+        table_name = name.lower()
+        action = action[0].lower()
+    except:
+        table_name = name
+        action = action[0]
+        
     if action == "c":
         api_url, sub_url = nc[table_name]["api_url"], nc[table_name]["create"]
     elif action == "r":

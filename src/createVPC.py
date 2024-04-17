@@ -212,12 +212,12 @@ class Create():
         
     def run(self):
         ### for this in self.nc.keys():
-        recoveryplan_query = f"SELECT * FROM {self.source_db['schemaName']}.recoveryplan WHERE completeflag=false;"
-        self.cur.execute(recoveryplan_query)
-        recoveryplan_table = self.cur.fetchall()
-        recoveryplan = list(recoveryplan_table[0])[2]
-        print(recoveryplan)
-        this = recoveryplan ### step.1 본인 Table을 기입, all로 설정시 전체 자원 생성
+        this = 'all' ### step.1 본인 Table을 기입, 'all'로 설정시 전체 자원 생성
+        if this == 'recoveryplan':
+            recoveryplan_query = f"SELECT * FROM {self.source_db['schemaName']}.recoveryplan WHERE completeflag=false;"
+            self.cur.execute(recoveryplan_query)
+            recoveryplan_table = self.cur.fetchall()
+            this = list(recoveryplan_table[0])[2]
         if this == 'all':
             for this in naverCloud.include_keys():
                 try:
