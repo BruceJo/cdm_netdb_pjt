@@ -11,6 +11,52 @@ import getConfig as gcf
 # pip install pickle-mixin
 import pickle
 import os
+import naverCloud
+import psycopg2
+import connDbnApi as cda
+import getConfig as gcf
+def GetSchemaList(destination):
+    try:
+        conn = cda.Connect(db = destination).connect_cockroachdb()
+        cursor = conn.cursor()
+        query = """
+            SELECT table_name, column_name 
+            FROM information_schema.columns 
+            WHERE table_schema = 'public';
+        """
+        
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        
+        schema = {}
+        for row in rows:
+            table_name = row[0]
+            column_name = row[1]
+            if table_name not in schema:
+                schema[table_name] = []
+            schema[table_name].append(column_name)
+        
+        return schema
+        
+    except psycopg2.Error as e:
+        print("PostgreSQL 오류 발생:", e)
+        return None
+        
+    finally:
+        if conn:
+            conn.close()
+
+source = app_conf['DATABASE-SOURCE'].copy()      
+schema = GetSchemaList()
+if schema:
+    print("데이터베이스 스키마:")
+    for table, columns in schema.items():
+        print(f"테이블 '{table}': {columns}")
+else:
+    print("스키마를 가져올 수 없습니다.")
+
+def SetStartTimestamp():
+    return datetime.now()
 
 class Tracer():
     def __init__(self, api):
@@ -128,11 +174,11 @@ class History():
 
         with open(DICT_PATH, 'wb') as file: 
             pickle.dump(now_res, file)
-        
 
 if __name__ == '__main__':
     DICT_PATH = "./history.pkl"
-    CONF_PATH = "../conf/app.conf"
+    CONF_PATH = "C:/Users/yubin/OneDrive/바탕 화면/대외활동/NETDB/cdm/cdm_netdb_pft_yuvnn/conf"
+    
     app_conf = gcf.Config(CONF_PATH).getConfig()
 
     api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
