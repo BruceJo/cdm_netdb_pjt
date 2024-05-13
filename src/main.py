@@ -41,7 +41,7 @@ def create_db():
     for k, v in req.items():
         source[k] = v 
     
-    cock_create = createSchema.Create(source) 
+    cock_create = cs.Create(source) 
     cock_create.create_schema() 
     cock_create.create_table()
     return 'success'
@@ -115,7 +115,7 @@ def create_vpc():
     api_target = change_default(req, api_target, 'apiTarget')
     
     # print(db_source, '\n', api_target)
-    cv = createVPC.Create(db_source, api_target)
+    cv = cVPC.Create(db_source, api_target)
     cv.run()
 
     return 'success'
@@ -220,62 +220,58 @@ def delete_vpc():
 
 # Server Run
 if __name__ == '__main__':
-    CONF_PATH = "../conf/app.conf"
+    CONF_PATH = "C:/Users/yubin/OneDrive/바탕 화면/대외활동/NETDB/cdm/cdm_netdb_pjt-repeat_read2insert_yuvnn/conf"
     app_conf = gcf.Config(CONF_PATH).getConfig()
     
     interpreter = "C:/Users/BruceJo/anaconda3/envs/pytest/python.exe"
     sub_proc = subprocess.run(args=[interpreter, "getHistory.py"], shell=True, capture_output=True) # sub프로세스 생성
     print(sub_proc)
 
-
     app.run(threaded=True, debug=True, host='0.0.0.0', port=9999)
+    
+    SCHEMARETENTIONPOLICY=5
+    StartTime = 0
+    RunStatus=False
+    getDB = cVPC.get_table()
+    app_conf= gcf.Config(CONF_PATH).getConfig()
+    NowResult = ''
+    PreResult = ''
 
-#---------------------------------------------------
-
-
-SCHEMARETENTIONPOLICY=5
-StartTime = 0
-RunStatus=False
-getDB = cVPC.get_table()
-app_conf= gcf.Config(CONF_PATH).getConfig()
-NowResult = ''
-PreResult = ''
-
-#  초기화
-if RunStatus == False:
-	print("systemError : not found subprocess")
-	if not getDB:
-        create_db()
-    app_conf['schemaName'] = {StartTime}
-    insert_error = read2insert()
-    if insert_error != 'success':
+    #  초기화
+    if RunStatus == False:
+        print("systemError : not found subprocess")
+        if not getDB:
+            create_db()
         app_conf['schemaName'] = {StartTime}
-        initFlag = True
-        pid = sub_proc.pid
-
-# 처음 실행
-if initFlag == True:
-    PreResult = gh.History.get_ActivityLog()
-    initFlag = False
-
-# 처음 실행이 아님 => 최신화 시작
-while(not initFlag):
-    diff = gh.History.run()
-    if (diff):
-        gh.SetRunStatus()
-        StartTime = gh.SetStartTimestamp()
-        gh.GetResourceinfo(app_conf)
-        app_conf['schemaName'] = {StartTime}
-        cs.create_schema()
         insert_error = read2insert()
-
-        schemaName = gh.SchemManager.GetResourceinfo(app_conf) #정렬되어 있으니까 하나만 가져와서 비교
-
-        if (insert_error != 'success' and schemaName < StartTime):
+        if insert_error != 'success':
             app_conf['schemaName'] = {StartTime}
-            PreResult = gh.History.get_ActivityLog()
-            getResource = gh.SchemManager.GetResourceinfo(app_conf)
-            gh.trigger_to_ns(getResource)
-    schemaList = gh.SchemManager.GetSchemaList(app_conf)
-    if len(schemaList) >= SCHEMARETENTIONPOLICY:
-        gh.SchemManager.DropSchema(app_conf)
+            initFlag = True
+            pid = sub_proc.pid
+
+    # 처음 실행
+    if initFlag == True:
+        PreResult = gh.History.get_ActivityLog()
+        initFlag = False
+
+    # 처음 실행이 아님 => 최신화 시작
+    while(not initFlag):
+        diff = gh.History.run()
+        if (diff):
+            gh.SetRunStatus()
+            StartTime = gh.SetStartTimestamp()
+            gh.GetResourceinfo(app_conf)
+            app_conf['schemaName'] = {StartTime}
+            cs.create_schema()
+            insert_error = read2insert()
+
+            schemaName = gh.SchemManager.GetResourceinfo(app_conf) #정렬되어 있으니까 하나만 가져와서 비교
+
+            if (insert_error != 'success' and schemaName < StartTime):
+                app_conf['schemaName'] = {StartTime}
+                PreResult = gh.History.get_ActivityLog()
+                getResource = gh.SchemManager.GetResourceinfo(app_conf)
+                gh.trigger_to_ns(getResource)
+        schemaList = gh.SchemManager.GetSchemaList(app_conf)
+        if len(schemaList) >= SCHEMARETENTIONPOLICY:
+            gh.SchemManager.DropSchema(app_conf)
