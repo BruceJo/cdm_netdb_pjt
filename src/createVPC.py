@@ -212,12 +212,14 @@ class Create():
         
     def run(self):
         ### for this in self.nc.keys():
-        this = 'all' ### step.1 본인 Table을 기입, 'all'로 설정시 전체 자원 생성
+        this = 'recoveryplan' ### step.1 본인 Table을 기입, 'all'로 설정시 전체 자원 생성
+        sent_flag = False
         if this == 'recoveryplan':
             recoveryplan_query = f"SELECT * FROM {self.source_db['schemaName']}.recoveryplan WHERE completeflag=false;"
             self.cur.execute(recoveryplan_query)
             recoveryplan_table = self.cur.fetchall()
             this = list(recoveryplan_table[0])[2]
+            sent_flag = True
         if this == 'all':
             for this in naverCloud.include_keys():
                 try:
@@ -260,6 +262,7 @@ class Create():
                     except:
                         pass
                     print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+                    
                     if this == 'vpc':
                         tmp_vpcno = json.loads(self.pretty_dict(self.read_db()))['getVpcListResponse']['vpcList'][0]['vpcNo'] 
                         query = f'INSERT INTO {self.destination["schemaName"+"_recov"]}.for_recovery vpcno VALUES ({tmp_vpcno});'
@@ -294,7 +297,7 @@ class Create():
                         try:
                             self.cur.execute(query)
                         except Exception as e:
-                            print(f"Error => {e}\n")                          
+                            print(f"Error => {e}\n")
                 # try:
                 #     self.create(row)
                 # except Exception as e:
@@ -341,7 +344,27 @@ class Create():
                 row = self.cc.query_db(row)[0]
                 self.create(row)
                 self.set_url(this, "read")
-                print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+                api_res = self.pretty_dict(self.read_db())
+                print('5. api result\n', api_res, '\n')
+            if sent_flag == True:
+                        sent_flag = False
+                        print('5.1. Send information into recovery result table.')
+                        query = f"UPDATE {self.source_db['schemaName']}.recoveryplan SET completeflag = true WHERE sourcekey = '{tmp_res}';"
+                        self.cur.execute(query)
+                        query = f"SELECT requestid, resourcetype FROM {self.source_db['schemaName']}.recoveryplan WHERE sourcekey ='{tmp_res}';"
+                        print('executeis ======== ', self.cur.execute(query))
+                        x = list(self.cur.fetchall())
+                        loaded_res = json.loads(api_res)
+                        if this == 'serverinstance':
+                            before_this = 'serverInstance'
+                        server_instance_no = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][f'{before_this}No']
+                        server_instance_status_code = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][f'{before_this}Status']['code']
+                        y = (server_instance_no, server_instance_status_code)
+                        import datetime
+                        current_timestamp = datetime.datetime.now()
+                        insert_query = f"INSERT INTO {self.source_db['schemaName']}.recoveryresults (requestid, resourcetype, targetkey, sourcekey, timestamp, status, detail) VALUES ('{x[0][0]}', '{x[0][1]}', '{y[0]}', '{tmp_res}', '{current_timestamp}', '{y[1]}', '{api_res}')"
+                        self.cur.execute(insert_query)
+                        self.conn.commit()
             # try:
             #     self.create(row)
             # except Exception as e:
