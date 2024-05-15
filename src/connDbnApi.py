@@ -42,7 +42,7 @@ class Connect():
 
         return result
 
-    def request_api(self, api_url, sub_url, **params):
+    def request_api(self, api_url, sub_url, **params): #getsource
         timestamp = str(int(time.time() * 1000))
         method = "GET"
         api_url = (f"/{api_url}/{sub_url}"
