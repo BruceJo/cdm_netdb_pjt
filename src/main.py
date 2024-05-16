@@ -9,7 +9,10 @@ import getHistory as gh
 import subprocess
 from subprocess import PIPE
 import configparser as parser
+import os
 
+CONF_PATH = "../conf/app.conf"
+app_conf = gcf.Config(CONF_PATH).getConfig()
 
 #Flask init
 app = Flask(__name__)
@@ -36,7 +39,7 @@ def create_db():
     req = request.get_json()
     if 'schemaName' not in req: 
         return 'fail, need key ["schemaName"]', 400
-    
+
     source = app_conf['DATABASE-SOURCE'].copy()
     
     for k, v in req.items():
@@ -218,20 +221,36 @@ def delete_vpc():
     
     return dv.run()
 
+@app.route('/a', methods=['POST'])
+def a():
+        req = request.get_json()
+        print(req)
 
 # Server Run
 if __name__ == '__main__':
-    # CONF_PATH = "./conf/app.conf"
-    # app_conf = gcf.Config(CONF_PATH).getConfig() 
+    create_db()
+    # RunStatus = False
+    # getDBmsg = create_db()
+    # print("************",getDBmsg)
+    # app.run(threaded=True, debug=True, host='0.0.0.0', port=9999)
+    
+
+    # interpreter = "C://Users//yubin//AppData//Local//Programs//Python//Python312//python.exe"
+    # cwdnow = os.getcwd() #현재 경로 가져오기
+    # process = subprocess.Popen(['python getHistory.py'],cwd = cwdnow, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # process_id = process.pid
 
     
-    interpreter = "C://Users//yubin//AppData//Local//Programs//Python//Python312//python.exe"
-    process = subprocess.Popen([interpreter,'getHistory.py'], shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    process_id = process.pid 
+    # if RunStatus == False:
+    #     print("systemError : not found subprocess")
+        
+
     
+
     # StartTime = gh.SetStartTimestamp()
     # print(StartTime)
 
+#----------------------------------------------
  
     # SCHEMARETENTIONPOLICY=5
     
@@ -243,7 +262,6 @@ if __name__ == '__main__':
 
     # #  초기화
     # if RunStatus == False:
-    #     print("44")
     #     print("systemError : not found subprocess")
     #     if not getDB:
     #         create_db()
@@ -259,7 +277,7 @@ if __name__ == '__main__':
     #     PreResult = gh.History.get_ActivityLog()
     #     initFlag = False
 
-    # # 처음 실행이 아님 => 최신화 시작
+    # 처음 실행이 아님 => 최신화 시작
     # while(not initFlag):
     #     diff = gh.History.run()
     #     if (diff):

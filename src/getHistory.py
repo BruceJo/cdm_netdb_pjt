@@ -16,8 +16,6 @@ import psycopg2
 import connDbnApi as cda
 import getConfig as gcf
 
-CONF_PATH = "./conf/app.conf"
-app_conf = gcf.Config(CONF_PATH).getConfig()
 
 def SetStartTimestamp():
     return datetime.now()
@@ -142,7 +140,7 @@ class History():
 if __name__ == '__main__':
     print("test")
     DICT_PATH = "./history.pkl"
-    CONF_PATH = "./conf/app.conf"
+    CONF_PATH = "../conf/app.conf"
     
     app_conf = gcf.Config(CONF_PATH).getConfig()
 
@@ -153,3 +151,4 @@ if __name__ == '__main__':
     repeat_time = gh.to_sec(gh.every_time, gh.every_unit)
     print('repeat_time', repeat_time)
     gh.run()
+    
