@@ -5,7 +5,6 @@ import psycopg2
 from datetime import datetime
 from datetime import date
 
-
 class Functions:
     def __init__(self):
         self.db_host = "175.45.214.45"
@@ -14,6 +13,7 @@ class Functions:
         self.db_user = "root"
         self.request_queue = 'request_queue'
         self.response_queue = 'response_queue'
+        self.schema_name = 'test0409t'
 
     def connect_cockroachdb(self):
         try:
@@ -85,19 +85,29 @@ class Functions:
         connection.close()
 
     def send_response(self, request_id, response_message):
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters('localhost', 5672, '/', pika.PlainCredentials('admin', 'admin')))
+        connection = pika.BlockingConnection(pika.ConnectionParameters('localhost', 5672, '/', pika.PlainCredentials('admin', 'admin')))
         channel = connection.channel()
         channel.queue_declare(queue=self.response_queue)
-        channel.basic_publish(exchange='', routing_key=self.response_queue, body=json.dumps(response_message))
+        channel.basic_publish(exchange='', routing_key=self.response_queue, body=json.dumps(response_message, default=str))
         print(f"SEND '{response_message}' TO {self.response_queue} FOR {request_id}")
         connection.close()
+
+    def create_response_message(self, request_id, code, message, reason, data):
+        return {
+            "response": {
+                "id": request_id,
+                "code": code,
+                "message": message,
+                "reason": reason,
+                "data": data
+            }
+        }
 
     def get_clusterinfo(self, request_id):
         try:
             conn = self.connect_cockroachdb()
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
+            
             # 모든 테이블 조회
             tables = [
                 'accesscontrolgroup', 'adjustmenttype', 'inautoscalinggroupserverinstance', 'initscript',
@@ -110,12 +120,12 @@ class Functions:
                 'route', 'scalingpolicy', 'scheduledupdategroupaction', 'serverinstance', 'activitylog',
                 'targetgroup', 'recoveryplan', 'recoveryresults'
             ]
-
+            
             result = {}
             for table in tables:
-                cur.execute(f"SELECT * FROM test0409t.{table}")
+                cur.execute(f"SELECT * FROM {self.schema_name}.{table}")
                 rows = cur.fetchall()
-
+                
                 # datetime 객체를 문자열로 변환
                 for row in rows:
                     for key, value in row.items():
@@ -126,29 +136,13 @@ class Functions:
                 result[table] = rows
 
             result = [result]
-            message = {
-                "response": {
-                    "id": request_id,
-                    "code": "clusterinfo",
-                    "message": "success",
-                    "reason": "",
-                    "data": result
-                }
-            }
+            message = self.create_response_message(request_id, "clusterinfo", "success", "", result)
             self.send_response(request_id, message)
             cur.close()
             conn.close()
-
+        
         except Exception as e:
-            message = {
-                "response": {
-                    "id": request_id,
-                    "code": "clusterinfo",
-                    "message": "fail",
-                    "reason": f"{e}",
-                    "data": {}
-                }
-            }
+            message = self.create_response_message(request_id, "clusterinfo", "fail", f"{e}", {})
             self.send_response(request_id, message)
 
     def sync_clusterinfo(self, request_id):
@@ -157,34 +151,26 @@ class Functions:
     def get_instanceinfo(self, request_id):
         try:
             conn = self.connect_cockroachdb()
-            cur = conn.cursor()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-            cur.execute("SELECT * FROM test0409t.serverinstance")
+            cur.execute(f"SELECT * FROM {self.schema_name}.serverinstance")
             rows = cur.fetchall()
 
-            message = {
-                "response": {
-                    "id": request_id,
-                    "code": "instanceinfo",
-                    "message": "success",
-                    "reason": "",
-                    "data": rows
-                }
-            }
+            # datetime 객체를 문자열로 변환
+            for row in rows:
+                for key, value in row.items():
+                    if isinstance(value, datetime):
+                        row[key] = value.isoformat()
+                    elif isinstance(value, date):
+                        row[key] = value.isoformat()
+
+            message = self.create_response_message(request_id, "instanceinfo", "success", "", rows)
             self.send_response(request_id, message)
             cur.close()
             conn.close()
 
         except Exception as e:
-            message = {
-                "response": {
-                    "id": request_id,
-                    "code": "instanceinfo",
-                    "message": "fail",
-                    "reason": f"{e}",
-                    "data": {}
-                }
-            }
+            message = self.create_response_message(request_id, "instanceinfo", "fail", f"{e}", {})
             self.send_response(request_id, message)
 
     def get_resourceinfo(self, request_id):
@@ -215,34 +201,26 @@ class Functions:
     def get_volumeinfo(self, request_id):
         try:
             conn = self.connect_cockroachdb()
-            cur = conn.cursor()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-            cur.execute("SELECT * FROM blockstorageinstance")
+            cur.execute(f"SELECT * FROM {self.schema_name}.blockstorageinstance")
             rows = cur.fetchall()
 
-            message = {
-                "response": {
-                    "id": request_id,
-                    "code": "volumeinfo",
-                    "message": "success",
-                    "reason": "",
-                    "data": rows
-                }
-            }
+            # datetime 객체를 문자열로 변환
+            for row in rows:
+                for key, value in row.items():
+                    if isinstance(value, datetime):
+                        row[key] = value.isoformat()
+                    elif isinstance(value, date):
+                        row[key] = value.isoformat()
+
+            message = self.create_response_message(request_id, "volumeinfo", "success", "", rows)
             self.send_response(request_id, message)
             cur.close()
             conn.close()
 
         except Exception as e:
-            message = {
-                "response": {
-                    "id": request_id,
-                    "code": "volumeinfo",
-                    "message": "fail",
-                    "reason": f"{e}",
-                    "data": {}
-                }
-            }
+            message = self.create_response_message(request_id, "volumeinfo", "fail", f"{e}", {})
             self.send_response(request_id, message)
 
     def process_volumeinfo(self, request_id, command, data):
@@ -258,34 +236,26 @@ class Functions:
     def get_snapshotinfo(self, request_id):
         try:
             conn = self.connect_cockroachdb()
-            cur = conn.cursor()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-            cur.execute("SELECT * FROM blockstoragesnapshotinstance")
+            cur.execute(f"SELECT * FROM {self.schema_name}.blockstoragesnapshotinstance")
             rows = cur.fetchall()
 
-            message = {
-                "response": {
-                    "id": request_id,
-                    "code": "snapshotinfo",
-                    "message": "success",
-                    "reason": "",
-                    "data": rows
-                }
-            }
+            # datetime 객체를 문자열로 변환
+            for row in rows:
+                for key, value in row.items():
+                    if isinstance(value, datetime):
+                        row[key] = value.isoformat()
+                    elif isinstance(value, date):
+                        row[key] = value.isoformat()
+
+            message = self.create_response_message(request_id, "snapshotinfo", "success", "", rows)
             self.send_response(request_id, message)
             cur.close()
             conn.close()
 
         except Exception as e:
-            message = {
-                "response": {
-                    "id": request_id,
-                    "code": "snapshotinfo",
-                    "message": "fail",
-                    "reason": f"{e}",
-                    "data": {}
-                }
-            }
+            message = self.create_response_message(request_id, "snapshotinfo", "fail", f"{e}", {})
             self.send_response(request_id, message)
 
     def process_snapshotinfo(self, request_id, command, data):
@@ -301,7 +271,7 @@ class Functions:
             cur.execute("ROLLBACK;")
             cur.execute("BEGIN;")
 
-            query = f'SELECT * FROM yuna.{table_name}'
+            query = f'SELECT * FROM {self.schema_name}.{table_name}'
             if ukey:
                 query += f' WHERE {table_name}no=%s'
                 print(f"code: {code} / command: get / query: ", query)
@@ -321,38 +291,20 @@ class Functions:
 
             final_result = mapping_func(cur, result_json, join_keys, ukey)
 
-            message = {
-                "response": {
-                    "id": request_id,
-                    "code": code,
-                    "message": "success",
-                    "reason": "",
-                    "data": final_result
-                }
-            }
+            message = self.create_response_message(request_id, code, "success", "", final_result)
             self.send_response(request_id, message)
             cur.close()
             conn.close()
 
         except Exception as e:
-            message = {
-                "response": {
-                    "id": request_id,
-                    "code": code,
-                    "message": "fail",
-                    "reason": f"{e}",
-                    "data": {
-                        code: ""
-                    }
-                }
-            }
+            message = self.create_response_message(request_id, code, "fail", f"{e}", {code: ""})
             self.send_response(request_id, message)
 
     def map_cluster_data(self, cur, result_json, join_keys, ukey):
         final_result = []
         for i in range(len(result_json)):
             for key in join_keys:
-                cur.execute(f"SELECT regionname FROM yuna.region WHERE id=%s;", (result_json[i][key],))
+                cur.execute(f"SELECT regionname FROM {self.schema_name}.region WHERE id=%s;", (result_json[i][key],))
                 fetch_result = cur.fetchone()
                 result_json[i][key.replace("id", "name")] = fetch_result[0] if fetch_result else ""
 
