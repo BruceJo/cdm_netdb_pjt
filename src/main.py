@@ -83,6 +83,7 @@ def read2insert(): # naver cloud 에서 source를 가지고옴
     source = change_default(req, source, 'dbSource')
     
     ri = rv2.Read2Insert(api, source)
+    print(ri)
     ri.run()
 
     return 'success'
@@ -221,82 +222,7 @@ def delete_vpc():
     
     return dv.run()
 
-@app.route('/a', methods=['POST'])
-def a():
-        req = request.get_json()
-        print(req)
 
 # Server Run
 if __name__ == '__main__':
-    create_db()
-    # RunStatus = False
-    # getDBmsg = create_db()
-    # print("************",getDBmsg)
-    # app.run(threaded=True, debug=True, host='0.0.0.0', port=9999)
-    
-
-    # interpreter = "C://Users//yubin//AppData//Local//Programs//Python//Python312//python.exe"
-    # cwdnow = os.getcwd() #현재 경로 가져오기
-    # process = subprocess.Popen(['python getHistory.py'],cwd = cwdnow, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    # process_id = process.pid
-
-    
-    # if RunStatus == False:
-    #     print("systemError : not found subprocess")
-        
-
-    
-
-    # StartTime = gh.SetStartTimestamp()
-    # print(StartTime)
-
-#----------------------------------------------
- 
-    # SCHEMARETENTIONPOLICY=5
-    
-    # RunStatus=False
-    # cv3 = createVPC.Create(db_source, api_target)
-    # getDB = cv3.get_table()
-    # NowResult = ''
-    # PreResult = ''
-
-    # #  초기화
-    # if RunStatus == False:
-    #     print("systemError : not found subprocess")
-    #     if not getDB:
-    #         create_db()
-    #     app_conf['schemaName'] = {StartTime}
-    #     insert_error = read2insert()
-    #     if insert_error != 'success':
-    #         app_conf['schemaName'] = {StartTime}
-    #         initFlag = True
-    #         pid = sub_proc.pid
-
-    # # 처음 실행
-    # if initFlag == True:
-    #     PreResult = gh.History.get_ActivityLog()
-    #     initFlag = False
-
-    # 처음 실행이 아님 => 최신화 시작
-    # while(not initFlag):
-    #     diff = gh.History.run()
-    #     if (diff):
-    #         gh.SetRunStatus()
-    #         StartTime = gh.SetStartTimestamp()
-    #         gh.GetResourceinfo(app_conf)
-    #         app_conf['schemaName'] = {StartTime}
-    #         cs.create_schema()
-    #         insert_error = read2insert()
-
-    #         schemaName = gh.SchemManager.GetResourceinfo(app_conf) #정렬되어 있으니까 하나만 가져와서 비교
-
-    #         if (insert_error != 'success' and schemaName < StartTime):
-    #             app_conf['schemaName'] = {StartTime}
-    #             PreResult = gh.History.get_ActivityLog()
-    #             getResource = gh.SchemManager.GetResourceinfo(app_conf)
-    #             gh.trigger_to_ns(getResource)
-    #     schemaList = gh.SchemManager.GetSchemaList(app_conf)
-    #     if len(schemaList) >= SCHEMARETENTIONPOLICY:
-    #         gh.SchemManager.DropSchema(app_conf)
-
-    #     app.run(threaded=True, debug=True, host='0.0.0.0', port=9999)
+    ...
