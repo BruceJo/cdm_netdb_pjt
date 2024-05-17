@@ -1,3 +1,7 @@
+import datetime
+import subprocess
+import sys
+import atexit
 from flask import Flask, request
 from flask_cors import CORS
 import getConfig as gcf
@@ -99,6 +103,28 @@ def read2insert():
     ri.run()
 
     return 'success'
+
+def is_subproc_run():
+    try:
+        with open(status_path, 'r') as sts:
+            last_line = sts.readlines()[-1]
+        return True if last_line == 'run' else False
+
+    except:
+        with open(status_path, 'w') as sts:
+            sts.write("init")
+        return False
+
+@app.route('/sync_cluster', methods=['POST'])
+def sync_cluster():
+    # start_time = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    # api = app_conf['API-SOURCE-NAVER-CLOUD'].copy()
+    
+    if is_subproc_run() == False:
+        ...
+
+    # ri = rv2.Read2Insert(api, None)
+    return 'a'
 
 
 @app.route('/create_vpc', methods=['POST'])
@@ -236,7 +262,12 @@ def delete_vpc():
 
 # Server Run
 if __name__ == '__main__':
-    CONF_PATH = "../conf/app.conf"
-    app_conf = gcf.Config(CONF_PATH).getConfig()
+    status_path = "../conf/status.conf"
+    config_path = "../conf/app.conf"
+    app_conf = gcf.Config(config_path).getConfig()
+
+    if 1:
+        cyclic_sync = subprocess.Popen([sys.executable or 'python', 'test.py'])    #For Test
+        atexit.register(cyclic_sync.kill)
     
     app.run(threaded=True, debug=True, host='0.0.0.0', port=9999)
