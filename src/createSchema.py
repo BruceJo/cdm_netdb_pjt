@@ -9,7 +9,7 @@ class Create():
         conn.autocommit = True
         cur = conn.cursor()
         q = f"CREATE SCHEMA IF NOT EXISTS {self.destination['schemaName']};"
-        cur.execute(q)        
+        cur.execute(q)
         cur.close()
         conn.close()
     
@@ -17,7 +17,7 @@ class Create():
         conn = cda.Connect(db = self.destination).connect_cockroachdb()
         conn.autocommit = True
         cur = conn.cursor()
-        with open(self.destination["schemaPath"], 'r') as file:
+        with open(self.destination["schemaPath"], 'r', encoding='UTF8') as file:
             sql = file.read()
         
         sql = sql.replace("CREATE TABLE IF NOT EXISTS", f"CREATE TABLE IF NOT EXISTS {self.destination['schemaName']}.")

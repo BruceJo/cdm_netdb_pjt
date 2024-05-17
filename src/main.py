@@ -43,6 +43,26 @@ def create_schema():
     cock_create.create_table()
     return 'success'
 
+@app.route('/create_recovery', methods=['POST'])
+def create_recovery():
+    # request format
+    # {}, empty json
+    source = app_conf['DATABASE-INFO'].copy()
+    
+    for k, v in source.items():
+        if k == 'schemaName':
+            source[k] = 'recovery'
+        elif k == 'schemaPath':
+            source[k] = source['recoverySchemaPath']
+        else:
+            source[k] = v
+
+    print(source)
+    cock_create = createSchema.Create(source)
+    cock_create.create_schema()
+    cock_create.create_table()
+    return 'success'
+
 
 @app.route('/read2insert', methods=['POST'])
 def read2insert():
