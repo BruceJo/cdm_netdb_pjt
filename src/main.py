@@ -20,7 +20,7 @@ def change_default(req, obj, req_key):
 
 # route
 @app.route('/create_schema', methods=['POST'])
-def create_db():
+def create_schema():
     # request format. Required ["dbSource"]["schemaName"]
     # {
     #     "dbName" : "cdm_fix",
@@ -33,7 +33,7 @@ def create_db():
     if 'schemaName' not in req: 
         return 'fail, need key ["schemaName"]', 400
     
-    source = app_conf['DATABASE-SOURCE'].copy()
+    source = app_conf['DATABASE-INFO'].copy()
     
     for k, v in req.items():
         source[k] = v
@@ -70,7 +70,7 @@ def read2insert():
         return 'fail, need key ["dbSource"]["schemaName"]', 400
     
     api = app_conf['API-SOURCE-NAVER-CLOUD'].copy()
-    source = app_conf['DATABASE-SOURCE'].copy()
+    source = app_conf['DATABASE-INFO'].copy()
     
     api = change_default(req, api, 'apiSource')
     source = change_default(req, source, 'dbSource')
@@ -105,7 +105,7 @@ def create_vpc():
     elif 'schemaName' not in req['dbSource']:
         return 'fail, need key ["dbSource"]["schemaName"]', 400
     
-    db_source = app_conf['DATABASE-SOURCE'].copy()
+    db_source = app_conf['DATABASE-INFO'].copy()
     api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
 
     db_source = change_default(req, db_source, 'dbSource')

@@ -265,39 +265,14 @@ class Create():
                     
                     if this == 'vpc':
                         tmp_vpcno = json.loads(self.pretty_dict(self.read_db()))['getVpcListResponse']['vpcList'][0]['vpcNo'] 
-                        query = f'INSERT INTO {self.destination["schemaName"+"_recov"]}.for_recovery vpcno VALUES ({tmp_vpcno});'
-                        try:
-                            self.cur.execute(query)
-                        except Exception as e:
-                            print(f"Error => {e}\n")
                     elif this == 'accesscontrolgroup':
-                        tmp_acgno = json.loads(self.pretty_dict(self.read_db()))['getAccessControlGroupListResponse']['accessControlGroupList'][0]['accessControlGroupNo']
-                        query = f'INSERT INTO {self.destination["schemaName"+"_recov"]}.for_recovery vpcno VALUES ({tmp_acgno});'
-                        try:
-                            self.cur.execute(query)
-                        except Exception as e:
-                            print(f"Error => {e}\n")                         
+                        tmp_acgno = json.loads(self.pretty_dict(self.read_db()))['getAccessControlGroupListResponse']['accessControlGroupList'][0]['accessControlGroupNo']                         
                     elif this == 'memberserverimageinstance':
-                        tmp_msiino = json.loads(self.pretty_dict(self.read_db()))['getmemberServerImageInstanceListResponse']['memberServerImageInstanceList'][0]['memberServerImageInstanceNo']
-                        query = f'INSERT INTO {self.destination["schemaName"+"_recov"]}.for_recovery vpcno VALUES ({tmp_msiino});'
-                        try:
-                            self.cur.execute(query)
-                        except Exception as e:
-                            print(f"Error => {e}\n")                              
+                        tmp_msiino = json.loads(self.pretty_dict(self.read_db()))['getmemberServerImageInstanceListResponse']['memberServerImageInstanceList'][0]['memberServerImageInstanceNo']                           
                     elif this == 'launchconfiguration':
-                        tmp_lcno = json.loads(self.pretty_dict(self.read_db()))['getlaunchConfigurationListResponse']['launchConfigurationList'][0]['launchConfigurationNo'] 
-                        query = f'INSERT INTO {self.destination["schemaName"+"_recov"]}.for_recovery vpcno VALUES ({tmp_lcno});'
-                        try:
-                            self.cur.execute(query)
-                        except Exception as e:
-                            print(f"Error => {e}\n")                        
+                        tmp_lcno = json.loads(self.pretty_dict(self.read_db()))['getlaunchConfigurationListResponse']['launchConfigurationList'][0]['launchConfigurationNo']                      
                     elif this == 'subnet':
                         tmp_subnetno = json.loads(self.pretty_dict(self.read_db()))['getsubnetListResponse']['subnetList'][0]['subnetNo']
-                        query = f'INSERT INTO {self.destination["schemaName"+"_recov"]}.for_recovery vpcno VALUES ({tmp_subnetno});'
-                        try:
-                            self.cur.execute(query)
-                        except Exception as e:
-                            print(f"Error => {e}\n")
                 # try:
                 #     self.create(row)
                 # except Exception as e:
