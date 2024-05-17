@@ -332,9 +332,9 @@ class Create():
                         loaded_res = json.loads(api_res)
                         if this == 'serverinstance':
                             before_this = 'serverInstance'
-                        server_instance_no = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][f'{before_this}No']
-                        server_instance_status_code = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][f'{before_this}Status']['code']
-                        y = (server_instance_no, server_instance_status_code)
+                            this_no = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][f'{before_this}No']
+                            this_code = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][f'{before_this}Status']['code']
+                        y = (this_no, this_code)
                         import datetime
                         current_timestamp = datetime.datetime.now()
                         insert_query = f"INSERT INTO {self.source_db['schemaName']}.recoveryresults (requestid, resourcetype, targetkey, sourcekey, timestamp, status, detail) VALUES ('{x[0][0]}', '{x[0][1]}', '{y[0]}', '{tmp_res}', '{current_timestamp}', '{y[1]}', '{api_res}')"
