@@ -8,6 +8,7 @@ import readVPC2InsertDB as rv2
 import subprocess
 from subprocess import PIPE
 
+print("test")
 CONF_PATH = "../conf/app.conf"
 RunStatus = False
 initFlag = False
