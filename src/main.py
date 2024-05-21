@@ -9,6 +9,7 @@ import createSchema
 import readVPC2InsertDB as rv2
 import createVPC
 import vudVPC
+import connDbnApi as cda
 # import createALL
 
 #Flask init
@@ -37,7 +38,7 @@ def create_schema():
     if 'schemaName' not in req: 
         return 'fail, need key ["schemaName"]', 400
     
-    source = app_conf['DATABASE-INFO'].copy()
+    source = read_conf()['DATABASE-INFO'].copy()
     
     for k, v in req.items():
         source[k] = v
@@ -51,7 +52,7 @@ def create_schema():
 def create_recovery():
     # request format
     # {}, empty json
-    source = app_conf['DATABASE-INFO'].copy()
+    source = read_conf()['DATABASE-INFO'].copy()
     
     for k, v in source.items():
         if k == 'schemaName':
@@ -93,8 +94,8 @@ def read2insert():
     elif 'schemaName' not in req['dbSource']:
         return 'fail, need key ["dbSource"]["schemaName"]', 400
     
-    api = app_conf['API-SOURCE-NAVER-CLOUD'].copy()
-    source = app_conf['DATABASE-INFO'].copy()
+    api = read_conf()['API-SOURCE-NAVER-CLOUD'].copy()
+    source = read_conf()['DATABASE-INFO'].copy()
     
     api = change_default(req, api, 'apiSource')
     source = change_default(req, source, 'dbSource')
@@ -115,16 +116,58 @@ def is_subproc_run():
             sts.write("init")
         return False
 
+def existence_db(db_source):
+    constant_db_name = db_source['dbName']
+    db_source['dbName'] = None
+    cd = cda.Connect(db=db_source)
+    db_source['dbName'] = constant_db_name
+    
+    if not constant_db_name in [x['database_name'] for x in cd.check_db()]:
+        cd.create_db(constant_db_name)
+        print("Created, db list : ", [x['database_name'] for x in cd.check_db()])
+    else:
+        print("Already exists, db list : ", [x['database_name'] for x in cd.check_db()])
+
+def create_resource_schema(source, rsn):
+    source['schemaName'] = rsn
+    cock_create = createSchema.Create(source)
+    cock_create.create_schema()
+    cock_create.create_table()
+
+def read_conf():   
+    return gcf.Config(config_path).getConfig()
+
 @app.route('/sync_cluster', methods=['POST'])
 def sync_cluster():
-    # start_time = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    # api = app_conf['API-SOURCE-NAVER-CLOUD'].copy()
-    
-    if is_subproc_run() == False:
-        ...
+    global RESOURCE_SCHEMA
+    start_time = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    resource_schema_name = "RS_"+start_time
 
-    # ri = rv2.Read2Insert(api, None)
-    return 'a'
+    if is_subproc_run():
+        return {"warning" : "Work already in progress."}
+    else:
+        db_source = read_conf()['DATABASE-INFO'].copy()
+        existence_db(db_source)
+        create_resource_schema(db_source, resource_schema_name)
+        db_source['schemaName'] = resource_schema_name
+        print(db_source)
+
+        api = read_conf()['API-SOURCE-NAVER-CLOUD'].copy()
+        ri = rv2.Read2Insert(api, db_source)
+        try:
+            ri.run()
+        except:
+            return {"error" : "insert error."}
+        
+        RESOURCE_SCHEMA = resource_schema_name
+        # update config file
+        # https://stackoverflow.com/questions/8884188/how-to-read-and-write-ini-file-with-python3
+
+        # wakeup subprocess
+        # status_path : init -> idle
+
+        # return Sync result (ri attribute)
+        return 'a'
 
 
 @app.route('/create_vpc', methods=['POST'])
@@ -151,8 +194,8 @@ def create_vpc():
     elif 'schemaName' not in req['dbSource']:
         return 'fail, need key ["dbSource"]["schemaName"]', 400
     
-    db_source = app_conf['DATABASE-INFO'].copy()
-    api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
+    db_source = read_conf()['DATABASE-INFO'].copy()
+    api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
 
     db_source = change_default(req, db_source, 'dbSource')
     api_target = change_default(req, api_target, 'apiTarget')
@@ -183,7 +226,7 @@ def view_vpc():
     elif 'target' not in req['read']:
         return 'fail, need key ["read"]["target"]', 400
     
-    api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
+    api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
     api_target = change_default(req, api_target, 'apiTarget')
     
     vv = vudVPC.VUD(api_target, req['read'], 'r')
@@ -218,7 +261,7 @@ def update_vpc():
     elif 'body' not in req['update']:
         return 'fail, need key ["update"]["body"]', 400
 
-    api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
+    api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
     api_target = change_default(req, api_target, 'apiTarget')
     
     uv = vudVPC.VUD(api_target, req['update'], 'u')
@@ -252,7 +295,7 @@ def delete_vpc():
     elif 'body' not in req['delete']:
         return 'fail, need key ["delete"]["body"]', 400
 
-    api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
+    api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
     api_target = change_default(req, api_target, 'apiTarget')
     
     ud = vudVPC.VUD(api_target, req['delete'], 'd')
@@ -264,7 +307,8 @@ def delete_vpc():
 if __name__ == '__main__':
     status_path = "../conf/status.conf"
     config_path = "../conf/app.conf"
-    app_conf = gcf.Config(config_path).getConfig()
+    RESOURCE_SCHEMA = read_conf()['DATABASE-INFO']['schemaName']
+    print('origin :', RESOURCE_SCHEMA)
 
     if 1:
         cyclic_sync = subprocess.Popen([sys.executable or 'python', 'test.py'])    #For Test
