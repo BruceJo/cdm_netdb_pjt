@@ -208,7 +208,7 @@ class Create():
     # AUTHOR: 차동현 / cdh@cbnu.ac.kr
     # DATE: 2024-01-29
     # DESCRIPTION: 무료 자원에 대하여 모든 자원 생성 및 특정 자원에 대하여 생성
-    # TODO: 전체 자원에 대하여 생성 
+    # TODO: -
         
     def run(self):
         ### for this in self.nc.keys():
@@ -327,9 +327,13 @@ class Create():
                         query = f"UPDATE {self.source_db['schemaName']}.recoveryplan SET completeflag = true WHERE sourcekey = '{tmp_res}';"
                         self.cur.execute(query)
                         query = f"SELECT requestid, resourcetype FROM {self.source_db['schemaName']}.recoveryplan WHERE sourcekey ='{tmp_res}';"
-                        print('executeis ======== ', self.cur.execute(query))
+                        self.cur.execute(query)
                         x = list(self.cur.fetchall())
                         loaded_res = json.loads(api_res)
+                        if this == 'vpc':
+                            before_this = 'vpc'
+                            this_no = loaded_res['getVpcListResponse']['vpcList'][0][f'{before_this}No']
+                            this_code = loaded_res['getVpcListResponse']['vpcList'][0][f'{before_this}Status']['code']
                         if this == 'serverinstance':
                             before_this = 'serverInstance'
                             this_no = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][f'{before_this}No']
