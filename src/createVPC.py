@@ -324,16 +324,17 @@ class Create():
             if sent_flag == True:
                         sent_flag = False
                         print('5.1. Send information into recovery result table.')
-                        query = f"UPDATE {self.source_db['schemaName']}.recoveryplan SET completeflag = true WHERE sourcekey = '{tmp_res}';"
+                        # query = f"UPDATE {self.source_db['schemaName']}.recoveryplan SET completeflag = true WHERE sourcekey = '{tmp_res}';"
+                        query = f"UPDATE recovery.recoveryplan SET completeflag = true WHERE sourcekey = '{tmp_res}';"
                         self.cur.execute(query)
-                        query = f"SELECT requestid, resourcetype FROM {self.source_db['schemaName']}.recoveryplan WHERE sourcekey ='{tmp_res}';"
+                        # query = f"SELECT requestid, resourcetype FROM {self.source_db['schemaName']}.recoveryplan WHERE sourcekey ='{tmp_res}';"
+                        query = f"SELECT requestid, resourcetype FROM recovery.recoveryplan WHERE sourcekey ='{tmp_res}';"
                         self.cur.execute(query)
                         x = list(self.cur.fetchall())
                         loaded_res = json.loads(api_res)
                         if this == 'vpc':
-                            before_this = 'vpc'
-                            this_no = loaded_res['getVpcListResponse']['vpcList'][0][f'{before_this}No']
-                            this_code = loaded_res['getVpcListResponse']['vpcList'][0][f'{before_this}Status']['code']
+                            this_no = loaded_res['getVpcListResponse']['vpcList'][0][f'{this}No']
+                            this_code = loaded_res['getVpcListResponse']['vpcList'][0][f'{this}Status']['code']
                         if this == 'serverinstance':
                             before_this = 'serverInstance'
                             this_no = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][f'{before_this}No']
@@ -341,7 +342,8 @@ class Create():
                         y = (this_no, this_code)
                         import datetime
                         current_timestamp = datetime.datetime.now()
-                        insert_query = f"INSERT INTO {self.source_db['schemaName']}.recoveryresults (requestid, resourcetype, targetkey, sourcekey, timestamp, status, detail) VALUES ('{x[0][0]}', '{x[0][1]}', '{y[0]}', '{tmp_res}', '{current_timestamp}', '{y[1]}', '{api_res}')"
+                        # insert_query = f"INSERT INTO {self.source_db['schemaName']}.recoveryresults (requestid, resourcetype, targetkey, sourcekey, timestamp, status, detail) VALUES ('{x[0][0]}', '{x[0][1]}', '{y[0]}', '{tmp_res}', '{current_timestamp}', '{y[1]}', '{api_res}')"
+                        insert_query = f"INSERT INTO recovery.recoveryresults (requestid, resourcetype, targetkey, sourcekey, timestamp, status, detail) VALUES ('{x[0][0]}', '{self.source_db['schemaName']}.{x[0][1]}', '{y[0]}', '{tmp_res}', '{current_timestamp}', '{y[1]}', '{api_res}')"
                         self.cur.execute(insert_query)
                         self.conn.commit()
             # try:
