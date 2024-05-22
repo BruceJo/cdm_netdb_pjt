@@ -22,7 +22,6 @@ class Create():
         
         sql = sql.replace('CREATE TABLE IF NOT EXISTS', f'CREATE TABLE IF NOT EXISTS "{self.destination["schemaName"]}".')
         sql = sql.replace('CREATE SEQUENCE IF NOT EXISTS ', f'CREATE SEQUENCE IF NOT EXISTS "{self.destination["schemaName"]}".')
-        print(f'set schema {self.destination["schemaName"]};')
         cur.execute(f'set schema {self.destination["schemaName"]};')
         cur.execute(sql)
         cur.close()
