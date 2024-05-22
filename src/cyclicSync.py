@@ -4,11 +4,15 @@ import getConfig as gcf
 # pip install pickle-mixin
 import pickle
 from datetime import datetime,timezone
+from dateutil.relativedelta import relativedelta
 import hmac
 import hashlib
 import base64
 import json
 import requests
+import re
+import os
+import subprocess
 
 class Tracer():
     def __init__(self, api):
@@ -103,17 +107,20 @@ class History():
         except requests.exceptions.ReadTimeout: 
             pass
 
-        ...
+    def make_pre_result(self):
+        _from, _to = self.trans_utc(self.period_time, self.period_unit)
+        now_res = self.cc.send_request(_from, _to)
+        
+        with open(binary_path, 'wb') as file: 
+            pickle.dump(now_res, file)
+        
 
     def run(self):
         _from, _to = self.trans_utc(self.period_time, self.period_unit)
         now_res = self.cc.send_request(_from, _to)
         
-        if not os.path.isfile(binary_path):
-            pre_res = {}
-        else:
-            with open(binary_path, 'rb') as file: 
-                pre_res = pickle.load(file)
+        with open(binary_path, 'rb') as file: 
+            pre_res = pickle.load(file)
         
         print(set(now_res), type(now_res))
         print(set(pre_res), type(pre_res))
@@ -121,11 +128,14 @@ class History():
 
         print('diff_cnt : ', diff_cnt)
         
-        if diff_cnt:
-            ...
+        # if diff_cnt:
+        if 1:
+            # 10 : pushDeltaInfo(Async) -> RMQ로 비동기 전달
+            # diff_json -> sub process parameter
+            subprocess.Popen([sys.executable or 'python', 'cyclicSub.py', status_path, config_path, binary_path, ])
 
-        with open(binary_path, 'wb') as file: 
-            pickle.dump(now_res, file)
+            with open(binary_path, 'wb') as file: 
+                pickle.dump(now_res, file)
         
 
 
@@ -152,45 +162,45 @@ def read_conf():
     return gcf.Config(config_path).getConfig()
 
 if __name__ == '__main__':
-    status_path = sys.argv[1]
-    config_path = sys.argv[2]
+    # status_path = sys.argv[1]
+    # config_path = sys.argv[2]
+    # for test
+    status_path = "../conf/status.conf"
+    config_path = "../conf/app.conf"
     binary_path = "./history.pkl"
     
     
     while True:
-        gh = History(read_conf()['API-SOURCE-NAVER-CLOUD'], read_conf()['DEFAULT'])
-        # __every = read_conf()['DEFAULT']['every']
+        gh = History(read_conf()['API-SOURCE-NAVER-CLOUD'], read_conf()['CYCLIC-SYNC'])
+        every = int(gh.to_sec(gh.every_time, gh.every_unit))
+        print("loop start")
 
         if check_status('init'):
-            # set pre_result
+            gh.make_pre_result()
             write_status('idle')
-        
-        elif check_status('idle'):
-            # get activity_log
-            # set now_result
-            # cal diff_result
-            # if diff_result == True :
+
+        else:   # idle or run
+            gh.run()
+            ## get activity_log
+            ## set now_result
+            ## cal diff_result
+            ## if diff_result == True :
                 # push delta to NS (async)
+                ## write_status('run')
+                ## start_time = str(int(time.time() * 1000))
+                ## resource_schema_name = "rs_" + start_time
+                ## create schema
+                ## get resource_info_from_api
+                ## try: insert info
+                ## get last_schema = schemaNames.find('rs_').split('rs_')[0].max()
                 
-                # write_status('run')
-                # start_time = str(int(time.time() * 1000))
-                # resource_schema_name = "rs_" + start_time
-                # get resource_info_from_api
-                # create schema
-                # try: insert info
-                # get last_schema = schemaNames.find('rs_').split('rs_')[0].max()
-                
-                # if last_schema < start_time: set schema (request to main)
-                    # set pre_result
+                ## if last_schema < start_time: set schema (request to main)
+                    ## set pre_result @main request
                     # get resouece_info_from_db
                     # push resource_info_from_db
                 
-                # get schema_list
+                ## get schema_list
                 # if len(schema_list) >= schema_retention_policy: drop old schemas
-                # write_status('idle') 
-
-            ...
-
-
-
-        time.sleep(5)
+                ## write_status('idle')
+        print("loop end")
+        time.sleep(every)
