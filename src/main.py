@@ -182,6 +182,7 @@ def set_schema_name():
     req = request.get_json()
     global RESOURCE_SCHEMA
     RESOURCE_SCHEMA = req['schemaName']
+    gcf.Config(config_path).updateConfig('DATABASE-INFO', 'schemaName', RESOURCE_SCHEMA)
 
 @app.route('/create_vpc', methods=['POST'])
 def create_vpc():
