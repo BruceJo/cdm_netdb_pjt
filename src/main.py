@@ -1,6 +1,7 @@
-import datetime
+import time
 import subprocess
 import sys
+import os
 import atexit
 from flask import Flask, request
 from flask_cors import CORS
@@ -62,7 +63,6 @@ def create_recovery():
         else:
             source[k] = v
 
-    print(source)
     cock_create = createSchema.Create(source)
     cock_create.create_schema()
     cock_create.create_table()
@@ -105,16 +105,22 @@ def read2insert():
 
     return 'success'
 
-def is_subproc_run():
+def is_subproc_run(stat):
+    # stat : init, idle, run
     try:
         with open(status_path, 'r') as sts:
             last_line = sts.readlines()[-1]
-        return True if last_line == 'run' else False
-
+        return True if last_line == stat else False
     except:
-        with open(status_path, 'w') as sts:
-            sts.write("init")
         return False
+
+def set_subproc_status():
+    if os.path.isfile(status_path):
+        with open(status_path, 'r') as sts:
+            last_line = sts.readlines()[-1]
+        if last_line not in ['init', 'idle', 'run']:
+            with open(status_path, 'w') as sts:
+                sts.write("init")
 
 def existence_db(db_source):
     constant_db_name = db_source['dbName']
@@ -140,34 +146,33 @@ def read_conf():
 @app.route('/sync_cluster', methods=['POST'])
 def sync_cluster():
     global RESOURCE_SCHEMA
-    start_time = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    resource_schema_name = "RS_"+start_time
+    start_time = str(int(time.time() * 1000))
+    resource_schema_name = "rs_" + start_time
 
-    if is_subproc_run():
-        return {"warning" : "Work already in progress."}
+    if is_subproc_run('run'):
+        return {"warning" : "Work already in progress."}, 200
     else:
         db_source = read_conf()['DATABASE-INFO'].copy()
         existence_db(db_source)
         create_resource_schema(db_source, resource_schema_name)
         db_source['schemaName'] = resource_schema_name
-        print(db_source)
 
         api = read_conf()['API-SOURCE-NAVER-CLOUD'].copy()
         ri = rv2.Read2Insert(api, db_source)
-        try:
-            ri.run()
-        except:
-            return {"error" : "insert error."}
+        # try:
+        #     ri.run()
+        # except:
+        #     return {"error" : "insert error."}, 500
         
         RESOURCE_SCHEMA = resource_schema_name
         # update config file
-        # https://stackoverflow.com/questions/8884188/how-to-read-and-write-ini-file-with-python3
+        gcf.Config(config_path).updateConfig('DATABASE-INFO', 'schemaName', resource_schema_name)
 
-        # wakeup subprocess
-        # status_path : init -> idle
+        # wakeup subprocess = if not exist status then status_path : N/A -> init
+        set_subproc_status()
 
-        # return Sync result (ri attribute)
-        return 'a'
+        # return Sync result (if you want attribute then get form db)
+        return {"success" : "Done."}, 200
 
 
 @app.route('/create_vpc', methods=['POST'])
@@ -311,7 +316,7 @@ if __name__ == '__main__':
     print('origin :', RESOURCE_SCHEMA)
 
     if 1:
-        cyclic_sync = subprocess.Popen([sys.executable or 'python', 'test.py'])    #For Test
+        cyclic_sync = subprocess.Popen([sys.executable or 'python', 'test.py', status_path])    #For Test
         atexit.register(cyclic_sync.kill)
     
     app.run(threaded=True, debug=True, host='0.0.0.0', port=9999)

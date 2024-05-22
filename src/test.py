@@ -1,6 +1,6 @@
 import time
 import os
-
+import sys
 
 def do_something():
     while True:
@@ -21,7 +21,7 @@ def write_status():
         sts.write("idle")
 
 if __name__ == '__main__':
-    status_path = "../conf/status.conf"
+    status_path = sys.argv[1]
     run_status = 'idle'
     isrun_init = check_status() 
 
