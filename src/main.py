@@ -121,6 +121,9 @@ def set_subproc_status():
         if last_line not in ['init', 'idle', 'run']:
             with open(status_path, 'w') as sts:
                 sts.write("init")
+    else:
+        with open(status_path, 'w') as sts:
+                sts.write("init")
 
 def existence_db(db_source):
     constant_db_name = db_source['dbName']
@@ -174,6 +177,11 @@ def sync_cluster():
         # return Sync result (if you want attribute then get form db)
         return {"success" : "Done."}, 200
 
+@app.route('/set_schema_name', methods=['POST'])
+def set_schema_name():
+    req = request.get_json()
+    global RESOURCE_SCHEMA
+    RESOURCE_SCHEMA = req['schemaName']
 
 @app.route('/create_vpc', methods=['POST'])
 def create_vpc():
@@ -316,7 +324,7 @@ if __name__ == '__main__':
     print('origin :', RESOURCE_SCHEMA)
 
     if 1:
-        cyclic_sync = subprocess.Popen([sys.executable or 'python', 'test.py', status_path])    #For Test
+        cyclic_sync = subprocess.Popen([sys.executable or 'python', 'cyclicSync.py', status_path, config_path])    #For Test
         atexit.register(cyclic_sync.kill)
     
     app.run(threaded=True, debug=True, host='0.0.0.0', port=9999)
