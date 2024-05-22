@@ -15,3 +15,12 @@ class Config():
         self.conf = cp._sections
 
         return self.conf
+    
+    def updateConfig(self, selection, key, value):
+        cp = parser.ConfigParser()
+        cp.optionxform = str
+        cp.read(self.path, encoding='utf-8')
+        cp.set(selection, key, value)
+        
+        with open(self.path, 'w') as configfile:
+            cp.write(configfile)
