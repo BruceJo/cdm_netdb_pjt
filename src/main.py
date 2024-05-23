@@ -162,10 +162,10 @@ def sync_cluster():
 
         api = read_conf()['API-SOURCE-NAVER-CLOUD'].copy()
         ri = rv2.Read2Insert(api, db_source)
-        # try:
-        #     ri.run()
-        # except:
-        #     return {"error" : "insert error."}, 500
+        try:
+            ri.run()
+        except:
+            return {"error" : "insert error."}, 500
         
         RESOURCE_SCHEMA = resource_schema_name
         # update config file
