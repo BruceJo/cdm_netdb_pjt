@@ -11,7 +11,6 @@ import base64
 import json
 import requests
 import re
-import os
 import subprocess
 
 class Tracer():
@@ -97,8 +96,6 @@ class History():
     
     def trigger_to_ns(self):
         body = {}
-
-        # 비동기처럼 응답을 기다리지 않고 post
         try:
             requests.post("http://localhost:9999/some_url", 
                           data=json.dumps({'Tagkey':body}), 
@@ -128,15 +125,13 @@ class History():
 
         print('diff_cnt : ', diff_cnt)
         
-        # if diff_cnt:
-        if 1:
+        if diff_cnt:
             # 10 : pushDeltaInfo(Async) -> RMQ로 비동기 전달
-            # diff_json -> sub process parameter
+            # ★ diff_json -> sub process parameter ★
             subprocess.Popen([sys.executable or 'python', 'cyclicSub.py', status_path, config_path, binary_path, ])
 
             with open(binary_path, 'wb') as file: 
                 pickle.dump(now_res, file)
-        
 
 
 def check_status(stat):
@@ -153,20 +148,16 @@ def write_status(stat):
     with open(status_path, 'w') as sts:
         sts.write(stat)
 
-
-    # if check_status():      # 0 : run | idle, 1 : init
-    #     print('> run GetActivityLog ~ SetPreResult <')
-    #     write_status()
-
 def read_conf():   
     return gcf.Config(config_path).getConfig()
 
+
 if __name__ == '__main__':
-    # status_path = sys.argv[1]
-    # config_path = sys.argv[2]
+    status_path = sys.argv[1]
+    config_path = sys.argv[2]
     # for test
-    status_path = "../conf/status.conf"
-    config_path = "../conf/app.conf"
+    # status_path = "../conf/status.conf"
+    # config_path = "../conf/app.conf"
     binary_path = "./history.pkl"
     
     
