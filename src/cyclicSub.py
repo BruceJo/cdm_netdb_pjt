@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     # diff_json = json.load(sys.argv[4])
     # print(diff_json)
-    # RMQ 비동기 전달 -> NaverStop
+    # ★ RMQ 비동기 전달 -> NaverStop ★
 
     write_status('run')
     start_time = str(int(time.time() * 1000))
@@ -35,10 +35,11 @@ if __name__ == '__main__':
 
     api = read_conf()['API-SOURCE-NAVER-CLOUD'].copy()
     ri = rv2.Read2Insert(api, db_source)
-    # try:
-    #     ri.run()
-    # except:
-    #     return {"error" : "insert error."}, 500
+    try:
+        ri.run()
+    except:
+        #★ RMQ 비동기 전달 -> NaverStop ★
+        ...
 
     cd = cda.Connect(db=db_source)
     schema_list = [x['schema_name'] for x in cd.query_db("show schemas;") if x['schema_name'][:3] == 'rs_']
@@ -49,7 +50,7 @@ if __name__ == '__main__':
                                  data=json.dumps({'schemaName' : resource_schema_name}),
                                  headers=HEADER)
         # get resouece_info_from_db
-        # push resource_info_from_db (RMQ 비동기 전달 -> NaverStop)
+        # push resource_info_from_db (★ RMQ 비동기 전달 -> NaverStop ★)
 
     cyclic = read_conf()['CYCLIC-SYNC'].copy()
     print(cyclic, schema_list)
@@ -58,5 +59,5 @@ if __name__ == '__main__':
         del_targets = sorted(schema_list, reverse=True)[retention_policy:]
         for del_target in del_targets:
             cd.delete_schema(del_target)
-            
+
     write_status('idle')

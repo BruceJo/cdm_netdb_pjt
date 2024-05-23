@@ -324,8 +324,7 @@ if __name__ == '__main__':
     RESOURCE_SCHEMA = read_conf()['DATABASE-INFO']['schemaName']
     print('origin :', RESOURCE_SCHEMA)
 
-    if 1:
-        cyclic_sync = subprocess.Popen([sys.executable or 'python', 'cyclicSync.py', status_path, config_path])    #For Test
-        atexit.register(cyclic_sync.kill)
+    cyclic_sync = subprocess.Popen([sys.executable or 'python', 'cyclicSync.py', status_path, config_path])    #For Test
+    atexit.register(cyclic_sync.kill)
     
     app.run(threaded=True, debug=True, host='0.0.0.0', port=9999)
