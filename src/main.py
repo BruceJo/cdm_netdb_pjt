@@ -1,3 +1,8 @@
+import time
+import subprocess
+import sys
+import os
+import atexit
 from flask import Flask, request
 from flask_cors import CORS
 import getConfig as gcf
@@ -5,6 +10,7 @@ import createSchema
 import readVPC2InsertDB as rv2
 import createVPC
 import vudVPC
+import connDbnApi as cda
 # import createALL
 
 #Flask init
@@ -33,7 +39,7 @@ def create_schema():
     if 'schemaName' not in req: 
         return 'fail, need key ["schemaName"]', 400
     
-    source = app_conf['DATABASE-INFO'].copy()
+    source = read_conf()['DATABASE-INFO'].copy()
     
     for k, v in req.items():
         source[k] = v
@@ -47,7 +53,7 @@ def create_schema():
 def create_recovery():
     # request format
     # {}, empty json
-    source = app_conf['DATABASE-INFO'].copy()
+    source = read_conf()['DATABASE-INFO'].copy()
     
     for k, v in source.items():
         if k == 'schemaName':
@@ -57,7 +63,6 @@ def create_recovery():
         else:
             source[k] = v
 
-    print(source)
     cock_create = createSchema.Create(source)
     cock_create.create_schema()
     cock_create.create_table()
@@ -89,8 +94,8 @@ def read2insert():
     elif 'schemaName' not in req['dbSource']:
         return 'fail, need key ["dbSource"]["schemaName"]', 400
     
-    api = app_conf['API-SOURCE-NAVER-CLOUD'].copy()
-    source = app_conf['DATABASE-INFO'].copy()
+    api = read_conf()['API-SOURCE-NAVER-CLOUD'].copy()
+    source = read_conf()['DATABASE-INFO'].copy()
     
     api = change_default(req, api, 'apiSource')
     source = change_default(req, source, 'dbSource')
@@ -100,6 +105,84 @@ def read2insert():
 
     return 'success'
 
+def is_subproc_run(stat):
+    # stat : init, idle, run
+    try:
+        with open(status_path, 'r') as sts:
+            last_line = sts.readlines()[-1]
+        return True if last_line == stat else False
+    except:
+        return False
+
+def set_subproc_status():
+    if os.path.isfile(status_path):
+        with open(status_path, 'r') as sts:
+            last_line = sts.readlines()[-1]
+        if last_line not in ['init', 'idle', 'run']:
+            with open(status_path, 'w') as sts:
+                sts.write("init")
+    else:
+        with open(status_path, 'w') as sts:
+                sts.write("init")
+
+def existence_db(db_source):
+    constant_db_name = db_source['dbName']
+    db_source['dbName'] = None
+    cd = cda.Connect(db=db_source)
+    db_source['dbName'] = constant_db_name
+    
+    if not constant_db_name in [x['database_name'] for x in cd.check_db()]:
+        cd.create_db(constant_db_name)
+        print("Created, db list : ", [x['database_name'] for x in cd.check_db()])
+    else:
+        print("Already exists, db list : ", [x['database_name'] for x in cd.check_db()])
+
+def create_resource_schema(source, rsn):
+    source['schemaName'] = rsn
+    cock_create = createSchema.Create(source)
+    cock_create.create_schema()
+    cock_create.create_table()
+
+def read_conf():   
+    return gcf.Config(config_path).getConfig()
+
+@app.route('/sync_cluster', methods=['POST'])
+def sync_cluster():
+    global RESOURCE_SCHEMA
+    start_time = str(int(time.time() * 1000))
+    resource_schema_name = "rs_" + start_time
+
+    if is_subproc_run('run'):
+        return {"warning" : "Work already in progress."}, 200
+    else:
+        db_source = read_conf()['DATABASE-INFO'].copy()
+        existence_db(db_source)
+        create_resource_schema(db_source, resource_schema_name)
+        db_source['schemaName'] = resource_schema_name
+
+        api = read_conf()['API-SOURCE-NAVER-CLOUD'].copy()
+        ri = rv2.Read2Insert(api, db_source)
+        try:
+            ri.run()
+        except:
+            return {"error" : "insert error."}, 500
+        
+        RESOURCE_SCHEMA = resource_schema_name
+        # update config file
+        gcf.Config(config_path).updateConfig('DATABASE-INFO', 'schemaName', resource_schema_name)
+
+        # wakeup subprocess = if not exist status then status_path : N/A -> init
+        set_subproc_status()
+
+        # return Sync result (if you want attribute then get form db)
+        return {"success" : "Done."}, 200
+
+@app.route('/set_schema_name', methods=['POST'])
+def set_schema_name():
+    req = request.get_json()
+    global RESOURCE_SCHEMA
+    RESOURCE_SCHEMA = req['schemaName']
+    gcf.Config(config_path).updateConfig('DATABASE-INFO', 'schemaName', RESOURCE_SCHEMA)
 
 @app.route('/create_vpc', methods=['POST'])
 def create_vpc():
@@ -125,8 +208,8 @@ def create_vpc():
     elif 'schemaName' not in req['dbSource']:
         return 'fail, need key ["dbSource"]["schemaName"]', 400
     
-    db_source = app_conf['DATABASE-INFO'].copy()
-    api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
+    db_source = read_conf()['DATABASE-INFO'].copy()
+    api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
 
     db_source = change_default(req, db_source, 'dbSource')
     api_target = change_default(req, api_target, 'apiTarget')
@@ -157,7 +240,7 @@ def view_vpc():
     elif 'target' not in req['read']:
         return 'fail, need key ["read"]["target"]', 400
     
-    api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
+    api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
     api_target = change_default(req, api_target, 'apiTarget')
     
     vv = vudVPC.VUD(api_target, req['read'], 'r')
@@ -192,7 +275,7 @@ def update_vpc():
     elif 'body' not in req['update']:
         return 'fail, need key ["update"]["body"]', 400
 
-    api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
+    api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
     api_target = change_default(req, api_target, 'apiTarget')
     
     uv = vudVPC.VUD(api_target, req['update'], 'u')
@@ -226,7 +309,7 @@ def delete_vpc():
     elif 'body' not in req['delete']:
         return 'fail, need key ["delete"]["body"]', 400
 
-    api_target = app_conf['API-TARGET-NAVER-CLOUD'].copy()
+    api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
     api_target = change_default(req, api_target, 'apiTarget')
     
     ud = vudVPC.VUD(api_target, req['delete'], 'd')
@@ -236,7 +319,12 @@ def delete_vpc():
 
 # Server Run
 if __name__ == '__main__':
-    CONF_PATH = "../conf/app.conf"
-    app_conf = gcf.Config(CONF_PATH).getConfig()
+    status_path = "../conf/status.conf"
+    config_path = "../conf/app.conf"
+    RESOURCE_SCHEMA = read_conf()['DATABASE-INFO']['schemaName']
+    print('origin :', RESOURCE_SCHEMA)
+
+    cyclic_sync = subprocess.Popen([sys.executable or 'python', 'cyclicSync.py', status_path, config_path])    #For Test
+    atexit.register(cyclic_sync.kill)
     
     app.run(threaded=True, debug=True, host='0.0.0.0', port=9999)

@@ -57,6 +57,55 @@ class Connect():
         return response
     
     ## conn db
+    def connect_cockroach_for_list(self):
+        try:
+            connection = psycopg2.connect(
+                host=self.host,
+                port=self.port,
+                user=self.user,
+            )
+            return connection
+        except Exception as e:
+            print(f"Database connection failure: {e}")
+            return None
+
+    def check_db(self):
+        conn = self.connect_cockroach_for_list()
+        cur = conn.cursor()
+
+        cur.execute("show databases;")
+        rows = cur.fetchall()
+        cols = [column[0] for column in cur.description]
+        
+        response = []
+        for row in rows:
+            response.append(dict(zip(cols, row)))
+        
+        cur.close()
+        conn.close()
+
+        return response
+    
+    def create_db(self, db_name):
+        conn = self.connect_cockroach_for_list()
+        cur = conn.cursor()
+
+        cur.execute("CREATE DATABASE "+ db_name +";")
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+    def delete_schema(self, schema_name):
+        conn = self.connect_cockroachdb()
+        cur = conn.cursor()
+
+        cur.execute(query = f"DROP SCHEMA IF EXISTS {schema_name} CASCADE;")
+
+        conn.commit()
+        cur.close()
+        conn.close()
+    
     def connect_cockroachdb(self):
         try:
             connection = psycopg2.connect(
