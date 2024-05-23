@@ -95,6 +95,16 @@ class Connect():
         conn.commit()
         cur.close()
         conn.close()
+
+    def delete_schema(self, schema_name):
+        conn = self.connect_cockroachdb()
+        cur = conn.cursor()
+
+        cur.execute(query = f"DROP SCHEMA IF EXISTS {schema_name} CASCADE;")
+
+        conn.commit()
+        cur.close()
+        conn.close()
     
     def connect_cockroachdb(self):
         try:

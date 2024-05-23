@@ -6,8 +6,6 @@ import getConfig as gcf
 import main as m
 import readVPC2InsertDB as rv2
 import connDbnApi as cda
-import re
-import pickle
 
 def write_status(stat):
     # stat : init, idle, run
@@ -57,7 +55,8 @@ if __name__ == '__main__':
     print(cyclic, schema_list)
     retention_policy = int(cyclic['schemaRetentionPolicy'])
     if len(schema_list) >= retention_policy:
-        del_targets = sorted(schema_list)[retention_policy:]
-        for i in del_targets:
-            print(i)
+        del_targets = sorted(schema_list, reverse=True)[retention_policy:]
+        for del_target in del_targets:
+            cd.delete_schema(del_target)
+            
     write_status('idle')
