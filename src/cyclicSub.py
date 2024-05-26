@@ -53,7 +53,6 @@ if __name__ == '__main__':
         # push resource_info_from_db (★ RMQ 비동기 전달 -> NaverStop ★)
 
     cyclic = read_conf()['CYCLIC-SYNC'].copy()
-    print(cyclic, schema_list)
     retention_policy = int(cyclic['schemaRetentionPolicy'])
     if len(schema_list) >= retention_policy:
         del_targets = sorted(schema_list, reverse=True)[retention_policy:]
