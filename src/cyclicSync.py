@@ -94,16 +94,6 @@ class History():
         from_utc, to_utc = self.trans_utc(num, unit)
         return (to_utc - from_utc) / 1e3
     
-    def trigger_to_ns(self):
-        body = {}
-        try:
-            requests.post("http://localhost:9999/some_url", 
-                          data=json.dumps({'Tagkey':body}), 
-                          headers={'Content-Type': 'application/json'}, 
-                          timeout=0.0000000001)
-        except requests.exceptions.ReadTimeout: 
-            pass
-
     def make_pre_result(self):
         _from, _to = self.trans_utc(self.period_time, self.period_unit)
         now_res = self.cc.send_request(_from, _to)
@@ -111,7 +101,6 @@ class History():
         with open(binary_path, 'wb') as file: 
             pickle.dump(now_res, file)
         
-
     def run(self):
         _from, _to = self.trans_utc(self.period_time, self.period_unit)
         now_res = self.cc.send_request(_from, _to)

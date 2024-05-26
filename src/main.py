@@ -3,15 +3,21 @@ import subprocess
 import sys
 import os
 import atexit
+import pickle
+import json
+import requests
 from flask import Flask, request
 from flask_cors import CORS
+import pandas as pd
+# pip install sqlalchemy-cockroachdb
+from sqlalchemy import create_engine
 import getConfig as gcf
 import createSchema
 import readVPC2InsertDB as rv2
 import createVPC
 import vudVPC
 import connDbnApi as cda
-# import createALL
+import naverCloud
 
 #Flask init
 app = Flask(__name__)
@@ -23,6 +29,53 @@ def change_default(req, obj, req_key):
         for k, v in req[req_key].items():
             obj[k] = v
     return obj
+
+def is_subproc_run(stat):
+    # stat : init, idle, run
+    try:
+        with open(status_path, 'r') as sts:
+            last_line = sts.readlines()[-1]
+        return True if last_line == stat else False
+    except:
+        return False
+
+def set_subproc_status():
+    if os.path.isfile(status_path):
+        with open(status_path, 'r') as sts:
+            last_line = sts.readlines()[-1]
+        if last_line not in ['init', 'idle', 'run']:
+            with open(status_path, 'w') as sts:
+                sts.write("init")
+    else:
+        with open(status_path, 'w') as sts:
+                sts.write("init")
+
+def existence_db(db_source):
+    constant_db_name = db_source['dbName']
+    db_source['dbName'] = None
+    cd = cda.Connect(db=db_source)
+    db_source['dbName'] = constant_db_name
+    
+    if not constant_db_name in [x['database_name'] for x in cd.check_db()]:
+        cd.create_db(constant_db_name)
+        print("Created, db list : ", [x['database_name'] for x in cd.check_db()])
+    else:
+        print("Already exists, db list : ", [x['database_name'] for x in cd.check_db()])
+
+def create_resource_schema(source, schema_name):
+    source['schemaName'] = schema_name
+    cock_create = createSchema.Create(source)
+    cock_create.create_schema()
+    cock_create.create_table()
+
+def read_conf():
+    return gcf.Config(config_path).getConfig()
+
+def insert_to_detail_engine(db_info):
+    connection_string = f"cockroachdb://{db_info['user']}@{db_info['host']}:{db_info['port']}/{db_info['dbName']}"
+    print(connection_string)
+    engine = create_engine(connection_string)
+    return engine
 
 # route
 @app.route('/create_schema', methods=['POST'])
@@ -105,47 +158,6 @@ def read2insert():
 
     return 'success'
 
-def is_subproc_run(stat):
-    # stat : init, idle, run
-    try:
-        with open(status_path, 'r') as sts:
-            last_line = sts.readlines()[-1]
-        return True if last_line == stat else False
-    except:
-        return False
-
-def set_subproc_status():
-    if os.path.isfile(status_path):
-        with open(status_path, 'r') as sts:
-            last_line = sts.readlines()[-1]
-        if last_line not in ['init', 'idle', 'run']:
-            with open(status_path, 'w') as sts:
-                sts.write("init")
-    else:
-        with open(status_path, 'w') as sts:
-                sts.write("init")
-
-def existence_db(db_source):
-    constant_db_name = db_source['dbName']
-    db_source['dbName'] = None
-    cd = cda.Connect(db=db_source)
-    db_source['dbName'] = constant_db_name
-    
-    if not constant_db_name in [x['database_name'] for x in cd.check_db()]:
-        cd.create_db(constant_db_name)
-        print("Created, db list : ", [x['database_name'] for x in cd.check_db()])
-    else:
-        print("Already exists, db list : ", [x['database_name'] for x in cd.check_db()])
-
-def create_resource_schema(source, rsn):
-    source['schemaName'] = rsn
-    cock_create = createSchema.Create(source)
-    cock_create.create_schema()
-    cock_create.create_table()
-
-def read_conf():   
-    return gcf.Config(config_path).getConfig()
-
 @app.route('/sync_cluster', methods=['POST'])
 def sync_cluster():
     global RESOURCE_SCHEMA
@@ -183,6 +195,71 @@ def set_schema_name():
     global RESOURCE_SCHEMA
     RESOURCE_SCHEMA = req['schemaName']
     gcf.Config(config_path).updateConfig('DATABASE-INFO', 'schemaName', RESOURCE_SCHEMA)
+
+@app.route('/source_to_target', methods=['POST'])
+def source_to_target():
+    db_source = read_conf()['DATABASE-INFO'].copy()
+    cd = cda.Connect(db=db_source)
+    table_list = [x['table_name'] for x in cd.query_db(f"show tables from {cd.db_name}.{db_source['schemaName']};") if x['type'] == 'table']
+
+    result = {}
+    for tbl in table_list:
+        __tbl = cd.query_db(f"select * from {db_source['schemaName']}.{tbl};")
+        result[tbl] = pd.DataFrame(__tbl).to_dict('split', index=False)
+
+    json_res = json.dumps(result, default=str)
+
+    with open(db_bin_path, 'wb') as file: 
+        pickle.dump(json_res, file)
+    
+    try:
+        requests.post(target_url+"/set_resource_info", data=json_res, headers=HEADER, timeout=0.0000000001)
+    except requests.exceptions.ReadTimeout: 
+        pass
+
+    return json_res
+
+@app.route('/set_resource_info', methods=['POST'])
+def set_resource_info():
+    req = request.get_json()
+    global DETAIL_SCHEMA
+    start_time = str(int(time.time() * 1000))
+    detail_schema_name = "ds_" + start_time
+
+    db_source = read_conf()['DATABASE-INFO'].copy()
+    existence_db(db_source)
+    create_resource_schema(db_source, detail_schema_name)
+    db_source['schemaName'] = detail_schema_name
+    engine = insert_to_detail_engine(db_source)
+    
+    # req -> db
+    order_key_dict = naverCloud.url_info()
+    order_key = [x.lower() for x in order_key_dict if x != 'Region']
+    
+    for tbl_name in order_key:
+        print("****************************", tbl_name)
+        tbl_info = req[tbl_name]
+        try:
+            pd.DataFrame(**tbl_info).to_sql(tbl_name, engine, schema=detail_schema_name, if_exists='replace', index=False)
+        except:
+            # push error (★ RMQ 비동기 전달 -> NaverStop ★)
+            pass
+
+    DETAIL_SCHEMA = detail_schema_name
+    gcf.Config(config_path).updateConfig('DATABASE-INFO', 'detailSchemaName', detail_schema_name)
+    
+    # del ds_ schema
+    cd = cda.Connect(db=db_source)
+    schema_list = [x['schema_name'] for x in cd.query_db("show schemas;") if x['schema_name'][:3] == 'ds_']
+    cyclic = read_conf()['CYCLIC-SYNC'].copy()
+    retention_policy = int(cyclic['schemaRetentionPolicy'])
+    
+    if len(schema_list) >= retention_policy:
+        del_targets = sorted(schema_list, reverse=True)[retention_policy:]
+        for del_target in del_targets:
+            cd.delete_schema(del_target)
+
+    return {"success" : "Done."}, 200
 
 @app.route('/create_vpc', methods=['POST'])
 def create_vpc():
@@ -321,8 +398,12 @@ def delete_vpc():
 if __name__ == '__main__':
     status_path = "../conf/status.conf"
     config_path = "../conf/app.conf"
+    db_bin_path = "./db_bin.pkl"
+    target_url = "http://localhost:9999"    # it is test ip for target
+
+    HEADER = {'Content-Type': 'application/json'}
     RESOURCE_SCHEMA = read_conf()['DATABASE-INFO']['schemaName']
-    print('origin :', RESOURCE_SCHEMA)
+    DETAIL_SCHEMA = read_conf()['DATABASE-INFO']['detailSchemaName']
 
     cyclic_sync = subprocess.Popen([sys.executable or 'python', 'cyclicSync.py', status_path, config_path])    #For Test
     atexit.register(cyclic_sync.kill)
