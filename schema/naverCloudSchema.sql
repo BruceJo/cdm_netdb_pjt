@@ -653,8 +653,8 @@ CREATE TABLE IF NOT EXISTS networkinterface (
 
 CREATE TABLE IF NOT EXISTS route (
 	id INTEGER NOT NULL DEFAULT NEXTVAL('route_seq'),
-	subnetid INT8 NOT NULL,						-- 추가된 부분
-	networkinterfaceno VARCHAR(255) NOT NULL, 	-- 추가된 부분
+	subnetid INT8 NULL,						-- 추가된 부분 lhb 0526 -> null fix insert 2 db 수정 필요함
+	networkinterfaceno VARCHAR(255) NULL, 	-- 추가된 부분 lhb 0526 -> null fix insert 2 db 수정 필요함
 	routetableid INT8 NOT NULL,
 	destinationcidrblock VARCHAR(255) NOT NULL,
 	targetname VARCHAR(255) NOT NULL,
