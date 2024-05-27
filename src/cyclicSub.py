@@ -42,6 +42,7 @@ if __name__ == '__main__':
 
     cd = cda.Connect(db=db_source)
     schema_list = [x['schema_name'] for x in cd.query_db("show schemas;") if x['schema_name'][:3] == 'rs_']
+    schema_list = [x for x in schema_list if x != resource_schema_name]
     last_schema = max(schema_list)
     
     if last_schema < resource_schema_name:
@@ -53,11 +54,13 @@ if __name__ == '__main__':
 
     cyclic = read_conf()['CYCLIC-SYNC'].copy()
     retention_policy = int(cyclic['schemaRetentionPolicy'])
+    schema_list = schema_list + [resource_schema_name]
+
     if len(schema_list) >= retention_policy:
         del_targets = sorted(schema_list, reverse=True)[retention_policy:]
         print('schema_list', schema_list)
         print('del_targets', del_targets)
-        
+
         for del_target in del_targets:
             cd.delete_schema(del_target)
         
