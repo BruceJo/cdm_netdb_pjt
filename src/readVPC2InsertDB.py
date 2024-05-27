@@ -1,6 +1,8 @@
 import connDbnApi as cda
 import naverCloud
 import json
+import traceback
+import sys
 
 class Read2Insert():
     def __init__(self, api, destination):
@@ -26,30 +28,36 @@ class Read2Insert():
     def read_api(self):
         res = self.cc.request_api(self.api_url, self.sub_url)
         return res
-    
+
     def insert_db(self, dict1):
         if self.continue_flag:
             self.continue_flag = False
             return None
-        
-        dict1 = {k: v for k, v in dict1.items() if v is not None}   # None -> null from (TBL)loadbalancersubnet/(COL)publicipinstanceid
-        dict1 = {k: (json.dumps(v) if (type(v)==list) else v) for k, v in dict1.items()}       # list(dict()) -> str() w/ ' string
-        dict1 = {k: (v.replace("'", "''") if (type(v)==str and "'" in v) else v) for k, v in dict1.items()}     # escape ' -> ''
+
+        dict1 = {k: v for k, v in dict1.items() if
+                 v is not None}  # None -> null from (TBL)loadbalancersubnet/(COL)publicipinstanceid
+        dict1 = {k: (json.dumps(v) if (isinstance(v, list) or isinstance(v, dict)) else v) for k, v in
+                 dict1.items()}  # list(dict()) -> str() w/ ' string
+        dict1 = {k: (v.replace("'", "''") if (isinstance(v, str) and "'" in v) else v) for k, v in
+                 dict1.items()}  # escape ' -> ''
 
         key_list = list(dict1.keys())
         key_str = (', '.join(key_list)).lower()
         val_tuple = tuple(dict1.values())
-        val_str = ', '.join(f"'{x}'" if isinstance(x, str) else str(x) for x in val_tuple)
-        
+        val_str = ', '.join(f"'{x}'" if isinstance(x, (str, dict)) else str(x) for x in val_tuple)
+
         query = f'INSERT INTO {self.destination["schemaName"]}.{self.table_name} ({key_str}) VALUES ({val_str});'
         # print('3. query\n', query, '\n')
         with open("insert_query.log", "a") as file:
-            file.write(query+'\n')
+            file.write(query + '\n')
             file.close()
-        try:#lhb try-catch
+        try:  # lhb try-catch
             self.cur.execute(query)
         except Exception as e:
+            print(query)
+            traceback.print_exc()
             print(f"Error => {e}\n")
+            sys.exit()
 
     def get_id(self, tbl, where, value):
         result = self.cc.query_db(f"SELECT id FROM {self.destination['schemaName']}.{tbl} where {where}='{value}';")
