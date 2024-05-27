@@ -17,7 +17,6 @@ import readVPC2InsertDB as rv2
 import createVPC
 import vudVPC
 import connDbnApi as cda
-import naverCloud
 
 #Flask init
 app = Flask(__name__)
@@ -192,10 +191,16 @@ def sync_cluster():
 @app.route('/set_schema_name', methods=['POST'])
 def set_schema_name():
     req = request.get_json()
-    global RESOURCE_SCHEMA
-    RESOURCE_SCHEMA = req['schemaName']
-    gcf.Config(config_path).updateConfig('DATABASE-INFO', 'schemaName', RESOURCE_SCHEMA)
-
+    if req['type'] == 'resource':
+        global RESOURCE_SCHEMA
+        RESOURCE_SCHEMA = req['schemaName']
+        gcf.Config(config_path).updateConfig('DATABASE-INFO', 'schemaName', req['schemaName'])
+    
+    elif req['type'] == 'detail':
+        global DETAIL_SCHEMA
+        DETAIL_SCHEMA = req['schemaName']
+        gcf.Config(config_path).updateConfig('DATABASE-INFO', 'detailSchemaName', req['schemaName'])
+        
 @app.route('/source_to_target', methods=['POST'])
 def source_to_target():
     db_source = read_conf()['DATABASE-INFO'].copy()
@@ -209,12 +214,18 @@ def source_to_target():
 
     json_res = json.dumps(result, default=str)
 
-    with open(db_bin_path, 'wb') as file: 
-        pickle.dump(json_res, file)
+    # 기록용도
+    # with open(db_temp_path, 'wb') as file: 
+    #     pickle.dump(json_res, file)
     
     try:
-        requests.post(target_url+"/set_resource_info", data=json_res, headers=HEADER, timeout=0.0000000001)
+        requests.post(target_url+"/set_resource_info", 
+                      data=json_res, 
+                      headers={'Content-Type': 'application/json'}, 
+                      timeout=0.0000000001)
     except requests.exceptions.ReadTimeout: 
+        pass
+    except requests.exceptions.ConnectTimeout:
         pass
 
     return json_res
@@ -230,34 +241,13 @@ def set_resource_info():
     existence_db(db_source)
     create_resource_schema(db_source, detail_schema_name)
     db_source['schemaName'] = detail_schema_name
-    engine = insert_to_detail_engine(db_source)
-    
-    # req -> db
-    order_key_dict = naverCloud.url_info()
-    order_key = [x.lower() for x in order_key_dict if x != 'Region']
-    
-    for tbl_name in order_key:
-        print("****************************", tbl_name)
-        tbl_info = req[tbl_name]
-        try:
-            pd.DataFrame(**tbl_info).to_sql(tbl_name, engine, schema=detail_schema_name, if_exists='replace', index=False)
-        except:
-            # push error (★ RMQ 비동기 전달 -> NaverStop ★)
-            pass
+    param_obj = {'db_source' : db_source, 'req' : req, 'config_path' : config_path}
 
-    DETAIL_SCHEMA = detail_schema_name
-    gcf.Config(config_path).updateConfig('DATABASE-INFO', 'detailSchemaName', detail_schema_name)
-    
-    # del ds_ schema
-    cd = cda.Connect(db=db_source)
-    schema_list = [x['schema_name'] for x in cd.query_db("show schemas;") if x['schema_name'][:3] == 'ds_']
-    cyclic = read_conf()['CYCLIC-SYNC'].copy()
-    retention_policy = int(cyclic['schemaRetentionPolicy'])
-    
-    if len(schema_list) >= retention_policy:
-        del_targets = sorted(schema_list, reverse=True)[retention_policy:]
-        for del_target in del_targets:
-            cd.delete_schema(del_target)
+    with open(f"./{detail_schema_name}.pkl", 'wb') as file: 
+        pickle.dump(param_obj, file)
+
+    # req -> db
+    subprocess.Popen([sys.executable or 'python', 'insertDetail.py', detail_schema_name])
 
     return {"success" : "Done."}, 200
 
@@ -398,14 +388,13 @@ def delete_vpc():
 if __name__ == '__main__':
     status_path = "../conf/status.conf"
     config_path = "../conf/app.conf"
-    db_bin_path = "./db_bin.pkl"
-    target_url = "http://localhost:9999"    # it is test ip for target
+    db_temp_path = "./db_temp.pkl"
+    target_url = "http://175.45.221.223:9999"    # it is test ip for target
 
-    HEADER = {'Content-Type': 'application/json'}
     RESOURCE_SCHEMA = read_conf()['DATABASE-INFO']['schemaName']
     DETAIL_SCHEMA = read_conf()['DATABASE-INFO']['detailSchemaName']
 
-    cyclic_sync = subprocess.Popen([sys.executable or 'python', 'cyclicSync.py', status_path, config_path])    #For Test
+    cyclic_sync = subprocess.Popen([sys.executable or 'python', 'cyclicSync.py', status_path, config_path])
     atexit.register(cyclic_sync.kill)
     
     app.run(threaded=True, debug=True, host='0.0.0.0', port=9999)
