@@ -57,7 +57,7 @@ class Read2Insert():
             print(query)
             traceback.print_exc()
             print(f"Error => {e}\n")
-            sys.exit()
+            #sys.exit()
 
     def get_id(self, tbl, where, value):
         result = self.cc.query_db(f"SELECT id FROM {self.destination['schemaName']}.{tbl} where {where}='{value}';")
