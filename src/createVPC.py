@@ -1,7 +1,7 @@
 import connDbnApi as cda
 import naverCloud
 import json
-
+import re
 class Create():
     def __init__(self, source_db, target_api):
         self.source_db = source_db
@@ -12,6 +12,7 @@ class Create():
         self.conn = self.cc.connect_cockroachdb()
         self.conn.autocommit = True
         self.cur = self.conn.cursor()
+        self.recovery_schema = "recovery"
 
     def read_db(self):
         res = self.cc.request_api(self.api_url, self.sub_url)
@@ -110,8 +111,9 @@ class Create():
             elif key == 'networkInterfaceNoList':#양식이 조금 달라서 .N 에 넣지 않았음
                 # 만들어야하는 키 목록 1. networkInterfaceOrder, 2. accessControlGroupNoList
                 # networkInterfaceList.N.networkInterfaceNo
+                nic_list = re.findall(r'\d+', row_dict['networkinterfacenolist'])
                 cnt = 0
-                for nic in row_dict['networkinterfacenolist']:
+                for nic in nic_list:
                     #네트워크인터페이스가 할당중이라면 실패함, 할당할 네트워크인터페이스가 서버에 붙어있지 않은 상태에서만 networkInterfaceNo 부여가 가능
                     #k1 = f'networkInterfaceList.{cnt+1}.networkInterfaceNo'
                     #v1 = f'{nic}'
@@ -120,11 +122,14 @@ class Create():
                     v2 = f'{cnt}'
                     dict1.update({k2: v2})
                     acg_cnt = 0
-                    acg_list = self.get_value('accesscontrolgroupnolist', 'networkinterface', **{'networkinterfaceno' : nic})
-                    for acg in acg_list:
-                        k3 = f'networkInterfaceList.{cnt+1}.accessControlGroupNoList.{acg_cnt+1}'
-                        v3 = f'{acg}'
-                        dict1.update({k3: v3})
+                    # acg_list = self.get_value('accesscontrolgroupnolist', 'networkinterface', **{'networkinterfaceno' : nic})
+                    acg_list_str = self.get_value('accesscontrolgroupnolist', 'networkinterface',**{'networkinterfaceno': nic})
+                    if acg_list_str is not None:
+                        acg_list = re.findall(r'\d+', acg_list_str)  # 문자열에서 숫자 값 추출
+                        for acg in acg_list:
+                            k3 = f'networkInterfaceList.{cnt+1}.accessControlGroupNoList.{acg_cnt+1}'
+                            v3 = f'{acg}'
+                            dict1.update({k3: v3})
                     cnt += 1
                 continue
 
@@ -204,56 +209,57 @@ class Create():
             raise Exception("[ERR] " + str(result))
         else:
             return dict1
-        
+
     # AUTHOR: 차동현 / cdh@cbnu.ac.kr
     # DATE: 2024-01-29
     # DESCRIPTION: 무료 자원에 대하여 모든 자원 생성 및 특정 자원에 대하여 생성
     # TODO: -
-        
+
     def run(self):
         ### for this in self.nc.keys():
-        this = 'recoveryplan' ### step.1 본인 Table을 기입, 'all'로 설정시 전체 자원 생성
+        this = 'recoveryplan'  ### step.1 본인 Table을 기입, 'all'로 설정시 전체 자원 생성
         sent_flag = False
         if this == 'recoveryplan':
-            recoveryplan_query = f"SELECT * FROM {self.source_db['schemaName']}.recoveryplan WHERE completeflag=false;"
+            recoveryplan_query = f"SELECT * FROM {self.recovery_schema}.recoveryplan WHERE completeflag=false;"
             self.cur.execute(recoveryplan_query)
             recoveryplan_table = self.cur.fetchall()
             this = list(recoveryplan_table[0])[2]
+            print(f"recovery plan list ==> {this}")
             sent_flag = True
         if this == 'all':
             for this in naverCloud.include_keys():
                 try:
                     self.set_url(this, "create")
                 except KeyError:
-                    pass    # continue
+                    pass  # continue
                 # Unit test
                 if this == 'loadbalancerlistener':
                     tmp_query = f"SELECT * FROM {self.source_db['schemaName']}.loadbalancerinstance WHERE loadbalancerlistenernolist = '[]';"
                     self.cur.execute(tmp_query)
                     resultslllr = self.cur.fetchall()
-                    print("len-------------",len(resultslllr))
+                    print("len-------------", len(resultslllr))
                     for i in range(len(resultslllr)):
-                            row = resultslllr[i]
-                            self.create(row)
-                            print("row is : ", row)
-                            self.set_url(this, "read")
-                            print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
-                            i+=1
+                        row = resultslllr[i]
+                        self.create(row)
+                        print("row is : ", row)
+                        self.set_url(this, "read")
+                        print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+                        i += 1
                 else:
                     row = self.get_table()[0]
                     for key in row.keys():
                         try:
                             if this != 'vpc':
                                 if key == 'vpcno':
-                                    row[key] =  tmp_vpcno
+                                    row[key] = tmp_vpcno
                                 elif key == 'accesscontrolgroupno':
-                                    row[key] =  tmp_acgno
-                                elif key ==  'memberserverimageinstanceno':
-                                    row[key] =  tmp_msiino
+                                    row[key] = tmp_acgno
+                                elif key == 'memberserverimageinstanceno':
+                                    row[key] = tmp_msiino
                                 elif key == 'launchconfigurationno':
-                                    row[key] =  tmp_lcno
+                                    row[key] = tmp_lcno
                                 elif key == 'subnetno':
-                                    row[key] =  tmp_subnetno
+                                    row[key] = tmp_subnetno
                         except:
                             pass
                     try:
@@ -262,17 +268,24 @@ class Create():
                     except:
                         pass
                     print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
-                    
+
                     if this == 'vpc':
-                        tmp_vpcno = json.loads(self.pretty_dict(self.read_db()))['getVpcListResponse']['vpcList'][0]['vpcNo'] 
+                        tmp_vpcno = json.loads(self.pretty_dict(self.read_db()))['getVpcListResponse']['vpcList'][0][
+                            'vpcNo']
                     elif this == 'accesscontrolgroup':
-                        tmp_acgno = json.loads(self.pretty_dict(self.read_db()))['getAccessControlGroupListResponse']['accessControlGroupList'][0]['accessControlGroupNo']                         
+                        tmp_acgno = json.loads(self.pretty_dict(self.read_db()))['getAccessControlGroupListResponse'][
+                            'accessControlGroupList'][0]['accessControlGroupNo']
                     elif this == 'memberserverimageinstance':
-                        tmp_msiino = json.loads(self.pretty_dict(self.read_db()))['getmemberServerImageInstanceListResponse']['memberServerImageInstanceList'][0]['memberServerImageInstanceNo']                           
+                        tmp_msiino = \
+                        json.loads(self.pretty_dict(self.read_db()))['getmemberServerImageInstanceListResponse'][
+                            'memberServerImageInstanceList'][0]['memberServerImageInstanceNo']
                     elif this == 'launchconfiguration':
-                        tmp_lcno = json.loads(self.pretty_dict(self.read_db()))['getlaunchConfigurationListResponse']['launchConfigurationList'][0]['launchConfigurationNo']                      
+                        tmp_lcno = json.loads(self.pretty_dict(self.read_db()))['getlaunchConfigurationListResponse'][
+                            'launchConfigurationList'][0]['launchConfigurationNo']
                     elif this == 'subnet':
-                        tmp_subnetno = json.loads(self.pretty_dict(self.read_db()))['getsubnetListResponse']['subnetList'][0]['subnetNo']
+                        tmp_subnetno = \
+                        json.loads(self.pretty_dict(self.read_db()))['getsubnetListResponse']['subnetList'][0][
+                            'subnetNo']
                 # try:
                 #     self.create(row)
                 # except Exception as e:
@@ -280,8 +293,8 @@ class Create():
                 # finally:
                 #     self.set_url(this, "read")
                 #     print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
-                    ### step.5 터미널에 출력되는 1~5를 확인
-                
+                ### step.5 터미널에 출력되는 1~5를 확인
+
                 # Integration test
                 # rows = self.get_table()
                 # for row in rows:
@@ -296,22 +309,22 @@ class Create():
             try:
                 self.set_url(this, "create")
             except KeyError:
-                pass    # continue
+                pass  # continue
             # Unit test
             if this == 'loadbalancerlistener':
                 tmp_query = f"SELECT * FROM {self.source_db['schemaName']}.loadbalancerinstance WHERE loadbalancerlistenernolist = '[]';"
                 self.cur.execute(tmp_query)
                 resultslllr = self.cur.fetchall()
-                print("len-------------",len(resultslllr))
+                print("len-------------", len(resultslllr))
                 for i in range(len(resultslllr)):
-                        row = resultslllr[i]
-                        self.set_url(this, "read")
-                        self.create(row)
-                        print("row is : ", row)
-                        print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
-                        i+=1
+                    row = resultslllr[i]
+                    self.set_url(this, "read")
+                    self.create(row)
+                    print("row is : ", row)
+                    print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+                    i += 1
             else:
-                tmp_res = f"SELECT sourcekey FROM {self.source_db['schemaName']}.recoveryplan ;"
+                tmp_res = f"SELECT sourcekey FROM {self.recovery_schema}.recoveryplan ;"
                 self.cur.execute(tmp_res)
                 tmp_res = list(self.cur.fetchall())[0][0]
                 row = (f"SELECT * FROM {self.source_db['schemaName']}.{this} WHERE {this}no = '{tmp_res}';")
@@ -322,30 +335,31 @@ class Create():
                 api_res = self.pretty_dict(self.read_db())
                 print('5. api result\n', api_res, '\n')
             if sent_flag == True:
-                        sent_flag = False
-                        print('5.1. Send information into recovery result table.')
-                        # query = f"UPDATE {self.source_db['schemaName']}.recoveryplan SET completeflag = true WHERE sourcekey = '{tmp_res}';"
-                        query = f"UPDATE recovery.recoveryplan SET completeflag = true WHERE sourcekey = '{tmp_res}';"
-                        self.cur.execute(query)
-                        # query = f"SELECT requestid, resourcetype FROM {self.source_db['schemaName']}.recoveryplan WHERE sourcekey ='{tmp_res}';"
-                        query = f"SELECT requestid, resourcetype FROM recovery.recoveryplan WHERE sourcekey ='{tmp_res}';"
-                        self.cur.execute(query)
-                        x = list(self.cur.fetchall())
-                        loaded_res = json.loads(api_res)
-                        if this == 'vpc':
-                            this_no = loaded_res['getVpcListResponse']['vpcList'][0][f'{this}No']
-                            this_code = loaded_res['getVpcListResponse']['vpcList'][0][f'{this}Status']['code']
-                        if this == 'serverinstance':
-                            before_this = 'serverInstance'
-                            this_no = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][f'{before_this}No']
-                            this_code = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][f'{before_this}Status']['code']
-                        y = (this_no, this_code)
-                        import datetime
-                        current_timestamp = datetime.datetime.now()
-                        # insert_query = f"INSERT INTO {self.source_db['schemaName']}.recoveryresults (requestid, resourcetype, targetkey, sourcekey, timestamp, status, detail) VALUES ('{x[0][0]}', '{x[0][1]}', '{y[0]}', '{tmp_res}', '{current_timestamp}', '{y[1]}', '{api_res}')"
-                        insert_query = f"INSERT INTO recovery.recoveryresults (requestid, resourcetype, targetkey, sourcekey, timestamp, status, detail) VALUES ('{x[0][0]}', '{self.source_db['schemaName']}.{x[0][1]}', '{y[0]}', '{tmp_res}', '{current_timestamp}', '{y[1]}', '{api_res}')"
-                        self.cur.execute(insert_query)
-                        self.conn.commit()
+                sent_flag = False
+                print('5.1. Send information into recovery result table.')
+                # query = f"UPDATE {self.source_db['schemaName']}.recoveryplan SET completeflag = true WHERE sourcekey = '{tmp_res}';"
+                query = f"UPDATE recovery.recoveryplan SET completeflag = true WHERE sourcekey = '{tmp_res}';"
+                self.cur.execute(query)
+                # query = f"SELECT requestid, resourcetype FROM {self.source_db['schemaName']}.recoveryplan WHERE sourcekey ='{tmp_res}';"
+                query = f"SELECT requestid, resourcetype FROM recovery.recoveryplan WHERE sourcekey ='{tmp_res}';"
+                self.cur.execute(query)
+                x = list(self.cur.fetchall())
+                loaded_res = json.loads(api_res)
+                if this == 'vpc':
+                    this_no = loaded_res['getVpcListResponse']['vpcList'][0][f'{this}No']
+                    this_code = loaded_res['getVpcListResponse']['vpcList'][0][f'{this}Status']['code']
+                if this == 'serverinstance':
+                    before_this = 'serverInstance'
+                    this_no = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][f'{before_this}No']
+                    this_code = \
+                    loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][f'{before_this}Status']['code']
+                y = (this_no, this_code)
+                import datetime
+                current_timestamp = datetime.datetime.now()
+                # insert_query = f"INSERT INTO {self.source_db['schemaName']}.recoveryresults (requestid, resourcetype, targetkey, sourcekey, timestamp, status, detail) VALUES ('{x[0][0]}', '{x[0][1]}', '{y[0]}', '{tmp_res}', '{current_timestamp}', '{y[1]}', '{api_res}')"
+                insert_query = f"INSERT INTO recovery.recoveryresults (requestid, resourcetype, targetkey, sourcekey, timestamp, status, detail) VALUES ('{x[0][0]}', '{self.source_db['schemaName']}.{x[0][1]}', '{y[0]}', '{tmp_res}', '{current_timestamp}', '{y[1]}', '{api_res}')"
+                self.cur.execute(insert_query)
+                self.conn.commit()
             # try:
             #     self.create(row)
             # except Exception as e:
@@ -353,15 +367,15 @@ class Create():
             # finally:
             #     self.set_url(this, "read")
             #     print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
-                ### step.5 터미널에 출력되는 1~5를 확인
-            
+            ### step.5 터미널에 출력되는 1~5를 확인
+
             # Integration test
             # rows = self.get_table()
             # for row in rows:
             #     try:
             #         self.create(row)
             #     except Exception as e:
-            #         print(e)
+            #         print(e)0
             #     finally:
             #         self.set_url(this, "read")
             #         print('5. api result\n', self.pretty_dict(self.read_db()), '\n')            
