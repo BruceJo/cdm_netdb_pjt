@@ -200,6 +200,8 @@ def set_schema_name():
         global DETAIL_SCHEMA
         DETAIL_SCHEMA = req['schemaName']
         gcf.Config(config_path).updateConfig('DATABASE-INFO', 'detailSchemaName', req['schemaName'])
+    
+    return 'ok'
         
 @app.route('/source_to_target', methods=['POST'])
 def source_to_target():
@@ -213,10 +215,6 @@ def source_to_target():
         result[tbl] = pd.DataFrame(__tbl).to_dict('split', index=False)
 
     json_res = json.dumps(result, default=str)
-
-    # 기록용도
-    # with open(db_temp_path, 'wb') as file: 
-    #     pickle.dump(json_res, file)
     
     try:
         requests.post(target_url+"/set_resource_info", 
@@ -389,7 +387,8 @@ if __name__ == '__main__':
     status_path = "../conf/status.conf"
     config_path = "../conf/app.conf"
     db_temp_path = "./db_temp.pkl"
-    target_url = "http://175.45.221.223:9999"    # it is test ip for target
+    target_ip = read_conf()['DATABASE-INFO']['target']
+    target_url = f"http://{target_ip}:9999"    # it is test ip for target
 
     RESOURCE_SCHEMA = read_conf()['DATABASE-INFO']['schemaName']
     DETAIL_SCHEMA = read_conf()['DATABASE-INFO']['detailSchemaName']

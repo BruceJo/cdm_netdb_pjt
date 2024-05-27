@@ -32,18 +32,18 @@ if __name__ == '__main__':
         tbl_info = req[tbl_name]
         __temp = pd.DataFrame(**tbl_info)
         if __temp.empty != True:
-            try:
-                __temp.to_sql(tbl_name, engine, schema=detail_schema_name, if_exists='replace', index=False)
-            except:
-                # push error (★ RMQ 비동기 전달 -> NaverStop ★)
-                pass
             print("insert to ", tbl_name)
-        else:
-            print("empty, ", tbl_name)
+            __temp.to_sql(tbl_name, engine, schema=detail_schema_name, if_exists='replace', index=False)
+            # try:
+            #     __temp.to_sql(tbl_name, engine, schema=detail_schema_name, if_exists='replace', index=False)
+            # except:
+            #     # push error (★ RMQ 비동기 전달 -> NaverStop ★)
+            #     pass
     
     # del ds_ schema
     cd = cda.Connect(db=db_source)
     schema_list = [x['schema_name'] for x in cd.query_db("show schemas;") if x['schema_name'][:3] == 'ds_']
+    schema_list = [x for x in schema_list if x != detail_schema_name]
     last_schema = max(schema_list)
     
     if last_schema < detail_schema_name:
@@ -53,7 +53,8 @@ if __name__ == '__main__':
 
     cyclic = gcf.Config(config_path).getConfig()['CYCLIC-SYNC'].copy()
     retention_policy = int(cyclic['schemaRetentionPolicy'])
-    print(len(schema_list), retention_policy)
+    schema_list = schema_list + [detail_schema_name]
+
     if len(schema_list) >= retention_policy:
         del_targets = sorted(schema_list, reverse=True)[retention_policy:]
         print('schema_list', schema_list)

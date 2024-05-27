@@ -289,7 +289,7 @@ CREATE TABLE IF NOT EXISTS accesscontrolgrouprule (
 	accesscontrolgroupruletype VARCHAR(255) NOT NULL,
 	accesscontrolgroupruledescription VARCHAR(255) NOT NULL,
 	CONSTRAINT accesscontrolgrouprule_pkey PRIMARY KEY (id ASC),
-    CONSTRAINT accesscontrolgrouprule_ukey UNIQUE (accesscontrolgroupid),
+    -- CONSTRAINT accesscontrolgrouprule_ukey UNIQUE (accesscontrolgroupid),
 	CONSTRAINT accesscontrolgrouprule_accesscontrolgroupid_fkey FOREIGN KEY (accesscontrolgroupid) REFERENCES accesscontrolgroup(id),
 	CONSTRAINT accesscontrolgrouprule_protocoltypeid_fkey FOREIGN KEY (protocoltypeid) REFERENCES protocoltype(id)
 );
