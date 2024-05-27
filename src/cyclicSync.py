@@ -38,7 +38,6 @@ class Tracer():
             'x-ncp-iam-access-key': self.access_key,
             'x-ncp-apigw-signature-v2': signature
         }
-        print('http_header', http_header)
         
         # https://api-gov.ncloud-docs.com/docs/management-cloudactivitytracer-getactivitylist
         json_body = {
@@ -105,16 +104,19 @@ class History():
         _from, _to = self.trans_utc(self.period_time, self.period_unit)
         now_res = self.cc.send_request(_from, _to)
         
-        with open(binary_path, 'rb') as file: 
-            pre_res = pickle.load(file)
-        
-        print(set(now_res), type(now_res))
-        print(set(pre_res), type(pre_res))
+        try:
+            with open(binary_path, 'rb') as file: 
+                pre_res = pickle.load(file)
+        except FileNotFoundError:
+            write_status('init')
+            return False
+
         diff_cnt = len(set(now_res) - set(pre_res))
 
-        print('diff_cnt : ', diff_cnt)
-        
         if diff_cnt:
+            print(set(now_res), type(now_res))
+            print(set(pre_res), type(pre_res))
+            print('diff_cnt : ', diff_cnt)
             # 10 : pushDeltaInfo(Async) -> RMQ로 비동기 전달
             # ★ diff_json -> sub process parameter ★
             subprocess.Popen([sys.executable or 'python', 'cyclicSub.py', status_path, config_path, binary_path, ])
@@ -153,7 +155,7 @@ if __name__ == '__main__':
     while True:
         gh = History(read_conf()['API-SOURCE-NAVER-CLOUD'], read_conf()['CYCLIC-SYNC'])
         every = int(gh.to_sec(gh.every_time, gh.every_unit))
-        print("loop start")
+        print("subprocess loop start")
 
         if check_status('init'):
             gh.make_pre_result()
@@ -182,5 +184,5 @@ if __name__ == '__main__':
                 ## get schema_list
                 # if len(schema_list) >= schema_retention_policy: drop old schemas
                 ## write_status('idle')
-        print("loop end")
+        print("subprocess loop end")
         time.sleep(every)

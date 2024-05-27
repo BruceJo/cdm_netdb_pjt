@@ -16,7 +16,6 @@ def read_conf():
     return gcf.Config(config_path).getConfig()
 
 if __name__ == '__main__':
-    HEADER = {'Content-Type': 'application/json'}
     status_path = sys.argv[1]
     config_path = sys.argv[2]
     binary_path = sys.argv[3]
@@ -47,8 +46,8 @@ if __name__ == '__main__':
     
     if last_schema < resource_schema_name:
         response = requests.post("http://localhost:9999/set_schema_name",
-                                 data=json.dumps({'schemaName' : resource_schema_name}),
-                                 headers=HEADER)
+                                 data=json.dumps({'type' : 'resource', 'schemaName' : resource_schema_name}),
+                                 headers={'Content-Type': 'application/json'})
         # get resouece_info_from_db
         # push resource_info_from_db (★ RMQ 비동기 전달 -> NaverStop ★)
 
@@ -56,7 +55,11 @@ if __name__ == '__main__':
     retention_policy = int(cyclic['schemaRetentionPolicy'])
     if len(schema_list) >= retention_policy:
         del_targets = sorted(schema_list, reverse=True)[retention_policy:]
+        print('schema_list', schema_list)
+        print('del_targets', del_targets)
+        
         for del_target in del_targets:
             cd.delete_schema(del_target)
-
+        
+        print("Past schema deletion completed by retention policy.")
     write_status('idle')
