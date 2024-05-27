@@ -24,21 +24,21 @@ if __name__ == '__main__':
 
     engine = m.insert_to_detail_engine(db_source)
 
-    order_key_dict = naverCloud.url_info()
-    order_key = [x.lower() for x in order_key_dict if x != 'Region'] + ['region']
-    order_key = [x for x in order_key if x in req.keys()]
+    order_key_dict = naverCloud.get_ordered_table_list()
+    order_key = [x for x in order_key_dict.keys() if x in req.keys()]
 
     for tbl_name in order_key:
         tbl_info = req[tbl_name]
         __temp = pd.DataFrame(**tbl_info)
         if __temp.empty != True:
             print("insert to ", tbl_name)
-            __temp.to_sql(tbl_name, engine, schema=detail_schema_name, if_exists='replace', index=False)
-            # try:
-            #     __temp.to_sql(tbl_name, engine, schema=detail_schema_name, if_exists='replace', index=False)
-            # except:
-            #     # push error (★ RMQ 비동기 전달 -> NaverStop ★)
-            #     pass
+            del __temp['id']
+            
+            try:
+                __temp.to_sql(tbl_name, engine, schema=detail_schema_name, if_exists='replace', index=False)
+            except:
+                # push error (★ RMQ 비동기 전달 -> NaverStop ★)
+                pass
     
     # del ds_ schema
     cd = cda.Connect(db=db_source)

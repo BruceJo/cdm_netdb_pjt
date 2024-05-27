@@ -67,6 +67,14 @@ def create_resource_schema(source, schema_name):
     cock_create.create_schema()
     cock_create.create_table()
 
+def create_detail_schema(source, schema_name):
+    source = source.copy()
+    source['schemaName'] = schema_name
+    source['schemaPath'] = source['detailSchemaPath']
+    cock_create = createSchema.Create(source)
+    cock_create.create_schema()
+    cock_create.create_table()
+
 def read_conf():
     return gcf.Config(config_path).getConfig()
 
@@ -237,7 +245,7 @@ def set_resource_info():
 
     db_source = read_conf()['DATABASE-INFO'].copy()
     existence_db(db_source)
-    create_resource_schema(db_source, detail_schema_name)
+    create_detail_schema(db_source, detail_schema_name)
     db_source['schemaName'] = detail_schema_name
     param_obj = {'db_source' : db_source, 'req' : req, 'config_path' : config_path}
 

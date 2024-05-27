@@ -2,6 +2,49 @@
 # Common Info                              #
 ############################################
 
+def get_ordered_table_list():
+    return {        
+        "accesscontrolgroup": 1,
+        "adjustmenttype": 2,
+        "inautoscalinggroupserverinstance": 3,
+        "initscript": 4,
+        "loadbalancerruleaction": 5,
+        "loadbalancerrulecondition": 6,
+        "loginkey": 7,
+        "memberserverimageinstance": 8,
+        "placementgroup": 9,
+        "product": 10,
+        "protocoltype": 11,
+        "publicipinstance": 12,
+        "region": 13,
+        "accesscontrolgrouprule": 14,
+        "launchconfiguration": 15,
+        "vpc": 16,
+        "vpcpeeringinstance": 17,
+        "zone": 18,
+        "blockstorageinstance": 19,
+        "blockstoragesnapshotinstance": 20,
+        "loadbalancerinstance": 21,
+        "loadbalancerlistener": 22,
+        "loadbalancerrule": 23,
+        "memberserverimage": 24,
+        "networkacl": 25,
+        "networkacldenyallowgroup": 26,
+        "networkaclrule": 27,
+        "routetable": 28,
+        "subnet": 29,
+        "autoscalinggroup": 30,
+        "loadbalancersubnet": 31,
+        "natgatewayinstance": 32,
+        "networkinterface": 33,
+        "route": 34,
+        "scalingpolicy": 35,
+        "scheduledupdategroupaction": 36,
+        "serverinstance": 37,
+        "activitylog": 38,
+        "targetgroup": 39
+    }
+
 def url_info():
     return {
         ### step.2 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 주소를 작성
