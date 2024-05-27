@@ -32,7 +32,7 @@ if __name__ == '__main__':
         __temp = pd.DataFrame(**tbl_info)
         if __temp.empty != True:
             print("insert to ", tbl_name)
-            del __temp['id']
+            #del __temp['id']
             
             try:
                 __temp.to_sql(tbl_name, engine, schema=detail_schema_name, if_exists='replace', index=False)
