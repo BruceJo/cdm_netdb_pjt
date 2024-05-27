@@ -239,8 +239,9 @@ CREATE TABLE IF NOT EXISTS product (
 	dbkindcode VARCHAR(255) NULL,
 	addblockstoragesize INT8 NULL,
 	generationcode VARCHAR(255) NULL,
+	productcategory VARCHAR(255) NULL, --0527 fix
 	CONSTRAINT product_pkey PRIMARY KEY (id ASC),
-    CONSTRAINT product_ukey UNIQUE (productcode)	-- PKEY 가 아니라 UKEY 로 변경
+ 	CONSTRAINT product_ukey UNIQUE (productcode)	-- PKEY 가 아니라 UKEY 로 변경
 );
 
 
