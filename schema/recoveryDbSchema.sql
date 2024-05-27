@@ -1,4 +1,3 @@
---- recovery details
 DROP TABLE IF EXISTS recoveryplan;
 DROP TABLE IF EXISTS recoveryresults;
 

@@ -1,4 +1,3 @@
---- recovery details
 DROP TABLE IF EXISTS accesscontrolgroup;
 DROP TABLE IF EXISTS adjustmenttype;
 DROP TABLE IF EXISTS inautoscalinggroupserverinstance;
