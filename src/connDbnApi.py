@@ -136,3 +136,15 @@ class Connect():
         conn.close()
 
         return response
+
+    def query_dbv(self, q, v):
+        #for update without fetch lhb
+        conn = self.connect_cockroachdb()
+        cur = conn.cursor()
+
+        cur.execute(f"use {self.db_name};")
+        print(f"use {self.db_name};")
+        cur.execute(q, v)
+        conn.commit()
+        cur.close()
+        conn.close()
