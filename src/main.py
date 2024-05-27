@@ -220,7 +220,8 @@ def source_to_target():
     result = {}
     for tbl in table_list:
         __tbl = cd.query_db(f"select * from {db_source['schemaName']}.{tbl};")
-        result[tbl] = pd.DataFrame(__tbl).to_dict('split', index=False)
+        result[tbl] = pd.DataFrame(__tbl).to_dict('split')
+        # result[tbl] = pd.DataFrame(__tbl).to_dict('split', index=False)
 
     json_res = json.dumps(result, default=str)
     
@@ -386,9 +387,98 @@ def delete_vpc():
     api_target = change_default(req, api_target, 'apiTarget')
     
     ud = vudVPC.VUD(api_target, req['delete'], 'd')
-    
     return ud.run()
 
+@app.route('/recovery_vpc', methods=['POST'])
+def recovery_vpc():
+    # request format. Required ["dbSource"]["schemaName"]
+    # {
+    #     "dbSource": {
+    #         "dbName": "cdm_fix",
+    #         "schemaName": "{your_schema_name}",
+    #         "host": "223.130.173.142",
+    #         "port": "26257",
+    #         "user": "root"
+    #     },
+    #     "apiTarget": {
+    #         "accessKey": "mYUP1ZqESUOpjyOokWC8",
+    #         "secretKey": "31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM",
+    #         "ncloudUrl": "https://ncloud.apigw.gov-ntruss.com",
+    #         "billingApiUrl": "https://billingapi.apigw.gov-ntruss.com"
+    #     }
+    # }
+    req = request.get_json()
+    print(req)
+    if 'dbSource' not in req:
+        return 'fail, need key ["dbSource"]', 400
+    elif 'schemaName' not in req['dbSource']:
+        return 'fail, need key ["dbSource"]["schemaName"]', 400
+
+    db_source = read_conf()['DATABASE-INFO'].copy()
+    db_source = change_default(req, db_source, 'dbSource')
+
+    cd = cda.Connect(db=db_source)
+    schema_list = [x['schema_name'] for x in cd.query_db("show schemas;") if x['schema_name'][:3] == 'ds_']
+    # schema_list = [x['schema_name'] for x in cd.query_db("show schemas;") if x['schema_name'][:3] == 'rs_']#for test
+    latest = sorted(schema_list, reverse=True)[0]
+    print(f"latest => {latest}")
+
+    db_source['schema_name'] = latest
+    db_source['schemaName'] = latest
+
+    api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
+
+    # db_source = read_conf()['DATABASE-INFO'].copy()
+    # api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
+    #
+    # db_source = change_default(req, db_source, 'dbSource')
+    # api_target = change_default(req, api_target, 'apiTarget')
+    #
+    # # print(db_source, '\n', api_target)
+    cv = createVPC.Create(db_source, api_target)
+    cv.run()
+
+    return 'success'
+
+
+@app.route('/set_recovery_info', methods=['POST'])
+def set_recovery_info():
+    # request format
+    # {}, empty json
+    req = request.get_json()
+    if 'sourcekey' not in req:
+        return 'fail, need key ["sourcekey"]', 400
+
+    db_source = read_conf()['DATABASE-INFO'].copy()
+    # cd = cda.Connect(db=db_source)
+    # db_source['dbName'] = constant_db_name
+
+    constant_db_name = db_source['dbName']
+    cd = cda.Connect(db=db_source)
+    db_source['dbName'] = constant_db_name
+
+    recovery_info = {
+        'requestid': req.get('requestid', 'localhost'),
+        'resourcetype': req.get('resourcetype', ''),
+        'sourcekey': req['sourcekey'],
+        'timestamp': req['timestamp'],
+        'command': req.get('command', 'CREATE'),
+        'detail': json.dumps(req.get('detail', {})),
+        'completeflag': req.get('completeflag', False)
+    }
+
+    query = f"""
+        INSERT INTO {cd.db_name}.recovery.recoveryplan (requestid, resourcetype, sourcekey, "timestamp", command, detail, completeflag)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """
+    values = (
+    recovery_info['requestid'], recovery_info['resourcetype'], recovery_info['sourcekey'], recovery_info['timestamp'],
+    recovery_info['command'], recovery_info['detail'], recovery_info['completeflag'])
+
+    cd.query_dbv(query, values)
+    #recovery table에 데이터 삽입
+
+    return 'success'
 
 # Server Run
 if __name__ == '__main__':
