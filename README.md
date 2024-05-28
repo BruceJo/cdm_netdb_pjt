@@ -3,20 +3,33 @@
 ## Dir.
 ```
 ./
+|-- .gitignore
 |-- conf
-|   `-- app.conf
+|   |-- app.conf
+|   `-- status.conf
 |-- schema
-|   `--naverCloudSchema.sql
+|   |-- detailDbSchema.sql
+|   |-- naverCloudSchema.sql
+|   `-- recoveryDbSchema.sql
 |-- src
+|   |-- apiClient.py
 |   |-- connDbnApi.py
+|   |-- createALL.py
 |   |-- createSchema.py
 |   |-- createVPC.py
+|   |-- cyclicSub.py
+|   |-- cyclicSync.py
+|   |-- demo_test.ipynb
 |   |-- getConfig.py
+|   |-- history.pkl
+|   |-- insertDetail.py
+|   |-- insert_query.log
 |   |-- main.py
+|   |-- masterController.py
 |   |-- naverCloud.py
+|   |-- naverController.py
 |   |-- readVPC2InsertDB.py
-|   |-- vudVPC.py
-|   `-- .gitignore
+|   `-- vudVPC.py
 `-- README.md
 ```
 
@@ -29,9 +42,14 @@ python 3.11
 
 ## Requirements
 ```
-flask
-flask_cors
-psycopg2
-requests
-configparser
+Flask==3.0.3
+Flask-Cors==4.0.1
+psycopg2==2.9.9
+configparser==7.0.0
+pandas==2.2.2
+SQLAlchemy==2.0.30
+sqlalchemy-cockroachdb==2.0.2
+requests==2.31.0
+pickle-mixin==1.0.2
+pika==1.3.2
 ```
