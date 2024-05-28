@@ -43,7 +43,7 @@ if __name__ == '__main__':
     cd = cda.Connect(db=db_source)
     schema_list = [x['schema_name'] for x in cd.query_db("show schemas;") if x['schema_name'][:3] == 'rs_']
     schema_list = [x for x in schema_list if x != resource_schema_name]
-    last_schema = max(schema_list)
+    last_schema = max(schema_list) if len(schema_list) != 0 else ''
     
     if last_schema < resource_schema_name:
         response = requests.post("http://localhost:9999/set_schema_name",
