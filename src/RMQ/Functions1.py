@@ -194,6 +194,16 @@ class Functions:
                     self.Volume(command, uuid)
                 else:
                     self.Volume(command, None)
+            elif command == 'create':
+                pass
+            elif command == 'create_sanpshot_volume':
+                pass
+            elif command == 'delete':
+                pass
+            elif command == 'attach':
+                pass
+            elif command == 'detach':
+                pass
         # 우동
         # create
         # create_sanpshot_volume
