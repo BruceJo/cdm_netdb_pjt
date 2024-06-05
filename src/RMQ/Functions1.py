@@ -236,7 +236,6 @@ class Functions:
         # delete
         # attach
         # detach
-
         elif code == 'snapshot':
             if command == 'get_all':
                 self.VolumeSnapshot(command, data)
@@ -478,7 +477,7 @@ class Functions:
                     }
                     }
                 payload = json.dumps(data)
-                response = requests.post(f"{self.base_url}/recovery_vpc", data=payload, headers=self.headers)
+                response = self.requests.post(f"{self.base_url}/recovery_vpc", data=payload, headers=self.headers)
                 
                 return response.text
 
