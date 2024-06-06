@@ -209,10 +209,33 @@ class Functions:
                     self.Volume(command, None)
                 pass
             elif command == 'delete':
+                if 'volume' in data and 'uuid' in data['volume']:
+                    uuid = data['volume']['uuid']
+                    self.Volume(command ,uuid)
+                else:
+                    self.Volume(command, None)
                 pass
             elif command == 'attach':
+                if 'volume' in data and 'uuid' in data['volume']:
+                    volume_uuid = data['volume']['uuid']
+                    if 'instance' in data and 'uuid' in data['instance']:
+                        instance_uuid = data['instance']['uuid']
+                        self.Volume(command, volume_uuid, instance_uuid)
+                    else:
+                        self.Volume(command, volume_uuid, None)
+                else:
+                    self.Volume(command, None, None)
                 pass
             elif command == 'detach':
+                if 'volume' in data and 'uuid' in data['volume']:
+                    uuid = data['volume']['uuid']
+                    if 'instance' in data and 'uuid' in data['instance']:
+                        instance_uuid = data['instance']['uuid']
+                        self.Volume(command, volume_uuid, instance_uuid)
+                    else:
+                        self.Volume(command, volume_uuid, None)
+                else:
+                    self.Volume(command, None, None)
                 pass
         # 우동
         def test_volume():
@@ -236,20 +259,20 @@ class Functions:
         # delete
         # attach
         # detach
-        elif code == 'snapshot':
-            if command == 'get_all':
-                self.VolumeSnapshot(command, data)
-            elif command == 'get':
-                if 'instance' in data and 'uuid' in data['instance']:
-                    uuid = data['instance']['uuid']
-                    self.VolumeSnapshot(command, uuid)
-                else:
-                    self.VolumeSnapshot(command, None)
-        #lhb add
-        elif code == 'resourceinfo':
-            self.ResourceInfo(command, data)
-        elif code == 'recoveryinfo':
-            self.RecoveryInfo(command, data)
+            if code == 'snapshot':
+                if command == 'get_all':
+                    self.VolumeSnapshot(command, data)
+                elif command == 'get':
+                    if 'instance' in data and 'uuid' in data['instance']:
+                        uuid = data['instance']['uuid']
+                        self.VolumeSnapshot(command, uuid)
+                    else:
+                        self.VolumeSnapshot(command, None)
+            #lhb add
+            elif code == 'resourceinfo':
+                self.ResourceInfo(command, data)
+            elif code == 'recoveryinfo':
+                self.RecoveryInfo(command, data)
         
         return True
 
@@ -445,6 +468,7 @@ class Functions:
 
             except Exception as e:
                 self.handle_exception("volume", e)
+### volume create
 
         elif command == 'create':
             #db 정보 받기
@@ -462,53 +486,165 @@ class Functions:
             
             #실제 command 실행
                 
-                if self.api_source is None or self.database is None:
-                    return "API source or database configuration is missing."
+                # if self.api_source is None or self.database is None:
+                #     return "API source or database configuration is missing."
         
-                data = {
-                    "apiSource": self.api_source,
-                    "dbSource": {
-                        "dbName": self.database["dbName"],
-                        "schemaName": self.database["schemaName"],
-                        "schemaPath": "../schema/naverCloudSchema.sql",
-                        "host": self.database["host"],
-                        "port": self.database["port"],
-                        "user": self.database["user"]
-                    }
-                    }
-                payload = json.dumps(data)
-                response = self.requests.post(f"{self.base_url}/recovery_vpc", data=payload, headers=self.headers)
-                
-                return response.text
-
-                # final_result = []
-                # for item in result_json:
-                #     volume = {
-                #         "instance": {
-                #             "uuid": item['serverinstanceno']
-                #         },
-                #         "volume": [
-                #             {
-                #                 "uuid": item['blockstorageinstanceno'],
-                #                 "name": item['blockstoragename'],
-                #                 "type": item['blockstoragediskdetailtype'],
-                #                 "size": item['blockstoragesize'],
-                #                 "status": item['blockstorageinstancestatusname'],
-                #                 "raw": {
-                #                     "blockstorageinstance": {"blockstorageinstanceno": item['blockstorageinstanceno']}}
-                #             }
-                #         ]
+                # data = {
+                #     "apiSource": self.api_source,
+                #     "dbSource": {
+                #         "dbName": self.database["dbName"],
+                #         "schemaName": self.database["schemaName"],
+                #         "schemaPath": "../schema/naverCloudSchema.sql",
+                #         "host": self.database["host"],
+                #         "port": self.database["port"],
+                #         "user": self.database["user"]
                 #     }
-                #     final_result.append(volume)
+                #     }
+                # payload = json.dumps(data)
+                # response = self.requests.post(f"{self.base_url}/recovery_vpc", data=payload, headers=self.headers)
+                
+                # return response.text
 
-                # message = self.create_response_message("volume", "success", "", {"instance_volume": final_result})
-                # self.send_response(message, "volume")
+                final_result = []
+                for item in result_json:
+                    volume = {
+                        "instance": {
+                            "uuid": item['serverinstanceno']
+                        },
+                        "volume": [
+                            {
+                                "uuid": item['blockstorageinstanceno'],
+                                "name": item['blockstoragename'],
+                                "type": item['blockstoragediskdetailtype'],
+                                "size": item['blockstoragesize'],
+                                "status": item['blockstorageinstancestatusname'],
+                                "raw": {
+                                    "blockstorageinstance": {"blockstorageinstanceno": item['blockstorageinstanceno']}}
+                            }
+                        ]
+                    }
+                    final_result.append(volume)
 
+                message = self.create_response_message("volume", "success", "", {"instance_volume": final_result})
+                self.send_response(message, "volume")
 
             except Exception as e:
                 self.handle_exception("volume", e)
+### volume delete
 
-                
+        elif command == 'delete':
+            #db 정보 받기
+            try:
+                instances = uuid
+                instance_uuids = [instance['uuid'] for instance in instances]
+                placeholders = ', '.join(['%s'] * len(instance_uuids))
+                query = f'SELECT * FROM {self.resource_db_schema}.blockstorageinstance WHERE serverinstanceno IN ({placeholders});'
+                rows = self.execute_query(query, instance_uuids)
+                if not rows:
+                    message = self.create_response_message("volume", "fail", "data not found", {})
+                    self.send_response(message, "volume")
+                    return
+                result_json = self.parse_query_result(rows)
+                final_result = []
+                for item in result_json:
+                    volume = {
+                        "instance": {
+                            "uuid": item['serverinstanceno']
+                        },
+                        "volume": [
+                            {
+                                "uuid": item['blockstorageinstanceno'],
+                                "name": item['blockstoragename'],
+                                "type": item['blockstoragediskdetailtype'],
+                                "size": item['blockstoragesize'],
+                                "status": item['blockstorageinstancestatusname'],
+                                "raw": {
+                                    "blockstorageinstance": {"blockstorageinstanceno": item['blockstorageinstanceno']}}
+                            }
+                        ]
+                    }
+                    final_result.append(volume)
+
+                message = self.create_response_message("volume", "success", "", {"instance_volume": final_result})
+                self.send_response(message, "volume")
+            except Exception as e:
+                self.handle_exception("volume", e)
+### volume attach
+        elif command == 'attach':
+            #db 정보 받기
+            try:
+                instances = uuid
+                instance_uuids = [instance['uuid'] for instance in instances]
+                placeholders = ', '.join(['%s'] * len(instance_uuids))
+                query = f'SELECT * FROM {self.resource_db_schema}.blockstorageinstance WHERE serverinstanceno IN ({placeholders});'
+                rows = self.execute_query(query, instance_uuids)
+                if not rows:
+                    message = self.create_response_message("volume", "fail", "data not found", {})
+                    self.send_response(message, "volume")
+                    return
+                result_json = self.parse_query_result(rows)
+                final_result = []
+                for item in result_json:
+                    volume = {
+                        "instance": {
+                            "uuid": item['serverinstanceno']
+                        },
+                        "volume": [
+                            {
+                                "uuid": item['blockstorageinstanceno'],
+                                "name": item['blockstoragename'],
+                                "type": item['blockstoragediskdetailtype'],
+                                "size": item['blockstoragesize'],
+                                "status": item['blockstorageinstancestatusname'],
+                                "raw": {
+                                    "blockstorageinstance": {"blockstorageinstanceno": item['blockstorageinstanceno']}}
+                            }
+                        ]
+                    }
+                    final_result.append(volume)
+
+                message = self.create_response_message("volume", "success", "", {"instance_volume": final_result, "instance_server": instances})
+                self.send_response(message, "volume")
+            except Exception as e:
+                self.handle_exception("volume", e)
+### volume detach
+        elif command == 'detach':
+            #db 정보 받기
+            try:
+                instances = uuid
+                instance_uuids = [instance['uuid'] for instance in instances]
+                placeholders = ', '.join(['%s'] * len(instance_uuids))
+                query = f'SELECT * FROM {self.resource_db_schema}.blockstorageinstance WHERE serverinstanceno IN ({placeholders});'
+                rows = self.execute_query(query, instance_uuids)
+                if not rows:
+                    message = self.create_response_message("volume", "fail", "data not found", {})
+                    self.send_response(message, "volume")
+                    return
+                result_json = self.parse_query_result(rows)
+                final_result = []
+                for item in result_json:
+                    volume = {
+                        "instance": {
+                            "uuid": item['serverinstanceno']
+                        },
+                        "volume": [
+                            {
+                                "uuid": item['blockstorageinstanceno'],
+                                "name": item['blockstoragename'],
+                                "type": item['blockstoragediskdetailtype'],
+                                "size": item['blockstoragesize'],
+                                "status": item['blockstorageinstancestatusname'],
+                                "raw": {
+                                    "blockstorageinstance": {"blockstorageinstanceno": item['blockstorageinstanceno']}}
+                            }
+                        ]
+                    }
+                    final_result.append(volume)
+
+                message = self.create_response_message("volume", "success", "", {"instance_server": instances})
+                self.send_response(message, "volume")
+            except Exception as e:
+                self.handle_exception("volume", e)
 
     def VolumeSnapshot(self, command, data):
         if command == 'get_all':
@@ -554,6 +690,63 @@ class Functions:
                 self.handle_exception("snapshot", e)
 
         elif command == 'get':
+            try:
+                instance_volumes = data.get('instance_volume', [])
+                final_result = []
+                for instance_volume in instance_volumes:
+                    instance_uuid = instance_volume['instance']['uuid']
+                    volume_uuids = [volume['uuid'] for volume in instance_volume['volume']]
+                    placeholders = ', '.join(['%s'] * len(volume_uuids))
+                    query = f'SELECT * FROM {self.resource_db_schema}.blockstoragesnapshotinstance WHERE serverinstanceno = %s AND blockstorageinstanceid IN ({placeholders});'
+                    params = [instance_uuid] + volume_uuids
+                    rows = self.execute_query(query, params)
+                    if not rows:
+                        continue
+                    result_json = self.parse_query_result(rows)
+
+                    snapshot_result = []
+                    for item in result_json:
+                        snapshot = {
+                            "instance": {
+                                "uuid": item['serverinstanceno']
+                            },
+                            "volume": [
+                                {
+                                    "uuid": item['blockstorageinstanceid'],
+                                    "snapshot": [
+                                        {
+                                            "uuid": item['blockstoragesnapshotinstanceno'],
+                                            "name": item['blockstoragesnapshotname'],
+                                            "size": item['blockstoragesnapshotvolumesize'],
+                                            "status": item['blockstoragesnapshotinstancestatusname'],
+                                            "type": item['snapshottype'],
+                                            "date": item['createdate'],
+                                            "raw": {"blockstoragesnapshotinstance": {
+                                                "blockstoragesnapshotinstanceno": item[
+                                                    'blockstoragesnapshotinstanceno']}}
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                        snapshot_result.append(snapshot)
+
+                    final_result.extend(snapshot_result)
+
+                if not final_result:
+                    message = self.create_response_message("snapshot", "fail", "data not found", {})
+                    self.send_response(message, "snapshot")
+                    return
+
+                message = self.create_response_message("snapshot", "success", "", {"instance_volume": final_result})
+                self.send_response(message, "snapshot")
+
+            except Exception as e:
+                self.handle_exception("snapshot", e)
+
+### volume create_volume_snapshot
+
+        elif command == 'create_volume_snapshot':
             try:
                 instance_volumes = data.get('instance_volume', [])
                 final_result = []
