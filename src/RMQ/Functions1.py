@@ -469,7 +469,6 @@ class Functions:
             except Exception as e:
                 self.handle_exception("volume", e)
 ### volume create
-
         elif command == 'create':
             #db 정보 받기
             try:
@@ -531,7 +530,6 @@ class Functions:
             except Exception as e:
                 self.handle_exception("volume", e)
 ### volume delete
-
         elif command == 'delete':
             #db 정보 받기
             try:
@@ -645,6 +643,7 @@ class Functions:
                 self.send_response(message, "volume")
             except Exception as e:
                 self.handle_exception("volume", e)
+  
 
     def VolumeSnapshot(self, command, data):
         if command == 'get_all':
@@ -732,20 +731,9 @@ class Functions:
                         snapshot_result.append(snapshot)
 
                     final_result.extend(snapshot_result)
-
-                if not final_result:
-                    message = self.create_response_message("snapshot", "fail", "data not found", {})
-                    self.send_response(message, "snapshot")
-                    return
-
-                message = self.create_response_message("snapshot", "success", "", {"instance_volume": final_result})
-                self.send_response(message, "snapshot")
-
             except Exception as e:
                 self.handle_exception("snapshot", e)
-
-### volume create_volume_snapshot
-
+                
         elif command == 'create_volume_snapshot':
             try:
                 instance_volumes = data.get('instance_volume', [])
@@ -787,8 +775,19 @@ class Functions:
                             ]
                         }
                         snapshot_result.append(snapshot)
+                    
+            except Exception as e:
+                self.handle_exception("snapshot", e)
 
-                    final_result.extend(snapshot_result)
+                if not final_result:
+                    message = self.create_response_message("snapshot", "fail", "data not found", {})
+                    self.send_response(message, "snapshot")
+                    return
+
+                message = self.create_response_message("snapshot", "success", "", {"instance_volume": final_result})
+                self.send_response(message, "snapshot")
+
+### volume create_volume_snapshot
 
                 if not final_result:
                     message = self.create_response_message("snapshot", "fail", "data not found", {})
