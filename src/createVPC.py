@@ -210,14 +210,14 @@ class Create():
         else:
             return dict1
 
-    # AUTHOR: 차동현 / cdh@cbnu.ac.kr
     # DATE: 2024-01-29
+    # UPDATE: 2024-06-06
     # DESCRIPTION: 무료 자원에 대하여 모든 자원 생성 및 특정 자원에 대하여 생성
     # TODO: -
 
-    def run(self):
+    def run(self, this, input_json=None):
         ### for this in self.nc.keys():
-        this = 'recoveryplan'  ### step.1 본인 Table을 기입, 'all'로 설정시 전체 자원 생성
+        # this = 'recoveryplan'  ### step.1 본인 Table을 기입, 'all'로 설정시 전체 자원 생성
         sent_flag = False
         if this == 'recoveryplan':
             recoveryplan_query = f"SELECT * FROM {self.recovery_schema}.recoveryplan WHERE completeflag=false;"
@@ -311,6 +311,14 @@ class Create():
             except KeyError:
                 pass  # continue
             # Unit test
+            if this == 'volume' or 'blockstorageinstance':
+                args = input_json
+                for i in range(len(args)):
+                    row = args[i]
+                    self.set_url(this, "create")
+                    self.create(row)
+                    print("row is: ", row)
+                    print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
             if this == 'loadbalancerlistener':
                 tmp_query = f"SELECT * FROM {self.source_db['schemaName']}.loadbalancerinstance WHERE loadbalancerlistenernolist = '[]';"
                 self.cur.execute(tmp_query)
