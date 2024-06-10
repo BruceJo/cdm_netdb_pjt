@@ -441,6 +441,117 @@ def recovery_vpc():
     return 'success'
 
 
+class recov_volume:
+    def __init__(self, config, command, serverinstanceno = None, volumeinstanceno = None):
+        self.base_url = f"http://{config['ip']}:9999"
+        self.api_source = config['api_source']
+        self.headers = {
+            "Accept": "*/*",
+            "User-Agent": "Thunder Client (https://www.thunderclient.com)",
+            "Content-Type": "application/json"
+        }
+        if command == "read":
+            self.api_url = "vsserver/v2/getBlockStorageInstanceList"
+        elif command == "create":
+            self.api_url = f"/vserver/v2/createBlockStorageInstance?regionCode=KR&serverInstanceNo={serverinstanceno}"
+        elif command == "attach":
+            self.api_url = f"vsserver/v2/attachBlockStorageInstance?&blockStorageInstanceNoList.1={volumeinstanceno}&serverInstanceNo={serverinstanceno}"
+        elif command == "detach":
+            self.api_url = f"/vserver/v2/detachBlockStorageInstances?&blockStorageInstanceNoList.1={volumeinstanceno}"
+        elif command == "delete":
+            self.api_url = f"/vserver/v2/deleteBlockStorageInstances?&blockStorageInstanceNoList.1={volumeinstanceno}"
+        elif command == "create_snapshot":
+            self.api_url = f"/vserver/v2/createBlockStorageSnapshotInstance?&originalBlockStorageInstanceNo={volumeinstanceno}"
+    
+    def execute_resp(self):
+        response = requests.get(f"{self.base_url}/{self.api_url}", headers=self.headers)
+        return response.text
+        
+config1 = {
+    'ip': '10.255.77.139',
+    'api_source': {
+        'accessKey': 'mYUP1ZqESUOpjyOokWC8',
+        'secretKey': '31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM',
+        'ncloudUrl': 'https://ncloud.apigw.gov-ntruss.com',
+        'billingApiUrl': 'https://billingapi.apigw.gov-ntruss.com'
+    }
+} ## Need to change
+
+@app.route('/recovery_volume', methods=['POST'])
+def recovery_volume():
+    # request format. Required ["dbSource"]["schemaName"]
+    # {
+    #     "dbSource": {
+    #         "dbName": "cdm_fix",
+    #         "schemaName": "{your_schema_name}",
+    #         "host": "223.130.173.142",
+    #         "port": "26257",
+    #         "user": "root"
+    #     },
+    #     "apiTarget": {
+    #         "accessKey": "mYUP1ZqESUOpjyOokWC8",
+    #         "secretKey": "31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM",
+    #         "ncloudUrl": "https://ncloud.apigw.gov-ntruss.com",
+    #         "billingApiUrl": "https://billingapi.apigw.gov-ntruss.com"
+    #     }
+    # }
+    req = request.get_json()
+    print(req)
+    try: 
+        cmd = req['request']['parameter']['command']
+    except:
+        return 'fail, code is not volume', 400
+
+    if cmd=='create':
+        serverinstance_no = req['request']['parameter']['data']['instance'][0]['instance'][0]['uuid']
+        src_client = recov_volume(config1, cmd, serverinstance_no, None)
+        src_client.execute_resp()
+    elif cmd=='delete':
+        volumeinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
+        src_client = recov_volume(config1, cmd, None, volumeinstance_no)
+        src_client.execute_resp()
+    elif cmd=='attach':
+        serverinstance_no = req['request']['parameter']['data']['instance'][0]['instance_uuid']
+        volumeinstance_no = req['request']['parameter']['data']['instance'][0]['volume_uuid']
+        src_client = recov_volume(config1, cmd, serverinstance_no, volumeinstance_no)
+        src_client.execute_resp()
+    elif cmd=='detach':
+        volumeinstance_no = req['request']['parameter']['data']['instance'][0]['volume_uuid']
+        src_client = recov_volume(config1, cmd, None, volumeinstance_no)
+        src_client.execute_resp()
+    elif cmd=='create_sanpshot_volume':
+        volumeinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
+        src_client = recov_volume(config1, cmd, None, volumeinstance_no)
+        src_client.execute_resp()
+
+
+    # db_source = read_conf()['DATABASE-INFO'].copy()
+    # db_source = change_default(req, db_source, 'dbSource')
+
+    # cd = cda.Connect(db=db_source)
+    # schema_list = [x['schema_name'] for x in cd.query_db("show schemas;") if x['schema_name'][:3] == 'ds_']
+    # # schema_list = [x['schema_name'] for x in cd.query_db("show schemas;") if x['schema_name'][:3] == 'rs_']#for test
+    # latest = sorted(schema_list, reverse=True)[0]
+    # print(f"latest => {latest}")
+
+    # db_source['schema_name'] = latest
+    # db_source['schemaName'] = latest
+
+    # api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
+
+    # # db_source = read_conf()['DATABASE-INFO'].copy()
+    # # api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
+    # #
+    # # db_source = change_default(req, db_source, 'dbSource')
+    # # api_target = change_default(req, api_target, 'apiTarget')
+    # #
+    # # # print(db_source, '\n', api_target)
+    # cv = createVPC.Create(db_source, api_target)
+    # cv.run()
+
+    return 'success'
+
+
 @app.route('/set_recovery_info', methods=['POST'])
 def set_recovery_info():
     # request format
@@ -479,6 +590,7 @@ def set_recovery_info():
     #recovery table에 데이터 삽입
 
     return 'success'
+
 
 # Server Run
 if __name__ == '__main__':

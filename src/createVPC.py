@@ -268,7 +268,6 @@ class Create():
                     except:
                         pass
                     print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
-
                     if this == 'vpc':
                         tmp_vpcno = json.loads(self.pretty_dict(self.read_db()))['getVpcListResponse']['vpcList'][0][
                             'vpcNo']
@@ -312,13 +311,16 @@ class Create():
                 pass  # continue
             # Unit test
             if this == 'volume' or 'blockstorageinstance':
-                args = input_json
-                for i in range(len(args)):
-                    row = args[i]
-                    self.set_url(this, "create")
-                    self.create(row)
-                    print("row is: ", row)
-                    print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+                if input_json != None:
+                    args = input_json
+                    for i in range(len(args)):
+                        row = args[i]
+                        self.set_url(this, "create")
+                        self.create(row)
+                        print("row is: ", row)
+                        print('5. api result\n', self.pretty_dict(self.read_db()), '\n')
+                else:
+                    pass
             if this == 'loadbalancerlistener':
                 tmp_query = f"SELECT * FROM {self.source_db['schemaName']}.loadbalancerinstance WHERE loadbalancerlistenernolist = '[]';"
                 self.cur.execute(tmp_query)
