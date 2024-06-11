@@ -440,6 +440,9 @@ def recovery_vpc():
 
     return 'success'
 
+import base64
+import hashlib
+import hmac
 
 class recov_volume:
     def __init__(self, config, command, serverinstanceno = None, volumeinstanceno = None):
@@ -451,22 +454,46 @@ class recov_volume:
             "Content-Type": "application/json"
         }
         if command == "read":
-            self.api_url = "vsserver/v2/getBlockStorageInstanceList"
+            self.api_url = "/vsserver/v2/getBlockStorageInstanceList"
         elif command == "create":
-            self.api_url = f"/vserver/v2/createBlockStorageInstance?regionCode=KR&serverInstanceNo={serverinstanceno}"
+            self.api_url = f"/vserver/v2/createBlockStorageInstance?regionCode=KR&serverInstanceNo={serverinstanceno}&blockStorageSize=100"
         elif command == "attach":
-            self.api_url = f"vsserver/v2/attachBlockStorageInstance?&blockStorageInstanceNoList.1={volumeinstanceno}&serverInstanceNo={serverinstanceno}"
+            self.api_url = f"/vserver/v2/attachBlockStorageInstance?regionCode=KR&blockStorageInstanceNo={volumeinstanceno}&serverInstanceNo={serverinstanceno}"
         elif command == "detach":
-            self.api_url = f"/vserver/v2/detachBlockStorageInstances?&blockStorageInstanceNoList.1={volumeinstanceno}"
+            self.api_url = f"/vserver/v2/detachBlockStorageInstances?regionCode=KR&blockStorageInstanceNoList.1={volumeinstanceno}"
         elif command == "delete":
-            self.api_url = f"/vserver/v2/deleteBlockStorageInstances?&blockStorageInstanceNoList.1={volumeinstanceno}"
-        elif command == "create_snapshot":
-            self.api_url = f"/vserver/v2/createBlockStorageSnapshotInstance?&originalBlockStorageInstanceNo={volumeinstanceno}"
+            self.api_url = f"/vserver/v2/deleteBlockStorageInstances?regionCode=KR&blockStorageInstanceNoList.1={volumeinstanceno}"
+        elif command == "create_snapshot_volume":
+            self.api_url = f"/vserver/v2/createBlockStorageSnapshotInstance?regionCode=KR&originalBlockStorageInstanceNo={volumeinstanceno}"
     
     def execute_resp(self):
-        response = requests.get(f"{self.base_url}/{self.api_url}", headers=self.headers)
+        response = self.send_request("GET", self.api_url, str(int(time.time() * 1000)))
+        # response = requests.get(f"{self.base_url}/{self.api_url}", headers=self.headers)
         return response.text
-        
+    
+    def create_signature(self, method, api_url, timestamp, access_key):
+        message = f"{method} {api_url}\n{timestamp}\n{access_key}"
+        print(f"###\n\n\n{message}\n\n\n###")
+        message = bytes(message, 'UTF-8')
+        SECRET_KEY = self.api_source['secretKey']
+        secret_key_bytes = bytes(SECRET_KEY, 'UTF-8')
+
+        signing_key = base64.b64encode(hmac.new(secret_key_bytes, message, digestmod=hashlib.sha256).digest())
+        return signing_key
+    
+    def send_request(self, method, api_url, timestamp):
+        ACCESS_KEY = self.api_source['accessKey']
+        signature = self.create_signature(method, api_url, timestamp, ACCESS_KEY)
+        http_header = {
+            'x-ncp-apigw-timestamp': timestamp,
+            'x-ncp-iam-access-key': ACCESS_KEY,
+            'x-ncp-apigw-signature-v2': signature
+        }
+        full_url = self.api_source['ncloudUrl'] + api_url
+        print("full_url is ::", full_url)
+        response = requests.get(full_url, headers=http_header)
+        return response
+
 config1 = {
     'ip': '10.255.77.139',
     'api_source': {
@@ -505,49 +532,24 @@ def recovery_volume():
     if cmd=='create':
         serverinstance_no = req['request']['parameter']['data']['instance'][0]['instance'][0]['uuid']
         src_client = recov_volume(config1, cmd, serverinstance_no, None)
-        src_client.execute_resp()
+        print(src_client.execute_resp())
     elif cmd=='delete':
         volumeinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
         src_client = recov_volume(config1, cmd, None, volumeinstance_no)
-        src_client.execute_resp()
+        print(src_client.execute_resp())
     elif cmd=='attach':
         serverinstance_no = req['request']['parameter']['data']['instance'][0]['instance_uuid']
         volumeinstance_no = req['request']['parameter']['data']['instance'][0]['volume_uuid']
         src_client = recov_volume(config1, cmd, serverinstance_no, volumeinstance_no)
-        src_client.execute_resp()
+        print(src_client.execute_resp())
     elif cmd=='detach':
         volumeinstance_no = req['request']['parameter']['data']['instance'][0]['volume_uuid']
         src_client = recov_volume(config1, cmd, None, volumeinstance_no)
-        src_client.execute_resp()
-    elif cmd=='create_sanpshot_volume':
+        print(src_client.execute_resp())
+    elif cmd=='create_snapshot_volume':
         volumeinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
         src_client = recov_volume(config1, cmd, None, volumeinstance_no)
-        src_client.execute_resp()
-
-
-    # db_source = read_conf()['DATABASE-INFO'].copy()
-    # db_source = change_default(req, db_source, 'dbSource')
-
-    # cd = cda.Connect(db=db_source)
-    # schema_list = [x['schema_name'] for x in cd.query_db("show schemas;") if x['schema_name'][:3] == 'ds_']
-    # # schema_list = [x['schema_name'] for x in cd.query_db("show schemas;") if x['schema_name'][:3] == 'rs_']#for test
-    # latest = sorted(schema_list, reverse=True)[0]
-    # print(f"latest => {latest}")
-
-    # db_source['schema_name'] = latest
-    # db_source['schemaName'] = latest
-
-    # api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
-
-    # # db_source = read_conf()['DATABASE-INFO'].copy()
-    # # api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
-    # #
-    # # db_source = change_default(req, db_source, 'dbSource')
-    # # api_target = change_default(req, api_target, 'apiTarget')
-    # #
-    # # # print(db_source, '\n', api_target)
-    # cv = createVPC.Create(db_source, api_target)
-    # cv.run()
+        print(src_client.execute_resp())
 
     return 'success'
 
