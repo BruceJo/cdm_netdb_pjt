@@ -1,5 +1,9 @@
-import requests
+import time
 import json
+import base64
+import hashlib
+import hmac
+import requests
 
 
 class ApiClient:
@@ -10,7 +14,7 @@ class ApiClient:
                 'accessKey': 'mYUP1ZqESUOpjyOokWC8',
                 'secretKey': '31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM',
                 'ncloudUrl': 'https://ncloud.apigw.gov-ntruss.com',
-                 'billingApiUrl': 'https://billingapi.apigw.gov-ntruss.com'
+                'billingApiUrl': 'https://billingapi.apigw.gov-ntruss.com'
             },
             'dbSource': {
                 'dbName': 'cdm_fix',
@@ -110,10 +114,58 @@ class ApiClient:
         response = requests.post(f"{self.base_url}/recovery_vpc", data=payload, headers=self.headers)
         return response.text
 
+    def modify_volume(self, data):
+        payload = json.dumps(data)
+        response = requests.post(f"{self.base_url}/modify_volume", data=payload, headers=self.headers)
+        return response.text
+
+    def reboot_serverinstances(self, data):
+        payload = json.dumps(data)
+        response = requests.post(f"{self.base_url}/reboot_serverinstances", data=payload, headers=self.headers)
+        return response.text
+
+    def send_to_endpoint(self, endpoint, data):
+        payload = json.dumps(data)
+        response = requests.post(f"{self.base_url}/{endpoint}", data=payload, headers=self.headers)
+        return response.text
+
+    def execute_resp(self, api_url):
+        response = self.send_request("GET", api_url, str(int(time.time() * 1000)))
+        # response = requests.get(f"{self.base_url}/{self.api_url}", headers=self.headers)
+        print("##>>",response.text)
+        return response.text
+
+    def create_signature(self, method, api_url, timestamp, access_key):
+        message = f"{method} {api_url}\n{timestamp}\n{access_key}"
+        print(f"###\n\n\n{message}\n\n\n###")
+        message = bytes(message, 'UTF-8')
+        SECRET_KEY = self.api_source['secretKey']
+        secret_key_bytes = bytes(SECRET_KEY, 'UTF-8')
+
+        signing_key = base64.b64encode(hmac.new(secret_key_bytes, message, digestmod=hashlib.sha256).digest())
+        return signing_key
+
+    def send_request(self, method, api_url, timestamp):
+        ACCESS_KEY = self.api_source['accessKey']
+        signature = self.create_signature(method, api_url, timestamp, ACCESS_KEY)
+        http_header = {
+            'x-ncp-apigw-timestamp': timestamp,
+            'x-ncp-iam-access-key': ACCESS_KEY,
+            'x-ncp-apigw-signature-v2': signature
+        }
+        full_url = self.api_source['ncloudUrl'] + api_url
+        print("full_url is ::", full_url)
+        response = requests.get(full_url, headers=http_header)
+        return response
+
+
+
+
+
 if __name__ == '__main__':
     #src
     config1 = {
-        'ip': '175.45.214.45',
+        'ip': 'localhost',
         'api_source': {
             'accessKey': 'mYUP1ZqESUOpjyOokWC8',
             'secretKey': '31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM',
@@ -145,5 +197,6 @@ if __name__ == '__main__':
             'user': 'root'
         }
     }
-    src_client = ApiClient(config1)
-    tgt_client = ApiClient(config2)
+    src_client = ApiClient()
+    src_client.sync_cluster()
+    # tgt_client = ApiClient(config2)

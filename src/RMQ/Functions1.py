@@ -1,10 +1,15 @@
 import sys, os
+import time
+
 import pika
 import json
 from psycopg2.extras import DictCursor
 import psycopg2
 from datetime import datetime
 import apiClient
+import re
+import pprint
+
 
 class Functions:
     def __init__(self, request_ID):
@@ -33,6 +38,40 @@ class Functions:
         except Exception as e:
             print(f"DB 접속 오류입니다: {e}")
 
+    def set_lastest_schema_rs(self):
+        schema_list = [x['schema_name'] for x in self.query_db("show schemas;") if x['schema_name'][:3] == 'rs_']
+        last_schema = max(schema_list)
+        if self.resource_db_schema != last_schema:
+            # print(f">>> schema name changed from {self.resource_db_schema} to {last_schema} <<<")
+            self.resource_db_schema = last_schema
+        return
+
+    def set_lastest_schema_ds(self):
+        schema_list = [x['schema_name'] for x in self.query_db("show schemas;") if x['schema_name'][:3] == 'ds_']
+        last_schema = max(schema_list)
+        if self.detail_db_schema != last_schema:
+            # print(f">>> schema name changed from {self.resource_db_schema} to {last_schema} <<<")
+            self.detail_db_schema = last_schema
+        return
+
+    def query_db(self, q):
+        conn = self.connect_db()
+        cur = conn.cursor()
+
+        cur.execute(f"use {self.db_database};")
+        cur.execute(q)
+        rows = cur.fetchall()
+        cols = [column[0] for column in cur.description]
+
+        response = []
+        for row in rows:
+            response.append(dict(zip(cols, row)))
+
+        cur.close()
+        conn.close()
+
+        return response
+
     def execute_query(self, query, params=None):
         conn = self.connect_db()
         cur = conn.cursor(cursor_factory=DictCursor)
@@ -60,7 +99,21 @@ class Functions:
     def query_dbv(self, conn, q, v):
         # conn = self.connect_db()
         cur = conn.cursor(cursor_factory=DictCursor)
-        cur.execute(q, v)
+        if v:
+            cur.execute(q, v)
+        else:
+            cur.execute(q)
+        conn.commit()
+        cur.close()
+        conn.close()
+
+    def query_dbv2(self, q, v):
+        conn = self.connect_db()
+        cur = conn.cursor(cursor_factory=DictCursor)
+        if v:
+            cur.execute(q, v)
+        else:
+            cur.execute(q)
         conn.commit()
         cur.close()
         conn.close()
@@ -115,6 +168,7 @@ class Functions:
                 "data": data
             }
         }
+
     def send_response(self, response_message, routing_key):
         response_message_str = json.dumps(response_message, indent=2)
         code = response_message['response']['code']
@@ -155,6 +209,10 @@ class Functions:
         channel.start_consuming()
 
     def process_request(self, request_message):
+        self.set_lastest_schema_rs()
+        self.set_lastest_schema_ds()
+        # print("req message")
+        # print(request_message)
         if 'request_code' not in request_message:
             print("Invalid request message: missing 'request_code'")
             print(request_message)
@@ -174,6 +232,8 @@ class Functions:
         command = request_message['request_command']
         data = request_message['request_data']
 
+        print(f"code: {code}, command: {command}, data: {data}")
+
         if code == 'clusterinfo':
             self.Clusterinfo(command)
         elif code == 'instanceinfo':
@@ -185,7 +245,11 @@ class Functions:
                     self.Instanceinfo(command, uuid)
                 else:
                     self.Instanceinfo(command, None)
-        elif code == 'volume':
+            elif command == 'reboot':
+                for instance_info in data['instance']:
+                    uuid = instance_info['uuid']
+                    self.Instanceinfo(command, uuid)
+        elif code == 'volumeinfo':
             if command == 'get_all':
                 self.Volume(command, data)
             elif command == 'get':
@@ -194,86 +258,32 @@ class Functions:
                     self.Volume(command, uuid)
                 else:
                     self.Volume(command, None)
-            elif command == 'create':
-                if 'instance' in data and 'uuid' in data['instance']:
-                    uuid = data['instance']['uuid']
-                    self.Volume(command, uuid)
-                else:
-                    self.Volume(command, None)
-                pass
+            elif command == 'create' or 'delete' or 'detach':
+                self.Volume(command, data)
             elif command == 'create_sanpshot_volume':
+                self.Volume(command, data)
+
+        elif code == 'snapshotinfo':
+            if command == 'get_all':
+                self.VolumeSnapshot(command, data)
+            elif command == 'get':
                 if 'instance' in data and 'uuid' in data['instance']:
                     uuid = data['instance']['uuid']
-                    self.Volume(command, uuid)
+                    self.VolumeSnapshot(command, uuid)
                 else:
-                    self.Volume(command, None)
-                pass
+                    self.VolumeSnapshot(command, None)
             elif command == 'delete':
-                if 'volume' in data and 'uuid' in data['volume']:
-                    uuid = data['volume']['uuid']
-                    self.Volume(command ,uuid)
-                else:
-                    self.Volume(command, None)
-                pass
-            elif command == 'attach':
-                if 'volume' in data and 'uuid' in data['volume']:
-                    volume_uuid = data['volume']['uuid']
-                    if 'instance' in data and 'uuid' in data['instance']:
-                        instance_uuid = data['instance']['uuid']
-                        self.Volume(command, volume_uuid, instance_uuid)
-                    else:
-                        self.Volume(command, volume_uuid, None)
-                else:
-                    self.Volume(command, None, None)
-                pass
-            elif command == 'detach':
-                if 'volume' in data and 'uuid' in data['volume']:
-                    uuid = data['volume']['uuid']
-                    if 'instance' in data and 'uuid' in data['instance']:
-                        instance_uuid = data['instance']['uuid']
-                        self.Volume(command, volume_uuid, instance_uuid)
-                    else:
-                        self.Volume(command, volume_uuid, None)
-                else:
-                    self.Volume(command, None, None)
-                pass
-        # 우동
-        def test_volume():
-    # # request = create_request("volume", "get", {"instance": [{"uuid": "2483886"}]})  # uuid for test
-    # # test_message(request)
-    # #
-    # # request = create_request("volume", "get", {"instance": []})
-    # # test_message(request)
-    # request = create_request("volume", "create", {"instance": []})
-    # print(request)
-    # request = create_request("volume", "create_sanpshot_volume", {"instance": [{"uuid": "2483886"}]})
-    # print(request)
-    # request = create_request("volume", "delete", {"instance": [{"uuid": "2483886"}]})
-    # print(request)
-    # request = create_request("volume", "attach", {"instance": [{"volume_uuid": "2483886", "instance_uuid": "2483886"}]})
-    # print(request)
-    # request = create_request("volume", "detach", {"instance": [{"instance_uuid": "2483886"}]})
-    # print(request)
-        # create
-        # create_sanpshot_volume
-        # delete
-        # attach
-        # detach
-            if code == 'snapshot':
-                if command == 'get_all':
-                    self.VolumeSnapshot(command, data)
-                elif command == 'get':
-                    if 'instance' in data and 'uuid' in data['instance']:
-                        uuid = data['instance']['uuid']
-                        self.VolumeSnapshot(command, uuid)
-                    else:
-                        self.VolumeSnapshot(command, None)
-            #lhb add
-            elif code == 'resourceinfo':
-                self.ResourceInfo(command, data)
-            elif code == 'recoveryinfo':
-                self.RecoveryInfo(command, data)
-        
+                for instance in data['instance']:
+                    uuid = instance['uuid']
+                    self.VolumeSnapshot(command, uuid)
+        # lhb add
+        elif code == 'resourceinfo':
+            self.ResourceInfo(command, data)
+        elif code == 'recoveryinfo':
+            self.RecoveryInfo(command, data)
+        elif code == 'recoveryjob':
+            self.RecoveryJob(command, data)
+
         return True
 
     def Clusterinfo(self, command):
@@ -332,7 +342,6 @@ class Functions:
             m = self.create_response_message("clusterinfo", "success", "", {"raw": res})
             self.send_response(m, "clusterinfo")
             print()
-
 
     def Instanceinfo(self, command, uuid):
         if command == 'get_all':
@@ -393,14 +402,41 @@ class Functions:
             except Exception as e:
                 self.handle_exception("instanceinfo", e)
 
-    def Volume(self, command, uuid):
+        elif command == 'reboot':
+            try:
+                api_client = self.api_client
+                m = {
+                    "request": {
+                        "code": "instanceinfo",
+                        "parameter": {
+                            "command": command,
+                            "data": {
+                                "instance": [
+                                    {
+                                        "uuid": uuid
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+                res = api_client.reboot_serverinstances(m)
+                message = self.create_response_message("instanceinfo", "success", "", {"raw": res})
+
+                self.send_response(message, "volumeinfo")
+            except Exception as e:
+                self.handle_exception("volumeinfo", e)
+
+    def Volume(self, command, data):
+        code = "volumeinfo"
+        # uuid는 main 자원의 uuid, 실행되는 주체가 볼륨이라면 볼륨 uuid
         if command == 'get_all':
             try:
                 query = f'SELECT * FROM {self.resource_db_schema}.blockstorageinstance;'
                 rows = self.execute_query(query)
                 if not rows:
-                    message = self.create_response_message("volume", "fail", "data not found", {})
-                    self.send_response(message, "volume")
+                    message = self.create_response_message(code, "fail", "data not found", {})
+                    self.send_response(message, code)
                     return
                 result_json = self.parse_query_result(rows)
 
@@ -424,22 +460,23 @@ class Functions:
                     }
                     final_result.append(volume)
 
-                message = self.create_response_message("volume", "success", "", {"instance_volume": final_result})
-                self.send_response(message, "volume")
+                message = self.create_response_message(code, "success", "", {"instance": final_result})
+                self.send_response(message, code)
 
             except Exception as e:
-                self.handle_exception("volume", e)
+                self.handle_exception(code, e)
 
         elif command == 'get':
             try:
+                uuid = data['instance']['uuid']
                 instances = uuid
                 instance_uuids = [instance['uuid'] for instance in instances]
                 placeholders = ', '.join(['%s'] * len(instance_uuids))
                 query = f'SELECT * FROM {self.resource_db_schema}.blockstorageinstance WHERE serverinstanceno IN ({placeholders});'
                 rows = self.execute_query(query, instance_uuids)
                 if not rows:
-                    message = self.create_response_message("volume", "fail", "data not found", {})
-                    self.send_response(message, "volume")
+                    message = self.create_response_message(code, "fail", "data not found", {})
+                    self.send_response(message, code)
                     return
                 result_json = self.parse_query_result(rows)
 
@@ -463,196 +500,105 @@ class Functions:
                     }
                     final_result.append(volume)
 
-                message = self.create_response_message("volume", "success", "", {"instance_volume": final_result})
-                self.send_response(message, "volume")
+                message = self.create_response_message(code, "success", "", {"raw": final_result})
+                self.send_response(message, code)
 
             except Exception as e:
-                self.handle_exception("volume", e)
-### volume create
-        elif command == 'create':
-            #db 정보 받기
+                self.handle_exception(code, e)
+
+        elif command == 'create' or 'delete' or 'detach':
             try:
-                instances = uuid
-                instance_uuids = [instance['uuid'] for instance in instances]
-                placeholders = ', '.join(['%s'] * len(instance_uuids))
-                query = f'SELECT * FROM {self.resource_db_schema}.blockstorageinstance WHERE serverinstanceno IN ({placeholders});'
-                rows = self.execute_query(query, instance_uuids)
-                if not rows:
-                    message = self.create_response_message("volume", "fail", "data not found", {})
-                    self.send_response(message, "volume")
-                    return
-                result_json = self.parse_query_result(rows)
-            
-            #실제 command 실행
-                
-                # if self.api_source is None or self.database is None:
-                #     return "API source or database configuration is missing."
-        
-                # data = {
-                #     "apiSource": self.api_source,
-                #     "dbSource": {
-                #         "dbName": self.database["dbName"],
-                #         "schemaName": self.database["schemaName"],
-                #         "schemaPath": "../schema/naverCloudSchema.sql",
-                #         "host": self.database["host"],
-                #         "port": self.database["port"],
-                #         "user": self.database["user"]
-                #     }
-                #     }
-                # payload = json.dumps(data)
-                # response = self.requests.post(f"{self.base_url}/recovery_vpc", data=payload, headers=self.headers)
-                
-                # return response.text
-
-                final_result = []
-                for item in result_json:
-                    volume = {
-                        "instance": {
-                            "uuid": item['serverinstanceno']
-                        },
-                        "volume": [
-                            {
-                                "uuid": item['blockstorageinstanceno'],
-                                "name": item['blockstoragename'],
-                                "type": item['blockstoragediskdetailtype'],
-                                "size": item['blockstoragesize'],
-                                "status": item['blockstorageinstancestatusname'],
-                                "raw": {
-                                    "blockstorageinstance": {"blockstorageinstanceno": item['blockstorageinstanceno']}}
-                            }
-                        ]
+                api_client = self.api_client
+                m = {
+                    "request": {
+                        "code": code,
+                        "parameter": {
+                            "command": command,
+                            "data": data
+                        }
                     }
-                    final_result.append(volume)
+                }
+                res = api_client.modify_volume(m)
 
-                message = self.create_response_message("volume", "success", "", {"instance_volume": final_result})
-                self.send_response(message, "volume")
+                # 정규 표현식을 사용하여 필요한 정보 추출
 
+                server_instance_match = re.search(r'<serverInstanceNo>(\d+)</serverInstanceNo>', res)
+                block_storage_instance_match = re.search(r'<blockStorageInstanceNo>(\d+)</blockStorageInstanceNo>', res)
+                block_storage_snapshot_instance_match = re.search(
+                    r'<blockStorageSnapshotInstanceNo>(\d+)</blockStorageSnapshotInstanceNo>', res)
+                original_block_storage_instance_match = re.search(
+                    r'<originalBlockStorageInstanceNo>(\d+)</originalBlockStorageInstanceNo>', res)
+
+                # 추출된 정보를 딕셔너리에 저장 (값이 있는 경우에만 추가)
+                structured_data = {}
+                if server_instance_match:
+                    structured_data["serverinstanceno"] = server_instance_match.group(1)
+                if block_storage_instance_match:
+                    structured_data["blockstorageinstanceno"] = block_storage_instance_match.group(1)
+                if block_storage_snapshot_instance_match:
+                    structured_data["blockstoragesnapshotinstanceno"] = block_storage_snapshot_instance_match.group(1)
+                if original_block_storage_instance_match:
+                    structured_data["originalblockstorageinstanceno"] = original_block_storage_instance_match.group(1)
+
+                # 응답 메시지 생성 (structured_data를 raw 키 안에 넣음)
+                # message = self.create_response_message(code, "success", "", {"raw": res, **structured_data})
+                message = self.create_response_message(code, "success", "", {**structured_data, "raw": res})
+
+                self.send_response(message, code)
             except Exception as e:
-                self.handle_exception("volume", e)
-### volume delete
-        elif command == 'delete':
-            #db 정보 받기
+                self.handle_exception(code, e)
+
+        elif command == 'create_sanpshot_volume':
             try:
-                instances = uuid
-                instance_uuids = [instance['uuid'] for instance in instances]
-                placeholders = ', '.join(['%s'] * len(instance_uuids))
-                query = f'SELECT * FROM {self.resource_db_schema}.blockstorageinstance WHERE serverinstanceno IN ({placeholders});'
-                rows = self.execute_query(query, instance_uuids)
-                if not rows:
-                    message = self.create_response_message("volume", "fail", "data not found", {})
-                    self.send_response(message, "volume")
-                    return
-                result_json = self.parse_query_result(rows)
-                final_result = []
-                for item in result_json:
-                    volume = {
-                        "instance": {
-                            "uuid": item['serverinstanceno']
-                        },
-                        "volume": [
-                            {
-                                "uuid": item['blockstorageinstanceno'],
-                                "name": item['blockstoragename'],
-                                "type": item['blockstoragediskdetailtype'],
-                                "size": item['blockstoragesize'],
-                                "status": item['blockstorageinstancestatusname'],
-                                "raw": {
-                                    "blockstorageinstance": {"blockstorageinstanceno": item['blockstorageinstanceno']}}
-                            }
-                        ]
+                api_client = self.api_client
+                m = {
+                    "request": {
+                        "code": code,
+                        "parameter": {
+                            "command": command,
+                            "data": data
+                        }
                     }
-                    final_result.append(volume)
+                }
+                res = api_client.modify_volume(m)
 
-                message = self.create_response_message("volume", "success", "", {"instance_volume": final_result})
-                self.send_response(message, "volume")
-            except Exception as e:
-                self.handle_exception("volume", e)
-### volume attach
-        elif command == 'attach':
-            #db 정보 받기
-            try:
-                instances = uuid
-                instance_uuids = [instance['uuid'] for instance in instances]
-                placeholders = ', '.join(['%s'] * len(instance_uuids))
-                query = f'SELECT * FROM {self.resource_db_schema}.blockstorageinstance WHERE serverinstanceno IN ({placeholders});'
-                rows = self.execute_query(query, instance_uuids)
-                if not rows:
-                    message = self.create_response_message("volume", "fail", "data not found", {})
-                    self.send_response(message, "volume")
-                    return
-                result_json = self.parse_query_result(rows)
-                final_result = []
-                for item in result_json:
-                    volume = {
-                        "instance": {
-                            "uuid": item['serverinstanceno']
-                        },
-                        "volume": [
-                            {
-                                "uuid": item['blockstorageinstanceno'],
-                                "name": item['blockstoragename'],
-                                "type": item['blockstoragediskdetailtype'],
-                                "size": item['blockstoragesize'],
-                                "status": item['blockstorageinstancestatusname'],
-                                "raw": {
-                                    "blockstorageinstance": {"blockstorageinstanceno": item['blockstorageinstanceno']}}
-                            }
-                        ]
-                    }
-                    final_result.append(volume)
+                # 정규 표현식을 사용하여 필요한 정보 추출
 
-                message = self.create_response_message("volume", "success", "", {"instance_volume": final_result, "instance_server": instances})
-                self.send_response(message, "volume")
-            except Exception as e:
-                self.handle_exception("volume", e)
-### volume detach
-        elif command == 'detach':
-            #db 정보 받기
-            try:
-                instances = uuid
-                instance_uuids = [instance['uuid'] for instance in instances]
-                placeholders = ', '.join(['%s'] * len(instance_uuids))
-                query = f'SELECT * FROM {self.resource_db_schema}.blockstorageinstance WHERE serverinstanceno IN ({placeholders});'
-                rows = self.execute_query(query, instance_uuids)
-                if not rows:
-                    message = self.create_response_message("volume", "fail", "data not found", {})
-                    self.send_response(message, "volume")
-                    return
-                result_json = self.parse_query_result(rows)
-                final_result = []
-                for item in result_json:
-                    volume = {
-                        "instance": {
-                            "uuid": item['serverinstanceno']
-                        },
-                        "volume": [
-                            {
-                                "uuid": item['blockstorageinstanceno'],
-                                "name": item['blockstoragename'],
-                                "type": item['blockstoragediskdetailtype'],
-                                "size": item['blockstoragesize'],
-                                "status": item['blockstorageinstancestatusname'],
-                                "raw": {
-                                    "blockstorageinstance": {"blockstorageinstanceno": item['blockstorageinstanceno']}}
-                            }
-                        ]
-                    }
-                    final_result.append(volume)
+                server_instance_match = re.search(r'<serverInstanceNo>(\d+)</serverInstanceNo>', res)
+                block_storage_instance_match = re.search(r'<blockStorageInstanceNo>(\d+)</blockStorageInstanceNo>', res)
+                block_storage_snapshot_instance_match = re.search(
+                    r'<blockStorageSnapshotInstanceNo>(\d+)</blockStorageSnapshotInstanceNo>', res)
+                original_block_storage_instance_match = re.search(
+                    r'<originalBlockStorageInstanceNo>(\d+)</originalBlockStorageInstanceNo>', res)
 
-                message = self.create_response_message("volume", "success", "", {"instance_server": instances})
-                self.send_response(message, "volume")
+                # 추출된 정보를 딕셔너리에 저장 (값이 있는 경우에만 추가)
+                structured_data = {}
+                if server_instance_match:
+                    structured_data["serverinstanceno"] = server_instance_match.group(1)
+                if block_storage_instance_match:
+                    structured_data["blockstorageinstanceno"] = block_storage_instance_match.group(1)
+                if block_storage_snapshot_instance_match:
+                    structured_data["blockstoragesnapshotinstanceno"] = block_storage_snapshot_instance_match.group(1)
+                if original_block_storage_instance_match:
+                    structured_data["originalblockstorageinstanceno"] = original_block_storage_instance_match.group(1)
+
+                # 응답 메시지 생성 (structured_data를 raw 키 안에 넣음)
+                # message = self.create_response_message(code, "success", "", {"raw": res, **structured_data})
+                message = self.create_response_message(code, "success", "", {**structured_data, "raw": res})
+
+                self.send_response(message, code)
             except Exception as e:
-                self.handle_exception("volume", e)
-  
+                self.handle_exception(code, e)
 
     def VolumeSnapshot(self, command, data):
+        print(f"volume snapshot > {command} {data}")
         if command == 'get_all':
             try:
                 query = f'SELECT * FROM {self.resource_db_schema}.blockstoragesnapshotinstance;'
                 rows = self.execute_query(query)
                 if not rows:
-                    message = self.create_response_message("snapshot", "fail", "data not found", {})
-                    self.send_response(message, "snapshot")
+                    message = self.create_response_message("snapshotinfo", "fail", "data not found", {})
+                    self.send_response(message, "snapshotinfo")
                     return
                 result_json = self.parse_query_result(rows)
 
@@ -660,7 +606,7 @@ class Functions:
                 for item in result_json:
                     snapshot = {
                         "instance": {
-                            "uuid": item['serverinstanceno']
+                            "uuid": item['basesnapshotinstanceno']
                         },
                         "volume": [
                             {
@@ -682,14 +628,15 @@ class Functions:
                     }
                     final_result.append(snapshot)
 
-                message = self.create_response_message("snapshot", "success", "", {"instance_volume": final_result})
-                self.send_response(message, "snapshot")
+                message = self.create_response_message("snapshotinfo", "success", "", {"instance": final_result})
+                self.send_response(message, "snapshotinfo")
 
             except Exception as e:
-                self.handle_exception("snapshot", e)
+                self.handle_exception("snapshotinfo", e)
 
         elif command == 'get':
             try:
+                self.set_lastest_schema_rs()
                 instance_volumes = data.get('instance_volume', [])
                 final_result = []
                 for instance_volume in instance_volumes:
@@ -731,74 +678,59 @@ class Functions:
                         snapshot_result.append(snapshot)
 
                     final_result.extend(snapshot_result)
+
+                if not final_result:
+                    message = self.create_response_message("snapshotinfo", "fail", "data not found", {})
+                    self.send_response(message, "snapshotinfo")
+                    return
+
+                message = self.create_response_message("snapshotinfo", "success", "", {"instance": final_result})
+                self.send_response(message, "snapshotinfo")
+
             except Exception as e:
-                self.handle_exception("snapshot", e)
-                
-        elif command == 'create_volume_snapshot':
+                self.handle_exception("snapshotinfo", e)
+        elif command == 'delete':
+            # print(f">>>> delete {data}")
             try:
-                instance_volumes = data.get('instance_volume', [])
-                final_result = []
-                for instance_volume in instance_volumes:
-                    instance_uuid = instance_volume['instance']['uuid']
-                    volume_uuids = [volume['uuid'] for volume in instance_volume['volume']]
-                    placeholders = ', '.join(['%s'] * len(volume_uuids))
-                    query = f'SELECT * FROM {self.resource_db_schema}.blockstoragesnapshotinstance WHERE serverinstanceno = %s AND blockstorageinstanceid IN ({placeholders});'
-                    params = [instance_uuid] + volume_uuids
-                    rows = self.execute_query(query, params)
-                    if not rows:
-                        continue
-                    result_json = self.parse_query_result(rows)
 
-                    snapshot_result = []
-                    for item in result_json:
-                        snapshot = {
-                            "instance": {
-                                "uuid": item['serverinstanceno']
-                            },
-                            "volume": [
-                                {
-                                    "uuid": item['blockstorageinstanceid'],
-                                    "snapshot": [
-                                        {
-                                            "uuid": item['blockstoragesnapshotinstanceno'],
-                                            "name": item['blockstoragesnapshotname'],
-                                            "size": item['blockstoragesnapshotvolumesize'],
-                                            "status": item['blockstoragesnapshotinstancestatusname'],
-                                            "type": item['snapshottype'],
-                                            "date": item['createdate'],
-                                            "raw": {"blockstoragesnapshotinstance": {
-                                                "blockstoragesnapshotinstanceno": item[
-                                                    'blockstoragesnapshotinstanceno']}}
-                                        }
-                                    ]
-                                }
-                            ]
+                api_client = self.api_client
+                m = {
+                    "request": {
+                        "code": "snapshotinfo",
+                        "parameter": {
+                            "command": "delete_snapshot_volume",
+                            "data": {"instance": [{"uuid": f"{data}"}]}
                         }
-                        snapshot_result.append(snapshot)
-                    
+                    }
+                }
+                print(f"><><{m}")
+
+                res = api_client.modify_volume(m)
+
+                server_instance_match = re.search(r'<serverInstanceNo>(\d+)</serverInstanceNo>', res)
+                block_storage_instance_match = re.search(r'<blockStorageInstanceNo>(\d+)</blockStorageInstanceNo>', res)
+                block_storage_snapshot_instance_match = re.search(
+                    r'<blockStorageSnapshotInstanceNo>(\d+)</blockStorageSnapshotInstanceNo>', res)
+                original_block_storage_instance_match = re.search(
+                    r'<originalBlockStorageInstanceNo>(\d+)</originalBlockStorageInstanceNo>', res)
+
+                structured_data = {}
+                if server_instance_match:
+                    structured_data["serverinstanceno"] = server_instance_match.group(1)
+                if block_storage_instance_match:
+                    structured_data["blockstorageinstanceno"] = block_storage_instance_match.group(1)
+                if block_storage_snapshot_instance_match:
+                    structured_data["blockstoragesnapshotinstanceno"] = block_storage_snapshot_instance_match.group(1)
+                if original_block_storage_instance_match:
+                    structured_data["originalblockstorageinstanceno"] = original_block_storage_instance_match.group(1)
+
+                # 응답 메시지 생성 (structured_data를 raw 키 안에 넣음)
+                # message = self.create_response_message(code, "success", "", {"raw": res, **structured_data})
+                message = self.create_response_message("snapshotinfo", "success", "", {**structured_data, "raw": res})
+
+                self.send_response(message, "snapshotinfo")
             except Exception as e:
-                self.handle_exception("snapshot", e)
-
-                if not final_result:
-                    message = self.create_response_message("snapshot", "fail", "data not found", {})
-                    self.send_response(message, "snapshot")
-                    return
-
-                message = self.create_response_message("snapshot", "success", "", {"instance_volume": final_result})
-                self.send_response(message, "snapshot")
-
-### volume create_volume_snapshot
-
-                if not final_result:
-                    message = self.create_response_message("snapshot", "fail", "data not found", {})
-                    self.send_response(message, "snapshot")
-                    return
-
-                message = self.create_response_message("snapshot", "success", "", {"instance_volume": final_result})
-                self.send_response(message, "snapshot")
-
-            except Exception as e:
-                self.handle_exception("snapshot", e)
+                self.handle_exception("snapshotinfo", e)
 
     # 2024.05.22 lhb add
     def convert_to_json(self, row):
@@ -843,7 +775,7 @@ class Functions:
             cursor.execute(update_query, (new_value, uuid))
             # Commit the transaction
             conn.commit()
-            return "Success"
+            return "success"
 
         except Exception as e:
             # If there is any error, rollback the transaction
@@ -861,132 +793,257 @@ class Functions:
             try:
                 api_client = self.api_client
                 res = api_client.source_to_target()
-                m = self.create_response_message(req_code, "success", "", {"raw": res})
+                m = self.create_response_message(req_code, "success", "", {"resource": res})
                 self.send_response(m, req_code)
+            except Exception as e:
+                self.handle_exception(req_code, e)
+        elif command == 'delete':
+            try:
+                # detail_db_schema 스키마에 저장할 데이터 추출
+                # resource_data = data.get('instance', [])
+                resource_data = data.get('resource')
+                api_client = self.api_client
+                res = api_client.set_resource_info(resource_data)
+
+                message = self.create_response_message(req_code, "success", "", {"resource": res})
+                self.send_response(message, req_code)
             except Exception as e:
                 self.handle_exception(req_code, e)
         elif command == 'set':
             try:
                 # detail_db_schema 스키마에 저장할 데이터 추출
                 # resource_data = data.get('instance', [])
-                resource_data = data.get('raw')
+                resource_data = data.get('resource')
                 api_client = self.api_client
                 res = api_client.set_resource_info(resource_data)
-                message = self.create_response_message(req_code, "success", "", {"raw": res})
+                message = self.create_response_message(req_code, "success", "", {"resource": res})
                 self.send_response(message, req_code)
             except Exception as e:
                 self.handle_exception(req_code, e)
         elif command == 'update':
             try:
-                # detail_db_schema 스키마에 저장할 데이터 추출
-                # resource_data = data.get('instance', [])
-                # def update_column_by_id(self, schema_name, table_name, column_name, uuid, new_value):
+                # recovery 데이터에서 필요한 정보 추출
+                plan_info_list = data['plan']['instance']  # instance 리스트를 가져옴
+                recovery_data = data['recovery']['raw']
 
-                queries = data.get('instance')
+                table_name = recovery_data['table_name']
+                column_name = recovery_data['column_name']
+                new_value = recovery_data['new_value']
 
                 # 타겟 DB에 접속해서 가장 최신 스키마에 대해 raw SQL 실행
-
-
                 schemas = self.execute_query_des("show schemas;")
-                last_schema = [schema['schema_name'] for schema in schemas if schema['schema_name'].startswith('ds_')]
-                print(">>>>", last_schema)
-                last_schema = max(last_schema)
-                print(">>>>", last_schema)
+                last_schema = next(
+                    (schema['schema_name'] for schema in schemas if schema['schema_name'].startswith('rs_')), None)
+                if last_schema is None:
+                    last_schema = 'public'  # Default schema if none found
 
-                res = ""
-                for query in queries:
-                    res = self.update_column_by_id(last_schema, query['table_name'], query['column_name'], query['uuid'], query['new_value'])
+                # instance 리스트에 대해 반복
+                for plan_info in plan_info_list:
+                    uuid_value = plan_info['uuid']
+                    res = self.update_column_by_id(last_schema, table_name, column_name, uuid_value, new_value)
 
-                message = self.create_response_message(req_code, "success", "", {"raw": res})
+                    # 각 instance에 대한 응답 메시지 생성 및 전송 (recoveryinfo 코드 사용)
+                    message = self.create_response_message(req_code, "success", "",
+                                                           {
+                                                               "resource": f"table name: {table_name}, column name: {column_name}, old_value: {uuid_value}, new_value: {new_value}"}
+                                                           )
                 self.send_response(message, req_code)
-
             except Exception as e:
                 self.handle_exception(req_code, e)
 
-
     def RecoveryInfo(self, command, data):
+        code = "recoveryinfo"
+
         if command == 'get' or command == 'status':
             cmd = command
             try:
-                query = f'''
-                    SELECT si.*, p.productname, p.producttype, r.regionname, z.zonename, vpc.vpcname, s.subnetname, s.subnet
-                    FROM {self.resource_db_schema}.serverinstance si
-                    JOIN {self.resource_db_schema}.product p ON si.serverproductcodeid = p.id
-                    JOIN {self.resource_db_schema}.region r ON si.regionid = r.id  
-                    JOIN {self.resource_db_schema}.zone z ON si.zoneid = z.id
-                    JOIN {self.resource_db_schema}.vpc vpc ON si.vpcid = vpc.id
-                    JOIN {self.resource_db_schema}.subnet s ON si.subnetid = s.id;
-                '''
-                server_instance_rows = self.execute_query(query)
-                if not server_instance_rows:
-                    message = self.create_response_message(cmd, "fail", "data not found", {})
-                    self.send_response(message, cmd)
-                    return
+                plan_query = f'''SELECT * FROM {self.recovery_db_schema}.recoveryplan'''
+                result_query = f'''SELECT * FROM {self.recovery_db_schema}.recoveryresults'''
 
-                # 서버인스턴스와 연관된 테이블 조회
-                server_instance_ids = [row['id'] for row in server_instance_rows]
-                placeholders = ', '.join(['%s'] * len(server_instance_ids))
+                # self.execute_query_des()
+                plan_res = self.execute_query_des(plan_query)
+                result_res = self.execute_query_des(result_query)
 
-                # 액티비티로그 테이블 조회
-                query_activitylog = f'''
-                    SELECT *
-                    FROM {self.resource_db_schema}.activitylog
-                    WHERE serverinstanceid IN ({placeholders});
-                '''
-                activitylog_rows = self.execute_query(query_activitylog, server_instance_ids)
+                plist = []
+                rlist = []
+                for plan in plan_res:
+                    source_key = plan['sourcekey']
 
-                # 네트워크인터페이스 테이블 조회
-                query_networkinterface = f'''
-                    SELECT ni.*, s.subnetname, s.subnet
-                    FROM {self.resource_db_schema}.networkinterface ni
-                    JOIN {self.resource_db_schema}.subnet s ON ni.subnetid = s.id
-                    WHERE ni.instanceno IN (SELECT serverinstanceno FROM {self.resource_db_schema}.serverinstance WHERE id IN ({placeholders}));
-                '''
-                networkinterface_rows = self.execute_query(query_networkinterface, server_instance_ids)
+                    tmp_query = f'''SELECT serverinstanceno, servername FROM {self.detail_db_schema}.serverinstance 
+                    WHERE serverinstanceno = '{source_key}'
+                    '''
+                    tmp_q_res = self.execute_query_des(tmp_query)
+                    tmp_res = []
+                    for tq in tmp_q_res:
+                        tmp_m = {
+                            "uuid": tq['serverinstanceno'],
+                            "name": tq['servername']
+                        }
+                        tmp_res.append(tmp_m)
 
-                # 퍼블릭IP 테이블 조회
-                query_publicip = f'''
-                    SELECT *
-                    FROM {self.resource_db_schema}.publicipinstance
-                    WHERE serverinstanceno IN (SELECT serverinstanceno FROM {self.resource_db_schema}.serverinstance WHERE id IN ({placeholders}));
-                '''
-                publicip_rows = self.execute_query(query_publicip, server_instance_ids)
+                    m = {
+                        "plan": {
+                            "id": plan['id'],
+                            "name": plan['requestid'],
+                            "instance": tmp_res
+                        }
+                    }
 
-                # 결과 데이터 생성
-                recovery_data = []
-                for row in server_instance_rows:
-                    server_instance_data = {"serverInstance": dict(row), "activityLogs": []}
+                    plist.append(m)
 
-                    # 액티비티로그 추가
-                    for log_row in activitylog_rows:
-                        if log_row['serverinstanceid'] == row['id']:
-                            server_instance_data["activityLogs"].append({"activityLog": dict(log_row)})
-
-                    # 네트워크인터페이스 추가
-                    server_instance_data["networkInterfaces"] = []
-                    for ni_row in networkinterface_rows:
-                        if ni_row['instanceno'] == row['serverinstanceno']:
-                            server_instance_data["networkInterfaces"].append({"networkInterface": dict(ni_row)})
-
-                    # 퍼블릭IP 추가
-                    server_instance_data["publicIps"] = []
-                    for publicip_row in publicip_rows:
-                        if publicip_row['serverinstanceno'] == row['serverinstanceno']:
-                            server_instance_data["publicIps"].append({"publicIp": dict(publicip_row)})
-
-                    recovery_data.append(server_instance_data)
-
-                message = self.create_response_message(cmd, "success", "", {"data": recovery_data})
-                self.send_response(message, cmd)
+                message = self.create_response_message(code, "success", "", plist)
+                self.send_response(message, code)
 
             except Exception as e:
                 self.handle_exception(cmd, e)
         elif command == 'update':
             try:
-                # recoveryinfo update 명령어 처리 로직 구현
-                # data 파라미터를 사용하여 필요한 데이터 추출 및 가공
-                # DB 쿼리 실행 및 결과 처리
-                # 응답 메시지 생성 및 전송
-                pass
+                # recovery 데이터에서 필요한 정보 추출
+                plan_info_list = data['plan']['instance']  # instance 리스트를 가져옴
+                recovery_data = data['recovery']['raw']
+
+                table_name = recovery_data['table_name']
+                column_name = recovery_data['column_name']
+                new_value = recovery_data['new_value']
+
+                # 타겟 DB에 접속해서 가장 최신 스키마에 대해 raw SQL 실행
+                schemas = self.execute_query_des("show schemas;")
+                last_schema = next(
+                    (schema['schema_name'] for schema in schemas if schema['schema_name'].startswith('ds_')), None)
+                if last_schema is None:
+                    last_schema = 'public'  # Default schema if none found
+
+                # instance 리스트에 대해 반복
+                for plan_info in plan_info_list:
+                    uuid_value = plan_info['uuid']
+                    res = self.update_column_by_id(last_schema, table_name, column_name, uuid_value, new_value)
+
+                    # 각 instance에 대한 응답 메시지 생성 및 전송 (recoveryinfo 코드 사용)
+                    message = self.create_response_message('recoveryinfo', "success", "",
+                                                           {
+                                                               "resource": f"table name: {table_name}, column name: {column_name}, old_value: {uuid_value}, new_value: {new_value}"}
+                                                           )
+                self.send_response(message, 'recoveryinfo')
             except Exception as e:
-                self.handle_exception("recoveryinfo", e)
+                self.handle_exception(code, e)
+        elif command == 'set':
+            try:
+                instances = data['plan']['instance']
+                for instance in instances:
+                    recovery_info = instance
+                    query = f"""
+                        INSERT INTO {self.db_database}.recovery.recoveryplan (requestid, resourcetype, sourcekey, "timestamp", command, detail, completeflag)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """
+                    values = (
+                        recovery_info['requestid'], recovery_info['resourcetype'], recovery_info['sourcekey'],
+                        recovery_info['timestamp'],
+                        recovery_info['command'], recovery_info['detail'], recovery_info['completeflag'])
+                    self.query_dbv2(query, values)
+                message = self.create_response_message(code, "success", "", {})
+                self.send_response(message, code)
+            except Exception as e:
+                self.handle_exception(code, e)
+
+        elif command == 'delete':
+            try:
+                plan_id = data['plan']['id']  # Extract the plan ID to delete
+
+                # Delete from recoveryplan table
+                delete_plan_query = f'''
+                        DELETE FROM {self.recovery_db_schema}.recoveryplan 
+                        WHERE id = %s
+                    '''
+                self.query_dbv2(delete_plan_query, (plan_id,))
+
+                message = self.create_response_message(code, "success", "",
+                                                       {"result": f"Plan id: {plan_id} deleted successfully"})
+                self.send_response(message, code)
+
+            except Exception as e:
+                self.handle_exception(code, e)  # Handle potential errors
+
+    def RecoveryJob(self, command, data):
+        code = "recoveryjob"
+        cmd = command
+        if command == 'run':
+            try:
+                print()
+                ac = self.api_client
+                endpoint = "recovery_vpc"
+                data = data['instance']
+                res = ac.send_to_endpoint(endpoint, data)
+                message = self.create_response_message(code, "success", "", res)
+                self.send_response(message, code)
+            except Exception as e:
+                self.handle_exception(code, e)
+
+        elif command == 'pause':
+            try:
+                message = self.create_response_message(code, "fail", "", "nothing to do")
+                self.send_response(message, code)
+            except Exception as e:
+                self.handle_exception(code, e)
+        elif command == 'stop':
+            try:
+                message = self.create_response_message(code, "fail", "", "nothing to do")
+                self.send_response(message, code)
+            except Exception as e:
+                self.handle_exception(code, e)
+
+        elif command == 'rollback':
+            try:
+                print()
+                ac = self.api_client
+                endpoint = "delete_vpc"
+                # print(">>>",data)
+                data = data['instance']
+                planid = data['plan']['id']
+                # res = ac.send_to_endpoint(endpoint, data)
+                # message = self.create_response_message(code, "success", "", res)
+
+                recoveryplan_query = f"SELECT * FROM {self.recovery_db_schema}.recoveryplan WHERE completeflag=true AND id={planid};"
+                recoveryplan_list = self.execute_query(recoveryplan_query)
+
+                if recoveryplan_list:
+                    for recoveryplan_table in recoveryplan_list:
+                        resourceType = recoveryplan_table[2]
+                        sourceKey = recoveryplan_table[3]
+                        tmp_result_qry = (f"SELECT * FROM {self.recovery_db_schema}.recoveryresults WHERE sourcekey='{sourceKey}' AND resourcetype='{resourceType}';")
+                        tmp_result_res = self.execute_query(tmp_result_qry)
+
+                        if tmp_result_res:
+                            for r in tmp_result_res:
+                                tmp_table_name = r[2]
+                                tmp_table_target_key = r[3]
+
+                                ac = self.api_client
+                                # ep = "delete_vpc"
+                                # data = {
+                                #     "delete": {
+                                #         "target": tmp_table_name,
+                                #         "body": {
+                                #             f"{tmp_table_name}no": tmp_table_target_key
+                                #         }
+                                #     }
+                                # }
+                                # res = ac.send_to_endpoint(ep, data)
+
+                                # if resource = serverinstance
+                                # 1. stopServerInstances
+                                tmp_url1 = f"/vserver/v2/stopServerInstances?regionCode=KR&serverInstanceNoList.1={tmp_table_target_key}"
+                                tmp_res1 = ac.execute_resp(tmp_url1)
+
+                                time.sleep(5) # waiting to stop
+
+                                # 2. terminateServerInstances
+                                tmp_url2 = f"/vserver/v2/terminateServerInstances?regionCode=KR&serverInstanceNoList.1={tmp_table_target_key}"
+                                tmp_res2 = ac.execute_resp(tmp_url2)
+                                # print(tmp_res2)
+
+                        message = self.create_response_message(code, "success", "", "")
+                else:
+                    message = self.create_response_message(code, "fail", "data not found", "")
+                self.send_response(message, code)
+            except Exception as e:
+                self.handle_exception(code, e)
