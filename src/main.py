@@ -17,10 +17,12 @@ import readVPC2InsertDB as rv2
 import createVPC
 import vudVPC
 import connDbnApi as cda
-
-#Flask init
+import mod_volume
+import serverinstance_control
+# Flask init
 app = Flask(__name__)
 CORS(app)
+
 
 # function
 def change_default(req, obj, req_key):
@@ -28,6 +30,7 @@ def change_default(req, obj, req_key):
         for k, v in req[req_key].items():
             obj[k] = v
     return obj
+
 
 def is_subproc_run(stat):
     # stat : init, idle, run
@@ -38,6 +41,7 @@ def is_subproc_run(stat):
     except:
         return False
 
+
 def set_subproc_status():
     if os.path.isfile(status_path):
         with open(status_path, 'r') as sts:
@@ -47,25 +51,28 @@ def set_subproc_status():
                 sts.write("init")
     else:
         with open(status_path, 'w') as sts:
-                sts.write("init")
+            sts.write("init")
+
 
 def existence_db(db_source):
     constant_db_name = db_source['dbName']
     db_source['dbName'] = None
     cd = cda.Connect(db=db_source)
     db_source['dbName'] = constant_db_name
-    
+
     if not constant_db_name in [x['database_name'] for x in cd.check_db()]:
         cd.create_db(constant_db_name)
         print("Created, db list : ", [x['database_name'] for x in cd.check_db()])
     else:
         print("Already exists, db list : ", [x['database_name'] for x in cd.check_db()])
 
+
 def create_resource_schema(source, schema_name):
     source['schemaName'] = schema_name
     cock_create = createSchema.Create(source)
     cock_create.create_schema()
     cock_create.create_table()
+
 
 def create_detail_schema(source, schema_name):
     source = source.copy()
@@ -75,14 +82,17 @@ def create_detail_schema(source, schema_name):
     cock_create.create_schema()
     cock_create.create_table()
 
+
 def read_conf():
     return gcf.Config(config_path).getConfig()
+
 
 def insert_to_detail_engine(db_info):
     connection_string = f"cockroachdb://{db_info['user']}@{db_info['host']}:{db_info['port']}/{db_info['dbName']}"
     print(connection_string)
     engine = create_engine(connection_string)
     return engine
+
 
 # route
 @app.route('/create_schema', methods=['POST'])
@@ -96,25 +106,26 @@ def create_schema():
     #     "user" : "root"
     # }
     req = request.get_json()
-    if 'schemaName' not in req: 
+    if 'schemaName' not in req:
         return 'fail, need key ["schemaName"]', 400
-    
+
     source = read_conf()['DATABASE-INFO'].copy()
-    
+
     for k, v in req.items():
         source[k] = v
-    
+
     cock_create = createSchema.Create(source)
     cock_create.create_schema()
     cock_create.create_table()
     return 'success'
+
 
 @app.route('/create_recovery', methods=['POST'])
 def create_recovery():
     # request format
     # {}, empty json
     source = read_conf()['DATABASE-INFO'].copy()
-    
+
     for k, v in source.items():
         if k == 'schemaName':
             source[k] = 'recovery'
@@ -149,21 +160,22 @@ def read2insert():
     #     }
     # }
     req = request.get_json()
-    if 'dbSource' not in req: 
+    if 'dbSource' not in req:
         return 'fail, need key ["dbSource"]', 400
     elif 'schemaName' not in req['dbSource']:
         return 'fail, need key ["dbSource"]["schemaName"]', 400
-    
+
     api = read_conf()['API-SOURCE-NAVER-CLOUD'].copy()
     source = read_conf()['DATABASE-INFO'].copy()
-    
+
     api = change_default(req, api, 'apiSource')
     source = change_default(req, source, 'dbSource')
-    
+
     ri = rv2.Read2Insert(api, source)
     ri.run()
 
     return 'success'
+
 
 @app.route('/sync_cluster', methods=['POST'])
 def sync_cluster():
@@ -172,7 +184,7 @@ def sync_cluster():
     resource_schema_name = "rs_" + start_time
 
     if is_subproc_run('run'):
-        return {"warning" : "Work already in progress."}, 200
+        return {"warning": "Work already in progress."}, 200
     else:
         db_source = read_conf()['DATABASE-INFO'].copy()
         existence_db(db_source)
@@ -184,8 +196,8 @@ def sync_cluster():
         try:
             ri.run()
         except:
-            return {"error" : "insert error."}, 500
-        
+            return {"error": "insert error."}, 500
+
         RESOURCE_SCHEMA = resource_schema_name
         # update config file
         gcf.Config(config_path).updateConfig('DATABASE-INFO', 'schemaName', resource_schema_name)
@@ -194,7 +206,8 @@ def sync_cluster():
         set_subproc_status()
 
         # return Sync result (if you want attribute then get form db)
-        return {"success" : "Done."}, 200
+        return {"success": "Done."}, 200
+
 
 @app.route('/set_schema_name', methods=['POST'])
 def set_schema_name():
@@ -203,19 +216,21 @@ def set_schema_name():
         global RESOURCE_SCHEMA
         RESOURCE_SCHEMA = req['schemaName']
         gcf.Config(config_path).updateConfig('DATABASE-INFO', 'schemaName', req['schemaName'])
-    
+
     elif req['type'] == 'detail':
         global DETAIL_SCHEMA
         DETAIL_SCHEMA = req['schemaName']
         gcf.Config(config_path).updateConfig('DATABASE-INFO', 'detailSchemaName', req['schemaName'])
-    
+
     return 'ok'
-        
+
+
 @app.route('/source_to_target', methods=['POST'])
 def source_to_target():
     db_source = read_conf()['DATABASE-INFO'].copy()
     cd = cda.Connect(db=db_source)
-    table_list = [x['table_name'] for x in cd.query_db(f"show tables from {cd.db_name}.{db_source['schemaName']};") if x['type'] == 'table']
+    table_list = [x['table_name'] for x in cd.query_db(f"show tables from {cd.db_name}.{db_source['schemaName']};") if
+                  x['type'] == 'table']
 
     result = {}
     for tbl in table_list:
@@ -224,18 +239,19 @@ def source_to_target():
         # result[tbl] = pd.DataFrame(__tbl).to_dict('split', index=False)
 
     json_res = json.dumps(result, default=str)
-    
+
     try:
-        requests.post(target_url+"/set_resource_info", 
-                      data=json_res, 
-                      headers={'Content-Type': 'application/json'}, 
+        requests.post(target_url + "/set_resource_info",
+                      data=json_res,
+                      headers={'Content-Type': 'application/json'},
                       timeout=0.0000000001)
-    except requests.exceptions.ReadTimeout: 
+    except requests.exceptions.ReadTimeout:
         pass
     except requests.exceptions.ConnectTimeout:
         pass
 
     return json_res
+
 
 @app.route('/set_resource_info', methods=['POST'])
 def set_resource_info():
@@ -248,15 +264,16 @@ def set_resource_info():
     existence_db(db_source)
     create_detail_schema(db_source, detail_schema_name)
     db_source['schemaName'] = detail_schema_name
-    param_obj = {'db_source' : db_source, 'req' : req, 'config_path' : config_path}
+    param_obj = {'db_source': db_source, 'req': req, 'config_path': config_path}
 
-    with open(f"./{detail_schema_name}.pkl", 'wb') as file: 
+    with open(f"./{detail_schema_name}.pkl", 'wb') as file:
         pickle.dump(param_obj, file)
 
     # req -> db
     subprocess.Popen([sys.executable or 'python', 'insertDetail.py', detail_schema_name])
 
-    return {"success" : "Done."}, 200
+    return {"success": "Done."}, 200
+
 
 @app.route('/create_vpc', methods=['POST'])
 def create_vpc():
@@ -277,22 +294,23 @@ def create_vpc():
     #     }
     # }
     req = request.get_json()
-    if 'dbSource' not in req: 
+    if 'dbSource' not in req:
         return 'fail, need key ["dbSource"]', 400
     elif 'schemaName' not in req['dbSource']:
         return 'fail, need key ["dbSource"]["schemaName"]', 400
-    
+
     db_source = read_conf()['DATABASE-INFO'].copy()
     api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
 
     db_source = change_default(req, db_source, 'dbSource')
     api_target = change_default(req, api_target, 'apiTarget')
-    
+
     # print(db_source, '\n', api_target)
     cv = createVPC.Create(db_source, api_target)
     cv.run()
 
     return 'success'
+
 
 @app.route('/view_vpc', methods=['POST'])
 def view_vpc():
@@ -309,16 +327,16 @@ def view_vpc():
     #     }
     # }
     req = request.get_json()
-    if 'read' not in req: 
+    if 'read' not in req:
         return 'fail, need key ["read"]', 400
     elif 'target' not in req['read']:
         return 'fail, need key ["read"]["target"]', 400
-    
+
     api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
     api_target = change_default(req, api_target, 'apiTarget')
-    
+
     vv = vudVPC.VUD(api_target, req['read'], 'r')
-    
+
     return vv.run()
 
 
@@ -342,7 +360,7 @@ def update_vpc():
     #     }
     # }
     req = request.get_json()
-    if 'update' not in req: 
+    if 'update' not in req:
         return 'fail, need key ["update"]', 400
     elif 'target' not in req['update']:
         return 'fail, need key ["update"]["target"]', 400
@@ -351,22 +369,15 @@ def update_vpc():
 
     api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
     api_target = change_default(req, api_target, 'apiTarget')
-    
+
     uv = vudVPC.VUD(api_target, req['update'], 'u')
-    
+
     return uv.run()
 
 
 @app.route('/delete_vpc', methods=['POST'])
 def delete_vpc():
     # request format. Required ["delete"]["target"], ["delete"]["body"]
-    # {
-    #     "apiTarget": {
-    #         "accessKey": "mYUP1ZqESUOpjyOokWC8",
-    #         "secretKey": "31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM",
-    #         "ncloudUrl": "https://ncloud.apigw.gov-ntruss.com",
-    #         "billingApiUrl": "https://billingapi.apigw.gov-ntruss.com"
-    #     },
     #     "delete" : {
     #         "target" : "RouteTable",
     #         "key" : "{some_your_key}", //If there are two or more delete APIs, specify the API address
@@ -374,48 +385,28 @@ def delete_vpc():
     #             "routeTableNo" : "20247"
     #         }
     #     }
-    # }
     req = request.get_json()
-    if 'delete' not in req: 
+    # print(">>>", req) #OK
+    if 'delete' not in req:
         return 'fail, need key ["delete"]', 400
-    elif 'target' not in req['delete']:
-        return 'fail, need key ["delete"]["target"]', 400
-    elif 'body' not in req['delete']:
-        return 'fail, need key ["delete"]["body"]', 400
 
     api_target = read_conf()['API-TARGET-NAVER-CLOUD'].copy()
-    api_target = change_default(req, api_target, 'apiTarget')
-    
+
     ud = vudVPC.VUD(api_target, req['delete'], 'd')
     return ud.run()
 
+
 @app.route('/recovery_vpc', methods=['POST'])
 def recovery_vpc():
-    # request format. Required ["dbSource"]["schemaName"]
-    # {
-    #     "dbSource": {
-    #         "dbName": "cdm_fix",
-    #         "schemaName": "{your_schema_name}",
-    #         "host": "223.130.173.142",
-    #         "port": "26257",
-    #         "user": "root"
-    #     },
-    #     "apiTarget": {
-    #         "accessKey": "mYUP1ZqESUOpjyOokWC8",
-    #         "secretKey": "31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM",
-    #         "ncloudUrl": "https://ncloud.apigw.gov-ntruss.com",
-    #         "billingApiUrl": "https://billingapi.apigw.gov-ntruss.com"
-    #     }
-    # }
     req = request.get_json()
-    print(req)
-    if 'dbSource' not in req:
-        return 'fail, need key ["dbSource"]', 400
-    elif 'schemaName' not in req['dbSource']:
-        return 'fail, need key ["dbSource"]["schemaName"]', 400
+    print(f"req info: \n{req}\n###")
 
+    if 'plan' not in req:
+        return 'fail, need key ["plan"]', 400
+
+    planid = req['plan']['id']
+    plan = 'recoveryplan'
     db_source = read_conf()['DATABASE-INFO'].copy()
-    db_source = change_default(req, db_source, 'dbSource')
 
     cd = cda.Connect(db=db_source)
     schema_list = [x['schema_name'] for x in cd.query_db("show schemas;") if x['schema_name'][:3] == 'ds_']
@@ -436,123 +427,70 @@ def recovery_vpc():
     #
     # # print(db_source, '\n', api_target)
     cv = createVPC.Create(db_source, api_target)
-    cv.run()
+    cv.run(resource_name=plan, recoveryplanid=planid)
 
     return 'success'
 
-import base64
-import hashlib
-import hmac
 
-class recov_volume:
-    def __init__(self, config, command, serverinstanceno = None, volumeinstanceno = None):
-        self.base_url = f"http://{config['ip']}:9999"
-        self.api_source = config['api_source']
-        self.headers = {
-            "Accept": "*/*",
-            "User-Agent": "Thunder Client (https://www.thunderclient.com)",
-            "Content-Type": "application/json"
-        }
-        if command == "read":
-            self.api_url = "/vsserver/v2/getBlockStorageInstanceList"
-        elif command == "create":
-            self.api_url = f"/vserver/v2/createBlockStorageInstance?regionCode=KR&serverInstanceNo={serverinstanceno}&blockStorageSize=100"
-        elif command == "attach":
-            self.api_url = f"/vserver/v2/attachBlockStorageInstance?regionCode=KR&blockStorageInstanceNo={volumeinstanceno}&serverInstanceNo={serverinstanceno}"
-        elif command == "detach":
-            self.api_url = f"/vserver/v2/detachBlockStorageInstances?regionCode=KR&blockStorageInstanceNoList.1={volumeinstanceno}"
-        elif command == "delete":
-            self.api_url = f"/vserver/v2/deleteBlockStorageInstances?regionCode=KR&blockStorageInstanceNoList.1={volumeinstanceno}"
-        elif command == "create_snapshot_volume":
-            self.api_url = f"/vserver/v2/createBlockStorageSnapshotInstance?regionCode=KR&originalBlockStorageInstanceNo={volumeinstanceno}"
-    
-    def execute_resp(self):
-        response = self.send_request("GET", self.api_url, str(int(time.time() * 1000)))
-        # response = requests.get(f"{self.base_url}/{self.api_url}", headers=self.headers)
-        return response.text
-    
-    def create_signature(self, method, api_url, timestamp, access_key):
-        message = f"{method} {api_url}\n{timestamp}\n{access_key}"
-        print(f"###\n\n\n{message}\n\n\n###")
-        message = bytes(message, 'UTF-8')
-        SECRET_KEY = self.api_source['secretKey']
-        secret_key_bytes = bytes(SECRET_KEY, 'UTF-8')
 
-        signing_key = base64.b64encode(hmac.new(secret_key_bytes, message, digestmod=hashlib.sha256).digest())
-        return signing_key
-    
-    def send_request(self, method, api_url, timestamp):
-        ACCESS_KEY = self.api_source['accessKey']
-        signature = self.create_signature(method, api_url, timestamp, ACCESS_KEY)
-        http_header = {
-            'x-ncp-apigw-timestamp': timestamp,
-            'x-ncp-iam-access-key': ACCESS_KEY,
-            'x-ncp-apigw-signature-v2': signature
-        }
-        full_url = self.api_source['ncloudUrl'] + api_url
-        print("full_url is ::", full_url)
-        response = requests.get(full_url, headers=http_header)
-        return response
-
-config1 = {
-    'ip': '10.255.77.139',
-    'api_source': {
-        'accessKey': 'mYUP1ZqESUOpjyOokWC8',
-        'secretKey': '31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM',
-        'ncloudUrl': 'https://ncloud.apigw.gov-ntruss.com',
-        'billingApiUrl': 'https://billingapi.apigw.gov-ntruss.com'
-    }
-} ## Need to change
-
-@app.route('/recovery_volume', methods=['POST'])
-def recovery_volume():
-    # request format. Required ["dbSource"]["schemaName"]
-    # {
-    #     "dbSource": {
-    #         "dbName": "cdm_fix",
-    #         "schemaName": "{your_schema_name}",
-    #         "host": "223.130.173.142",
-    #         "port": "26257",
-    #         "user": "root"
-    #     },
-    #     "apiTarget": {
-    #         "accessKey": "mYUP1ZqESUOpjyOokWC8",
-    #         "secretKey": "31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM",
-    #         "ncloudUrl": "https://ncloud.apigw.gov-ntruss.com",
-    #         "billingApiUrl": "https://billingapi.apigw.gov-ntruss.com"
-    #     }
-    # }
+@app.route('/modify_volume', methods=['POST'])
+def modify_volume():
     req = request.get_json()
     print(req)
-    try: 
+    res = "fail"
+    try:
         cmd = req['request']['parameter']['command']
+        # print(f"cmd: {cmd}")
+        if cmd == 'create':
+            serverinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
+            src_client = mod_volume.volume_control(cmd, serverinstance_no, None)
+            res = src_client.execute_resp()
+        elif cmd == 'delete':
+            volumeinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
+            src_client = mod_volume.volume_control(cmd, None, volumeinstance_no)
+            res = src_client.execute_resp()
+        elif cmd == 'attach':
+            serverinstance_no = req['request']['parameter']['data']['instance'][0]['instance_uuid']
+            volumeinstance_no = req['request']['parameter']['data']['instance'][0]['volume_uuid']
+            src_client = mod_volume.volume_control(cmd, serverinstance_no, volumeinstance_no)
+            res = src_client.execute_resp()
+        elif cmd == 'detach':
+            volumeinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
+            src_client = mod_volume.volume_control(cmd, None, volumeinstance_no)
+            res = src_client.execute_resp()
+        elif cmd == 'create_snapshot_volume':
+            volumeinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
+            src_client = mod_volume.volume_control(cmd, None, volumeinstance_no)
+            res = src_client.execute_resp()
+        elif cmd == 'get_snapshot_volume':
+            volumeinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
+            src_client = mod_volume.volume_control(cmd, None, volumeinstance_no)
+            res = src_client.execute_resp()
+        elif cmd == 'delete_snapshot_volume':
+            volumeinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
+            src_client = mod_volume.volume_control(cmd, None, volumeinstance_no)
+            res = src_client.execute_resp()
+        return res
     except:
-        return 'fail, code is not volume', 400
+        return f'fail, check request message', 400
 
-    if cmd=='create':
-        serverinstance_no = req['request']['parameter']['data']['instance'][0]['instance'][0]['uuid']
-        src_client = recov_volume(config1, cmd, serverinstance_no, None)
-        print(src_client.execute_resp())
-    elif cmd=='delete':
-        volumeinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
-        src_client = recov_volume(config1, cmd, None, volumeinstance_no)
-        print(src_client.execute_resp())
-    elif cmd=='attach':
-        serverinstance_no = req['request']['parameter']['data']['instance'][0]['instance_uuid']
-        volumeinstance_no = req['request']['parameter']['data']['instance'][0]['volume_uuid']
-        src_client = recov_volume(config1, cmd, serverinstance_no, volumeinstance_no)
-        print(src_client.execute_resp())
-    elif cmd=='detach':
-        volumeinstance_no = req['request']['parameter']['data']['instance'][0]['volume_uuid']
-        src_client = recov_volume(config1, cmd, None, volumeinstance_no)
-        print(src_client.execute_resp())
-    elif cmd=='create_snapshot_volume':
-        volumeinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
-        src_client = recov_volume(config1, cmd, None, volumeinstance_no)
-        print(src_client.execute_resp())
+@app.route('/reboot_serverinstances', methods=['POST'])
+def reboot_serverinstances():
+    req = request.get_json()
+    print(f"reboot>>\n{req}")
 
-    return 'success'
-
+    res = "fail"
+    try:
+        cmd = req['request']['parameter']['command']
+        # print(f"cmd: {cmd}")
+        if cmd == 'reboot':
+            serverinstance_no = [req['request']['parameter']['data']['instance'][0]['uuid']]
+            src_client = serverinstance_control.serverinstance_control(cmd, serverinstance_no)
+            res = src_client.execute_resp()
+        return res
+    except Exception:
+        print(Exception)
+        return 'fail, check request message', 400
 
 @app.route('/set_recovery_info', methods=['POST'])
 def set_recovery_info():
@@ -585,12 +523,12 @@ def set_recovery_info():
         VALUES (%s, %s, %s, %s, %s, %s, %s)
     """
     values = (
-    recovery_info['requestid'], recovery_info['resourcetype'], recovery_info['sourcekey'], recovery_info['timestamp'],
-    recovery_info['command'], recovery_info['detail'], recovery_info['completeflag'])
+        recovery_info['requestid'], recovery_info['resourcetype'], recovery_info['sourcekey'],
+        recovery_info['timestamp'],
+        recovery_info['command'], recovery_info['detail'], recovery_info['completeflag'])
 
     cd.query_dbv(query, values)
-    #recovery table에 데이터 삽입
-
+    # recovery table에 데이터 삽입
     return 'success'
 
 
@@ -600,12 +538,12 @@ if __name__ == '__main__':
     config_path = "../conf/app.conf"
     db_temp_path = "./db_temp.pkl"
     target_ip = read_conf()['DATABASE-INFO']['target']
-    target_url = f"http://{target_ip}:9999"    # it is test ip for target
+    target_url = f"http://{target_ip}:9999"  # it is test ip for target
 
     RESOURCE_SCHEMA = read_conf()['DATABASE-INFO']['schemaName']
     DETAIL_SCHEMA = read_conf()['DATABASE-INFO']['detailSchemaName']
 
     cyclic_sync = subprocess.Popen([sys.executable or 'python', 'cyclicSync.py', status_path, config_path])
     atexit.register(cyclic_sync.kill)
-    
+
     app.run(threaded=True, debug=True, host='0.0.0.0', port=9999)
