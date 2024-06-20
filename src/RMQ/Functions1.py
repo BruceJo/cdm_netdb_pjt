@@ -1,6 +1,6 @@
 import sys, os
 import time
-
+import xmltodict
 import pika
 import json
 from psycopg2.extras import DictCursor
@@ -185,6 +185,13 @@ class Functions:
     def handle_exception(self, code, exception):
         message = self.create_response_message(code, "fail", str(f"Exception Code: {code}, E: {exception}"), {})
         self.send_response(message, code)
+
+    def xml_to_json(self, xml_data):  # xml을 json형식으로 변환하는 함수 추가했습니다 0618
+        # Convert XML data to a dictionary
+        dict_data = xmltodict.parse(xml_data)
+        # Convert the dictionary to a JSON string
+        json_data = json.dumps(dict_data, indent=2)
+        return json_data
 
     def receive_request(self):
         connection = pika.BlockingConnection(
@@ -421,7 +428,10 @@ class Functions:
                     }
                 }
                 res = api_client.reboot_serverinstances(m)
-                message = self.create_response_message("instanceinfo", "success", "", {"raw": res})
+                # xml=>json으로 변환
+                raw_xml = res
+                raw_json = self.xml_to_json(raw_xml)
+                message = self.create_response_message("instanceinfo", "success", "", {"raw": raw_json})
 
                 self.send_response(message, "volumeinfo")
             except Exception as e:
@@ -628,7 +638,7 @@ class Functions:
                     }
                     final_result.append(snapshot)
 
-                message = self.create_response_message("snapshotinfo", "success", "", {"instance": final_result})
+                message = self.create_response_message("snapshotinfo", "success", "", {"instance_volume": final_result})
                 self.send_response(message, "snapshotinfo")
 
             except Exception as e:
@@ -793,7 +803,7 @@ class Functions:
             try:
                 api_client = self.api_client
                 res = api_client.source_to_target()
-                m = self.create_response_message(req_code, "success", "", {"resource": res})
+                m = self.create_response_message(req_code, "success", "", {"resource": {"raw" : res}})
                 self.send_response(m, req_code)
             except Exception as e:
                 self.handle_exception(req_code, e)
@@ -816,7 +826,7 @@ class Functions:
                 resource_data = data.get('resource')
                 api_client = self.api_client
                 res = api_client.set_resource_info(resource_data)
-                message = self.create_response_message(req_code, "success", "", {"resource": res})
+                message = self.create_response_message(req_code, "success", "", {"resource": {"raw" : res}})
                 self.send_response(message, req_code)
             except Exception as e:
                 self.handle_exception(req_code, e)
@@ -864,7 +874,7 @@ class Functions:
                 plan_res = self.execute_query_des(plan_query)
                 result_res = self.execute_query_des(result_query)
 
-                plist = []
+                # plist = []
                 rlist = []
                 for plan in plan_res:
                     source_key = plan['sourcekey']
@@ -889,9 +899,9 @@ class Functions:
                         }
                     }
 
-                    plist.append(m)
+                    # plist.append(m)
 
-                message = self.create_response_message(code, "success", "", plist)
+                message = self.create_response_message(code, "success", "", m)
                 self.send_response(message, code)
 
             except Exception as e:
