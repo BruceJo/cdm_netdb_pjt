@@ -228,13 +228,29 @@ class Create():
         ### for this in self.nc.keys():
         print(f"### create resource name >> {resource_name}")
 
+#######################################################
+
+        # Recovery Plan 테이블에서 complete flag가 0인 데이터를 tmp 테이블로 옮깁니다.
+        transfer_query = "INSERT INTO recovery.tmp SELECT * FROM recovery.recoveryplan WHERE completeflag = 0;"
+        self.cur.execute(transfer_query)
+    
+        # 이동된 데이터 처리
+        process_query = "SELECT * FROM recovery.tmp;"
+        self.cur.execute(process_query)
+        tmp_data = self.cur.fetchall()
+        print(tmp_data)
+
+######################################################
+
         recovery_list = []
 
         sent_flag = False
         if resource_name == 'recoveryplan':
+
             if recoveryplanid == None:
                 raise Exception("[ERR] recoveryplanid is not defined")
                 pass
+            
             recoveryplan_query = f"SELECT * FROM {self.recovery_schema}.recoveryplan WHERE completeflag=false AND id={recoveryplanid};"
             #일치하는 결과 없으면 에러 처리 필요
             print(">>>",recoveryplan_query)
@@ -248,6 +264,8 @@ class Create():
         else:
             recovery_list.append(resource_name)
 
+########################################################
+
         for this in recovery_list:
             print(f"create resource => {this}")
             if self.is_valiable_table(this):
@@ -259,7 +277,7 @@ class Create():
                         for key, value in filtering_info.items():
                             if key in r:
                                 r[key] = value
-                for r in row:
+                for r in row:``
                     self.create(r)
 
                     if resource_name == 'recoveryplan':
