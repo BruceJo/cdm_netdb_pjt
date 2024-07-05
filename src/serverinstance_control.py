@@ -29,6 +29,9 @@ class serverinstance_control:
                 else:  # 쿼리 파라미터가 없는 경우
                     self.api_url += f"?{param}"
 
+        self.api_url += "&responseFormatType=json"
+        print(self.api_url)
+
     def execute_resp(self):
         response = self.send_request("GET", self.api_url, str(int(time.time() * 1000)))
         # response = requests.get(f"{self.base_url}/{self.api_url}", headers=self.headers)

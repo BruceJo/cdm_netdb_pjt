@@ -7,7 +7,7 @@ import getConfig as gcf
 
 
 class volume_control:
-    def __init__(self, command, serverinstanceno=None, volumeinstanceno=None, default_ip="localhost"):
+    def __init__(self, command, serverinstanceno=None, volumeinstanceno=None, default_ip="localhost", option=None):
         self.status_path = "../conf/status.conf"
         self.config_path = "../conf/app.conf"
         self.db_temp_path = "./db_temp.pkl"
@@ -18,22 +18,48 @@ class volume_control:
             "User-Agent": "Thunder Client (https://www.thunderclient.com)",
             "Content-Type": "application/json"
         }
+        print(f"##### volume control command: {command}")
+
         if command == "read":
             self.api_url = "/vserver/v2/getBlockStorageInstanceList"
-        elif command == "create":
-            self.api_url = f"/vserver/v2/createBlockStorageInstance?regionCode=KR&serverInstanceNo={serverinstanceno}&blockStorageSize=100"
+        elif command == "create" or command == "create_snapshot_volume":
+            self.api_url = f"/vserver/v2/createBlockStorageInstance?regionCode=KR&serverInstanceNo={serverinstanceno}"
+            if option:
+                if 'size' in option:
+                    self.api_url += f"&blockStorageSize={option['size']}"
+                else:
+                    self.api_url += f"&blockStorageSize=50"
+                if 'type' in option:
+                    self.api_url += f"&blockStorageDiskDetailTypeCode={option['type']}"
+                if 'snapshot' in option:
+                    self.api_url += f"&blockStorageSnapshotInstanceNo={option['snapshot']}"
+            else:
+                self.api_url += f"&blockStorageSize=50"
+
         elif command == "attach":
             self.api_url = f"/vserver/v2/attachBlockStorageInstance?regionCode=KR&blockStorageInstanceNo={volumeinstanceno}&serverInstanceNo={serverinstanceno}"
         elif command == "detach":
-            self.api_url = f"/vserver/v2/detachBlockStorageInstances?regionCode=KR&blockStorageInstanceNoList.1={volumeinstanceno}"
+            self.api_url = f"/vserver/v2/detachBlockStorageInstances?regionCode=KR"
+            if isinstance(volumeinstanceno, list):
+                for i, vol in enumerate(volumeinstanceno, 1):
+                    self.api_url += f"&blockStorageInstanceNoList.{i}={vol}"
+            else:
+                self.api_url += f"&blockStorageInstanceNoList.1={volumeinstanceno}"
         elif command == "delete":
-            self.api_url = f"/vserver/v2/deleteBlockStorageInstances?regionCode=KR&blockStorageInstanceNoList.1={volumeinstanceno}"
-        elif command == "create_snapshot_volume":
+            self.api_url = f"/vserver/v2/deleteBlockStorageInstances?regionCode=KR"
+            if isinstance(volumeinstanceno, list):
+                for i, vol in enumerate(volumeinstanceno, 1):
+                    self.api_url += f"&blockStorageInstanceNoList.{i}={vol}"
+            else:
+                self.api_url += f"&blockStorageInstanceNoList.1={volumeinstanceno}"
+        elif command == "create_snapshot":
             self.api_url = f"/vserver/v2/createBlockStorageSnapshotInstance?regionCode=KR&originalBlockStorageInstanceNo={volumeinstanceno}"
         elif command == "get_snapshot_volume":
             self.api_url = f"/vserver/v2/getBlockStorageSnapshotInstanceList?regionCode=KR"
-        elif command == "delete_snapshot_volume":
+        elif command == "delete_snapshot":
             self.api_url = f"/vserver/v2/deleteBlockStorageSnapshotInstances?regionCode=KR&blockStorageSnapshotInstanceNoList.1={volumeinstanceno}"
+
+        self.api_url += "&responseFormatType=json"
 
     def execute_resp(self):
         response = self.send_request("GET", self.api_url, str(int(time.time() * 1000)))
