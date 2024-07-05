@@ -19,6 +19,11 @@ import vudVPC
 import connDbnApi as cda
 import mod_volume
 import serverinstance_control
+import threading
+
+recovery_tasks = {}
+
+
 # Flask init
 app = Flask(__name__)
 CORS(app)
@@ -426,11 +431,28 @@ def recovery_vpc():
     # api_target = change_default(req, api_target, 'apiTarget')
     #
     # # print(db_source, '\n', api_target)
-    cv = createVPC.Create(db_source, api_target)
-    cv.run(resource_name=plan, recoveryplanid=planid)
 
-    return 'success'
+    cancel_flag = threading.Event()
+    cv = createVPC.Create(db_source, api_target, cancel_flag)
+    task = threading.Thread(target=cv.run, kwargs={'resource_name': plan, 'recoveryplanid': planid})
+    recovery_tasks[planid] = {'task': task, 'cancel_flag': cancel_flag}
 
+    task.start()
+
+    return 'Recovery process started', 202
+
+@app.route('/cancel_recovery_vpc', methods=['POST'])
+def cancel_recovery_vpc():
+    req = request.get_json()
+    if 'planid' not in req:
+        return 'fail, need key ["planid"]', 400
+
+    planid = req['planid']
+    if planid in recovery_tasks:
+        recovery_tasks[planid]['cancel_flag'].set()
+        return 'Cancel request sent', 200
+    else:
+        return 'No such recovery task found', 404
 
 
 @app.route('/modify_volume', methods=['POST'])
@@ -440,39 +462,70 @@ def modify_volume():
     res = "fail"
     try:
         cmd = req['request']['parameter']['command']
-        # print(f"cmd: {cmd}")
-        if cmd == 'create':
-            serverinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
-            src_client = mod_volume.volume_control(cmd, serverinstance_no, None)
-            res = src_client.execute_resp()
-        elif cmd == 'delete':
-            volumeinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
-            src_client = mod_volume.volume_control(cmd, None, volumeinstance_no)
-            res = src_client.execute_resp()
-        elif cmd == 'attach':
-            serverinstance_no = req['request']['parameter']['data']['instance'][0]['instance_uuid']
-            volumeinstance_no = req['request']['parameter']['data']['instance'][0]['volume_uuid']
-            src_client = mod_volume.volume_control(cmd, serverinstance_no, volumeinstance_no)
-            res = src_client.execute_resp()
-        elif cmd == 'detach':
-            volumeinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
-            src_client = mod_volume.volume_control(cmd, None, volumeinstance_no)
-            res = src_client.execute_resp()
-        elif cmd == 'create_snapshot_volume':
-            volumeinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
-            src_client = mod_volume.volume_control(cmd, None, volumeinstance_no)
-            res = src_client.execute_resp()
-        elif cmd == 'get_snapshot_volume':
-            volumeinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
-            src_client = mod_volume.volume_control(cmd, None, volumeinstance_no)
-            res = src_client.execute_resp()
-        elif cmd == 'delete_snapshot_volume':
-            volumeinstance_no = req['request']['parameter']['data']['instance'][0]['uuid']
-            src_client = mod_volume.volume_control(cmd, None, volumeinstance_no)
-            res = src_client.execute_resp()
-        return res
-    except:
-        return f'fail, check request message', 400
+        code = req['request']['code']
+        instance_volumes = req['request']['parameter']['data']['instance_volume']
+        print(f"cmd: {cmd} code: {code}")
+
+        results = []
+        for instance_volume in instance_volumes:
+            server_uuid = instance_volume.get('instance', {}).get('uuid')
+            volumes = instance_volume.get('volume', [])
+            snapshots = instance_volume.get('snapshot', [])
+
+            # 단일 딕셔너리인 경우 리스트로 변환
+            if isinstance(volumes, dict):
+                volumes = [volumes]
+
+            if isinstance(snapshots, dict):
+                snapshots = [snapshots]
+
+            if cmd == 'create':
+                opt = instance_volume
+                if code == 'snapshotinfo':
+                    for volume in volumes:
+                        volume_uuid = volume['uuid']
+                        cmd = 'create_snapshot'
+                        src_client = mod_volume.volume_control(cmd, None, volume_uuid)
+                        res = src_client.execute_resp()
+                        results.append(res)
+                else:
+                    src_client = mod_volume.volume_control(cmd, server_uuid, None, option=opt)
+                    res = src_client.execute_resp()
+                    results.append(res)
+            elif cmd in ['detach', 'delete']:
+                if code == 'snapshotinfo':
+                    for snapshot in snapshots:
+                        snapshot_uuid = snapshot['uuid']
+                        cmd = 'delete_snapshot'
+                        src_client = mod_volume.volume_control(cmd, None, snapshot_uuid)
+                        res = src_client.execute_resp()
+                        results.append(res)
+                else:
+                    volume_uuids = [volume['uuid'] for volume in volumes]
+                    for volume_uuid in volume_uuids:
+                        src_client = mod_volume.volume_control(cmd, None, volume_uuid)
+                        res = src_client.execute_resp()
+                        results.append(res)
+            elif cmd == 'attach':
+                for volume in volumes:
+                    volume_uuid = volume['uuid']
+                    src_client = mod_volume.volume_control(cmd, server_uuid, volume_uuid)
+                    res = src_client.execute_resp()
+                    results.append(res)
+            elif cmd in ['create_snapshot_volume', 'get_snapshot_volume', 'delete_snapshot_volume']:
+                for volume in volumes:
+                    volume_uuid = volume['uuid']
+                    src_client = mod_volume.volume_control(cmd, None, volume_uuid)
+                    res = src_client.execute_resp()
+                    results.append(res)
+
+        if len(results) == 1:
+            return results[0]
+        else:
+            return results
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return f'fail, check request message: {str(e)}', 400
 
 @app.route('/reboot_serverinstances', methods=['POST'])
 def reboot_serverinstances():
