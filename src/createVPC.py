@@ -5,8 +5,9 @@ import re
 
 
 class Create():
-    def __init__(self, source_db, target_api):
+    def __init__(self, source_db, target_api, cancel_flag=None):
         self.source_db = source_db
+        self.cancel_flag = cancel_flag
         self.target_api = target_api
         self.nc = naverCloud.url_info()
         self.include_keys = naverCloud.include_keys()
@@ -267,6 +268,10 @@ class Create():
 ########################################################
 
         for this in recovery_list:
+            if self.cancel_flag and self.cancel_flag.is_set():
+                print(f"Recovery process for {resource_name} cancelled during {this} creation.")
+                return 'Recovery cancelled'
+                
             print(f"create resource => {this}")
             if self.is_valiable_table(this):
                 print("process ...")
@@ -277,9 +282,12 @@ class Create():
                         for key, value in filtering_info.items():
                             if key in r:
                                 r[key] = value
-                for r in row:``
+                for r in row:                    
+                    if self.cancel_flag and self.cancel_flag.is_set():
+                        print(f"Recovery process for {resource_name} cancelled during {this} creation.")
+                        return 'Recovery cancelled'
+                        
                     self.create(r)
-
                     if resource_name == 'recoveryplan':
                         tmp_res = f"SELECT sourcekey FROM {self.recovery_schema}.recoveryplan ;"
                         self.cur.execute(tmp_res)
