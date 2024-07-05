@@ -1,6 +1,6 @@
 import sys, os
 import time
-import xmltodict
+
 import pika
 import json
 from psycopg2.extras import DictCursor
@@ -25,6 +25,8 @@ class Functions:
         self.response_exchange = 'response_exchange'
         self.request_ID = request_ID
         self.api_client = apiClient.ApiClient()
+        self.set_lastest_schema_ds()
+        self.set_lastest_schema_rs()
 
     def connect_db(self):
         try:
@@ -186,13 +188,6 @@ class Functions:
         message = self.create_response_message(code, "fail", str(f"Exception Code: {code}, E: {exception}"), {})
         self.send_response(message, code)
 
-    def xml_to_json(self, xml_data):  # xml을 json형식으로 변환하는 함수 추가했습니다 0618
-        # Convert XML data to a dictionary
-        dict_data = xmltodict.parse(xml_data)
-        # Convert the dictionary to a JSON string
-        json_data = json.dumps(dict_data, indent=2)
-        return json_data
-
     def receive_request(self):
         connection = pika.BlockingConnection(
             pika.ConnectionParameters('localhost', 5672, '/', pika.PlainCredentials('admin', 'admin')))
@@ -260,29 +255,25 @@ class Functions:
             if command == 'get_all':
                 self.Volume(command, data)
             elif command == 'get':
-                if 'instance' in data and 'uuid' in data['instance']:
-                    uuid = data['instance']['uuid']
-                    self.Volume(command, uuid)
-                else:
-                    self.Volume(command, None)
+                self.Volume(command, data)
             elif command == 'create' or 'delete' or 'detach':
                 self.Volume(command, data)
-            elif command == 'create_sanpshot_volume':
+            elif command == 'create_snapshot_volume':
                 self.Volume(command, data)
 
         elif code == 'snapshotinfo':
             if command == 'get_all':
                 self.VolumeSnapshot(command, data)
             elif command == 'get':
-                if 'instance' in data and 'uuid' in data['instance']:
-                    uuid = data['instance']['uuid']
+                if 'instance_volume' in data and 'uuid' in data['instance_volume']:
+                    uuid = data['instance_volume']['uuid']
                     self.VolumeSnapshot(command, uuid)
                 else:
                     self.VolumeSnapshot(command, None)
             elif command == 'delete':
-                for instance in data['instance']:
-                    uuid = instance['uuid']
-                    self.VolumeSnapshot(command, uuid)
+                self.VolumeSnapshot(command, data)
+            elif command == 'create':
+                self.VolumeSnapshot(command, data)
         # lhb add
         elif code == 'resourceinfo':
             self.ResourceInfo(command, data)
@@ -351,13 +342,14 @@ class Functions:
             print()
 
     def Instanceinfo(self, command, uuid):
+        code = 'instanceinfo'
         if command == 'get_all':
             try:
                 query = f'SELECT * FROM {self.resource_db_schema}.serverinstance;'
                 rows = self.execute_query(query)
                 if not rows:
-                    message = self.create_response_message("instanceinfo", "fail", "data not found", {})
-                    self.send_response(message, "instanceinfo")
+                    message = self.create_response_message(code, "fail", "data not found", {})
+                    self.send_response(message, code)
                     return
                 result_json = self.parse_query_result(rows)
                 final_result = []
@@ -371,18 +363,18 @@ class Functions:
                     }
                     final_result.append(m)
 
-                message = self.create_response_message("instanceinfo", "success", "", {"instance": final_result})
-                self.send_response(message, "instanceinfo")
+                message = self.create_response_message(code, "success", "", {"instance": final_result})
+                self.send_response(message, code)
 
             except Exception as e:
-                self.handle_exception("instanceinfo", e)
+                self.handle_exception(code, e)
 
         elif command == 'get':
             try:
                 m = []
                 if not uuid:  # uuid가 빈 리스트인 경우
-                    message = self.create_response_message("instanceinfo", "fail", "data not found", {})
-                    self.send_response(message, "instanceinfo")
+                    message = self.create_response_message(code, "fail", "data not found", {})
+                    self.send_response(message, code)
                     return
                 for instance in uuid:
                     listkey = instance['uuid']
@@ -401,20 +393,20 @@ class Functions:
                     }
                     m.append(mm)
                 if not m:
-                    message = self.create_response_message("instanceinfo", "fail", "data not found", {})
-                    self.send_response(message, "instanceinfo")
+                    message = self.create_response_message(code, "fail", "data not found", {})
+                    self.send_response(message, code)
                     return
-                message = self.create_response_message("instanceinfo", "success", "", {"instance": m})
-                self.send_response(message, "instanceinfo")
+                message = self.create_response_message(code, "success", "", {"instance": m})
+                self.send_response(message, code)
             except Exception as e:
-                self.handle_exception("instanceinfo", e)
+                self.handle_exception(code, e)
 
         elif command == 'reboot':
             try:
                 api_client = self.api_client
                 m = {
                     "request": {
-                        "code": "instanceinfo",
+                        "code": code,
                         "parameter": {
                             "command": command,
                             "data": {
@@ -428,14 +420,11 @@ class Functions:
                     }
                 }
                 res = api_client.reboot_serverinstances(m)
-                # xml=>json으로 변환
-                raw_xml = res
-                raw_json = self.xml_to_json(raw_xml)
-                message = self.create_response_message("instanceinfo", "success", "", {"raw": raw_json})
+                message = self.create_response_message(code, "success", "", {"raw": res})
 
-                self.send_response(message, "volumeinfo")
+                self.send_response(message, code)
             except Exception as e:
-                self.handle_exception("volumeinfo", e)
+                self.handle_exception(code, e)
 
     def Volume(self, command, data):
         code = "volumeinfo"
@@ -470,7 +459,7 @@ class Functions:
                     }
                     final_result.append(volume)
 
-                message = self.create_response_message(code, "success", "", {"instance": final_result})
+                message = self.create_response_message(code, "success", "", {"instance_volume": final_result})
                 self.send_response(message, code)
 
             except Exception as e:
@@ -478,11 +467,14 @@ class Functions:
 
         elif command == 'get':
             try:
-                uuid = data['instance']['uuid']
-                instances = uuid
-                instance_uuids = [instance['uuid'] for instance in instances]
+                print(">>>>", data)
+                uuid = data['instance_volume'][0]['instance']['uuid']
+                print(">>>>",uuid)
+                instances = data['instance_volume']
+                instance_uuids = [instance['instance']['uuid'] for instance in instances]
                 placeholders = ', '.join(['%s'] * len(instance_uuids))
                 query = f'SELECT * FROM {self.resource_db_schema}.blockstorageinstance WHERE serverinstanceno IN ({placeholders});'
+                print(query)
                 rows = self.execute_query(query, instance_uuids)
                 if not rows:
                     message = self.create_response_message(code, "fail", "data not found", {})
@@ -516,7 +508,8 @@ class Functions:
             except Exception as e:
                 self.handle_exception(code, e)
 
-        elif command == 'create' or 'delete' or 'detach':
+
+        elif command in ['create', 'delete', 'detach', 'attach', 'create_snapshot_volume']:
             try:
                 api_client = self.api_client
                 m = {
@@ -529,86 +522,67 @@ class Functions:
                     }
                 }
                 res = api_client.modify_volume(m)
+                print(">>>>",res)
+                res_dict = json.loads(res)
 
-                # 정규 표현식을 사용하여 필요한 정보 추출
+                response_key = next((key for key in res_dict.keys() if key.endswith('Response')), None)
+                if response_key:
+                    storage_list = res_dict[response_key]['blockStorageInstanceList']
+                elif 'blockStorageSnapshotInstanceList' in res_dict[response_key]:
+                    storage_list = res_dict[response_key]['blockStorageSnapshotInstanceList']
+                else:
+                    raise ValueError("Unexpected API response format")
 
-                server_instance_match = re.search(r'<serverInstanceNo>(\d+)</serverInstanceNo>', res)
-                block_storage_instance_match = re.search(r'<blockStorageInstanceNo>(\d+)</blockStorageInstanceNo>', res)
-                block_storage_snapshot_instance_match = re.search(
-                    r'<blockStorageSnapshotInstanceNo>(\d+)</blockStorageSnapshotInstanceNo>', res)
-                original_block_storage_instance_match = re.search(
-                    r'<originalBlockStorageInstanceNo>(\d+)</originalBlockStorageInstanceNo>', res)
-
-                # 추출된 정보를 딕셔너리에 저장 (값이 있는 경우에만 추가)
-                structured_data = {}
-                if server_instance_match:
-                    structured_data["serverinstanceno"] = server_instance_match.group(1)
-                if block_storage_instance_match:
-                    structured_data["blockstorageinstanceno"] = block_storage_instance_match.group(1)
-                if block_storage_snapshot_instance_match:
-                    structured_data["blockstoragesnapshotinstanceno"] = block_storage_snapshot_instance_match.group(1)
-                if original_block_storage_instance_match:
-                    structured_data["originalblockstorageinstanceno"] = original_block_storage_instance_match.group(1)
-
-                # 응답 메시지 생성 (structured_data를 raw 키 안에 넣음)
-                # message = self.create_response_message(code, "success", "", {"raw": res, **structured_data})
-                message = self.create_response_message(code, "success", "", {**structured_data, "raw": res})
-
-                self.send_response(message, code)
-            except Exception as e:
-                self.handle_exception(code, e)
-
-        elif command == 'create_sanpshot_volume':
-            try:
-                api_client = self.api_client
-                m = {
-                    "request": {
-                        "code": code,
-                        "parameter": {
-                            "command": command,
-                            "data": data
-                        }
+                instance_volumes = []
+                for refine_dict in storage_list:
+                    # 추출된 정보를 딕셔너리에 저장
+                    structured_data = {
+                        "serverinstanceno": refine_dict.get('serverInstanceNo'),
+                        "blockstorageinstanceno": refine_dict.get('blockStorageInstanceNo') or refine_dict.get(
+                            'blockStorageSnapshotInstanceNo'),
+                        "blockstoragesnapshotinstanceno": refine_dict.get('blockStorageSnapshotInstanceNo'),
+                        "originalblockstorageinstanceno": refine_dict.get('originalBlockStorageInstanceNo')
                     }
-                }
-                res = api_client.modify_volume(m)
 
-                # 정규 표현식을 사용하여 필요한 정보 추출
+                    # 볼륨 정보 구성
+                    volume_info = {
+                        "uuid": structured_data["blockstorageinstanceno"],
+                        "name": refine_dict.get('blockStorageName') or refine_dict.get('blockStorageSnapshotName'),
+                        "type": refine_dict.get('blockStorageDiskDetailType', {}).get('codeName'),
+                        "size": refine_dict.get('blockStorageSize') or refine_dict.get(
+                            'blockStorageSnapshotVolumeSize'),
+                        "status": refine_dict.get('blockStorageInstanceStatusName') or refine_dict.get(
+                            'blockStorageSnapshotInstanceStatusName'),
+                        "snapshot": None if command != 'create_snapshot_volume' else structured_data[
+                            "blockstoragesnapshotinstanceno"],
+                        "raw": refine_dict
+                    }
 
-                server_instance_match = re.search(r'<serverInstanceNo>(\d+)</serverInstanceNo>', res)
-                block_storage_instance_match = re.search(r'<blockStorageInstanceNo>(\d+)</blockStorageInstanceNo>', res)
-                block_storage_snapshot_instance_match = re.search(
-                    r'<blockStorageSnapshotInstanceNo>(\d+)</blockStorageSnapshotInstanceNo>', res)
-                original_block_storage_instance_match = re.search(
-                    r'<originalBlockStorageInstanceNo>(\d+)</originalBlockStorageInstanceNo>', res)
+                    instance_volumes.append({
+                        "instance": {
+                            "uuid": structured_data["serverinstanceno"]
+                        },
+                        "volume": volume_info
+                    })
 
-                # 추출된 정보를 딕셔너리에 저장 (값이 있는 경우에만 추가)
-                structured_data = {}
-                if server_instance_match:
-                    structured_data["serverinstanceno"] = server_instance_match.group(1)
-                if block_storage_instance_match:
-                    structured_data["blockstorageinstanceno"] = block_storage_instance_match.group(1)
-                if block_storage_snapshot_instance_match:
-                    structured_data["blockstoragesnapshotinstanceno"] = block_storage_snapshot_instance_match.group(1)
-                if original_block_storage_instance_match:
-                    structured_data["originalblockstorageinstanceno"] = original_block_storage_instance_match.group(1)
-
-                # 응답 메시지 생성 (structured_data를 raw 키 안에 넣음)
-                # message = self.create_response_message(code, "success", "", {"raw": res, **structured_data})
-                message = self.create_response_message(code, "success", "", {**structured_data, "raw": res})
-
+                message = self.create_response_message(code, "success", "", {
+                    "instance_volume": instance_volumes
+                })
                 self.send_response(message, code)
+
             except Exception as e:
                 self.handle_exception(code, e)
 
     def VolumeSnapshot(self, command, data):
         print(f"volume snapshot > {command} {data}")
+        code = 'snapshotinfo'
         if command == 'get_all':
             try:
                 query = f'SELECT * FROM {self.resource_db_schema}.blockstoragesnapshotinstance;'
                 rows = self.execute_query(query)
                 if not rows:
-                    message = self.create_response_message("snapshotinfo", "fail", "data not found", {})
-                    self.send_response(message, "snapshotinfo")
+                    message = self.create_response_message(code, "fail", "data not found", {})
+                    self.send_response(message, code)
                     return
                 result_json = self.parse_query_result(rows)
 
@@ -638,12 +612,11 @@ class Functions:
                     }
                     final_result.append(snapshot)
 
-                message = self.create_response_message("snapshotinfo", "success", "", {"instance_volume": final_result})
-                self.send_response(message, "snapshotinfo")
+                message = self.create_response_message(code, "success", "", {"instance": final_result})
+                self.send_response(message, code)
 
             except Exception as e:
-                self.handle_exception("snapshotinfo", e)
-
+                self.handle_exception(code, e)
         elif command == 'get':
             try:
                 self.set_lastest_schema_rs()
@@ -690,58 +663,143 @@ class Functions:
                     final_result.extend(snapshot_result)
 
                 if not final_result:
-                    message = self.create_response_message("snapshotinfo", "fail", "data not found", {})
-                    self.send_response(message, "snapshotinfo")
+                    message = self.create_response_message(code, "fail", "data not found", {})
+                    self.send_response(message, code)
                     return
 
-                message = self.create_response_message("snapshotinfo", "success", "", {"instance": final_result})
-                self.send_response(message, "snapshotinfo")
+                message = self.create_response_message(code, "success", "", {"instance": final_result})
+                self.send_response(message, code)
 
             except Exception as e:
-                self.handle_exception("snapshotinfo", e)
+                self.handle_exception(code, e)
         elif command == 'delete':
-            # print(f">>>> delete {data}")
             try:
-
                 api_client = self.api_client
                 m = {
                     "request": {
-                        "code": "snapshotinfo",
+                        "code": code,
                         "parameter": {
-                            "command": "delete_snapshot_volume",
-                            "data": {"instance": [{"uuid": f"{data}"}]}
+                            "command": command,
+                            "data": data
                         }
                     }
                 }
-                print(f"><><{m}")
-
                 res = api_client.modify_volume(m)
+                res_dict = json.loads(res)
 
-                server_instance_match = re.search(r'<serverInstanceNo>(\d+)</serverInstanceNo>', res)
-                block_storage_instance_match = re.search(r'<blockStorageInstanceNo>(\d+)</blockStorageInstanceNo>', res)
-                block_storage_snapshot_instance_match = re.search(
-                    r'<blockStorageSnapshotInstanceNo>(\d+)</blockStorageSnapshotInstanceNo>', res)
-                original_block_storage_instance_match = re.search(
-                    r'<originalBlockStorageInstanceNo>(\d+)</originalBlockStorageInstanceNo>', res)
+                response_key = next((key for key in res_dict.keys() if key.endswith('Response')), None)
+                if response_key:
+                    if 'blockStorageInstanceList' in res_dict[response_key]:
+                        storage_list = res_dict[response_key]['blockStorageInstanceList']
+                    elif 'blockStorageSnapshotInstanceList' in res_dict[response_key]:
+                        storage_list = res_dict[response_key]['blockStorageSnapshotInstanceList']
+                    else:
+                        raise ValueError("Unexpected API response format")
+                else:
+                    raise ValueError("No valid response key found")
 
-                structured_data = {}
-                if server_instance_match:
-                    structured_data["serverinstanceno"] = server_instance_match.group(1)
-                if block_storage_instance_match:
-                    structured_data["blockstorageinstanceno"] = block_storage_instance_match.group(1)
-                if block_storage_snapshot_instance_match:
-                    structured_data["blockstoragesnapshotinstanceno"] = block_storage_snapshot_instance_match.group(1)
-                if original_block_storage_instance_match:
-                    structured_data["originalblockstorageinstanceno"] = original_block_storage_instance_match.group(1)
+                instance_volumes = []
+                for refine_dict in storage_list:
+                    # 추출된 정보를 딕셔너리에 저장
+                    structured_data = {
+                        "serverinstanceno": refine_dict.get('serverInstanceNo'),
+                        "blockstorageinstanceno": refine_dict.get('blockStorageInstanceNo') or refine_dict.get(
+                            'blockStorageSnapshotInstanceNo'),
+                        "blockstoragesnapshotinstanceno": refine_dict.get('blockStorageSnapshotInstanceNo'),
+                        "originalblockstorageinstanceno": refine_dict.get('originalBlockStorageInstanceNo')
+                    }
 
-                # 응답 메시지 생성 (structured_data를 raw 키 안에 넣음)
-                # message = self.create_response_message(code, "success", "", {"raw": res, **structured_data})
-                message = self.create_response_message("snapshotinfo", "success", "", {**structured_data, "raw": res})
+                    # 스냅샷 또는 볼륨 정보 구성
+                    info = {
+                        "uuid": structured_data["blockstorageinstanceno"],
+                        "name": refine_dict.get('blockStorageName') or refine_dict.get('blockStorageSnapshotName'),
+                        "type": refine_dict.get('blockStorageDiskDetailType', {}).get('codeName') or refine_dict.get(
+                            'snapshotType', {}).get('codeName'),
+                        "size": refine_dict.get('blockStorageSize') or refine_dict.get(
+                            'blockStorageSnapshotVolumeSize'),
+                        "status": refine_dict.get('blockStorageInstanceStatusName') or refine_dict.get(
+                            'blockStorageSnapshotInstanceStatusName'),
+                        "snapshot": None if command != 'create_snapshot' else structured_data[
+                            "blockstoragesnapshotinstanceno"],
+                        "raw": refine_dict
+                    }
 
-                self.send_response(message, "snapshotinfo")
+                    # code가 'snapshotinfo'일 경우 'snapshot'으로, 그 외의 경우 'volume'으로 키 설정
+                    key = 'snapshot' if code == 'snapshotinfo' else 'volume'
+                    instance_volumes.append({
+                        key: info
+                    })
+
+                message = self.create_response_message(code, "success", "", {
+                    "instance_volume": instance_volumes
+                })
+                self.send_response(message, code)
+
             except Exception as e:
-                self.handle_exception("snapshotinfo", e)
+                self.handle_exception(code, e)
+        elif command == 'create':
+            try:
+                api_client = self.api_client
+                m = {
+                    "request": {
+                        "code": code,
+                        "parameter": {
+                            "command": command,
+                            "data": data
+                        }
+                    }
+                }
+                res = api_client.modify_volume(m)
+                res_dict = json.loads(res)
 
+                response_key = next((key for key in res_dict.keys() if key.endswith('Response')), None)
+                if response_key:
+                    if 'blockStorageInstanceList' in res_dict[response_key]:
+                        storage_list = res_dict[response_key]['blockStorageInstanceList']
+                    elif 'blockStorageSnapshotInstanceList' in res_dict[response_key]:
+                        storage_list = res_dict[response_key]['blockStorageSnapshotInstanceList']
+                    else:
+                        raise ValueError("Unexpected API response format")
+                else:
+                    raise ValueError("No valid response key found")
+
+                instance_volumes = []
+                for refine_dict in storage_list:
+                    # 추출된 정보를 딕셔너리에 저장
+                    structured_data = {
+                        "serverinstanceno": refine_dict.get('serverInstanceNo'),
+                        "blockstorageinstanceno": refine_dict.get('blockStorageInstanceNo') or refine_dict.get(
+                            'blockStorageSnapshotInstanceNo'),
+                        "blockstoragesnapshotinstanceno": refine_dict.get('blockStorageSnapshotInstanceNo'),
+                        "originalblockstorageinstanceno": refine_dict.get('originalBlockStorageInstanceNo')
+                    }
+
+                    # 볼륨 정보 구성
+                    volume_info = {
+                        "uuid": structured_data["blockstorageinstanceno"],
+                        "name": refine_dict.get('blockStorageName') or refine_dict.get('blockStorageSnapshotName'),
+                        "type": refine_dict.get('blockStorageDiskDetailType', {}).get('codeName') or refine_dict.get(
+                            'snapshotType', {}).get('codeName'),
+                        "size": refine_dict.get('blockStorageSize') or refine_dict.get(
+                            'blockStorageSnapshotVolumeSize'),
+                        "status": refine_dict.get('blockStorageInstanceStatusName') or refine_dict.get(
+                            'blockStorageSnapshotInstanceStatusName'),
+                        "snapshot": None if command != 'create_snapshot' else structured_data[
+                            "blockstoragesnapshotinstanceno"],
+                        "raw": refine_dict
+                    }
+
+                    instance_volumes.append({
+                        "volume": volume_info
+                    })
+
+                message = self.create_response_message(code, "success", "", {
+                    "instance_volume": instance_volumes
+                })
+                self.send_response(message, code)
+
+            except Exception as e:
+                self.handle_exception(code, e)
     # 2024.05.22 lhb add
     def convert_to_json(self, row):
         json_data = {}
@@ -803,7 +861,7 @@ class Functions:
             try:
                 api_client = self.api_client
                 res = api_client.source_to_target()
-                m = self.create_response_message(req_code, "success", "", {"resource": {"raw" : res}})
+                m = self.create_response_message(req_code, "success", "", {"resource": {"raw": res}})
                 self.send_response(m, req_code)
             except Exception as e:
                 self.handle_exception(req_code, e)
@@ -815,7 +873,7 @@ class Functions:
                 api_client = self.api_client
                 res = api_client.set_resource_info(resource_data)
 
-                message = self.create_response_message(req_code, "success", "", {"resource": res})
+                message = self.create_response_message(req_code, "success", "", {"resource": {"raw": res}})
                 self.send_response(message, req_code)
             except Exception as e:
                 self.handle_exception(req_code, e)
@@ -826,7 +884,7 @@ class Functions:
                 resource_data = data.get('resource')
                 api_client = self.api_client
                 res = api_client.set_resource_info(resource_data)
-                message = self.create_response_message(req_code, "success", "", {"resource": {"raw" : res}})
+                message = self.create_response_message(req_code, "success", "", {"resource": {"raw": res}})
                 self.send_response(message, req_code)
             except Exception as e:
                 self.handle_exception(req_code, e)
@@ -874,7 +932,7 @@ class Functions:
                 plan_res = self.execute_query_des(plan_query)
                 result_res = self.execute_query_des(result_query)
 
-                # plist = []
+                pdict = {}
                 rlist = []
                 for plan in plan_res:
                     source_key = plan['sourcekey']
@@ -892,16 +950,18 @@ class Functions:
                         tmp_res.append(tmp_m)
 
                     m = {
-                        "plan": {
-                            "id": plan['id'],
-                            "name": plan['requestid'],
-                            "instance": tmp_res
-                        }
+                        "id": plan['id'],
+                        "name": plan['requestid'],
+                        "instance": tmp_res
                     }
 
-                    # plist.append(m)
+                    if 'plan' in data:
+                        if plan['id'] == data['plan'].get('id'):
+                            pdict[f"plan {plan['id']}"] = m  # 각 계획을 고유 키로 저장
+                    else:
+                        pdict[f"plan {plan['id']}"] = m  # 각 계획을 고유 키로 저장
 
-                message = self.create_response_message(code, "success", "", m)
+                message = self.create_response_message(code, "success", "", pdict)
                 self.send_response(message, code)
 
             except Exception as e:
@@ -928,28 +988,32 @@ class Functions:
                     uuid_value = plan_info['uuid']
                     res = self.update_column_by_id(last_schema, table_name, column_name, uuid_value, new_value)
 
+                    tmp_query = f'''SELECT * FROM {self.detail_db_schema}.{table_name}'''
+                    tmp_q_res = self.execute_query_des(tmp_query)
+
+                    serializable_result = [self.convert_to_json(row) for row in tmp_q_res]
+
                     # 각 instance에 대한 응답 메시지 생성 및 전송 (recoveryinfo 코드 사용)
                     message = self.create_response_message('recoveryinfo', "success", "",
                                                            {
-                                                               "resource": f"table name: {table_name}, column name: {column_name}, old_value: {uuid_value}, new_value: {new_value}"}
+                                                               "raw": serializable_result,
+                                                               "detail": f"table name: {table_name}, column name: {column_name}, old_value: {uuid_value}, new_value: {new_value}"}
                                                            )
                 self.send_response(message, 'recoveryinfo')
             except Exception as e:
                 self.handle_exception(code, e)
         elif command == 'set':
             try:
-                instances = data['plan']['instance']
-                for instance in instances:
-                    recovery_info = instance
-                    query = f"""
-                        INSERT INTO {self.db_database}.recovery.recoveryplan (requestid, resourcetype, sourcekey, "timestamp", command, detail, completeflag)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    """
-                    values = (
-                        recovery_info['requestid'], recovery_info['resourcetype'], recovery_info['sourcekey'],
-                        recovery_info['timestamp'],
-                        recovery_info['command'], recovery_info['detail'], recovery_info['completeflag'])
-                    self.query_dbv2(query, values)
+                recovery_info = data['plan']['raw']
+                query = f"""
+                    INSERT INTO {self.db_database}.recovery.recoveryplan (id, requestid, resourcetype, sourcekey, "timestamp", command, detail, completeflag)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                values = (
+                    recovery_info['requestid'], recovery_info['requestname'],recovery_info['resourcetype'], recovery_info['sourcekey'],
+                    recovery_info['timestamp'],
+                    recovery_info['command'], recovery_info['detail'], recovery_info['completeflag'])
+                self.query_dbv2(query, values)
                 message = self.create_response_message(code, "success", "", {})
                 self.send_response(message, code)
             except Exception as e:
@@ -981,9 +1045,9 @@ class Functions:
                 print()
                 ac = self.api_client
                 endpoint = "recovery_vpc"
-                data = data['instance']
+                # data = data['instance']
                 res = ac.send_to_endpoint(endpoint, data)
-                message = self.create_response_message(code, "success", "", res)
+                message = self.create_response_message(code, "success", "", data)
                 self.send_response(message, code)
             except Exception as e:
                 self.handle_exception(code, e)
@@ -994,9 +1058,18 @@ class Functions:
                 self.send_response(message, code)
             except Exception as e:
                 self.handle_exception(code, e)
+
         elif command == 'stop':
             try:
-                message = self.create_response_message(code, "fail", "", "nothing to do")
+                print("Stopping recovery job...")
+                ac = self.api_client
+                endpoint = "cancel_recovery_vpc"
+                plan_id = data['plan']['id']
+                stop_data = {'planid': plan_id}
+                res = ac.send_to_endpoint(endpoint, stop_data)
+                print('##>>',res)
+
+                message = self.create_response_message(code, "success", "", data)
                 self.send_response(message, code)
             except Exception as e:
                 self.handle_exception(code, e)
@@ -1007,7 +1080,6 @@ class Functions:
                 ac = self.api_client
                 endpoint = "delete_vpc"
                 # print(">>>",data)
-                data = data['instance']
                 planid = data['plan']['id']
                 # res = ac.send_to_endpoint(endpoint, data)
                 # message = self.create_response_message(code, "success", "", res)
