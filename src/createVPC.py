@@ -255,7 +255,7 @@ class Create():
                 delete_current_recoveryplan_query = f"DELETE FROM recovery.recoveryplan WHERE completeflag=false AND id={recoveryplanid};"
                 self.cur.execute(delete_current_recoveryplan_query)
 
-            for i in range(len(insert_sorted_recoveryplan_query)):
+            for i in range(len(sorted_current_recovey_plan)):
                 recoveryplanid = sorted_current_recovey_plan[i][0]
                 insert_sorted_recoveryplan_query = f"INSERT INTO recovery.recoveryplan SELECT * FROM recovery.recoveryplan WHERE completeflag=false AND id={recoveryplanid};"
                 self.cur.execute(insert_sorted_recoveryplan_query)
