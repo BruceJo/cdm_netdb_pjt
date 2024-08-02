@@ -228,31 +228,39 @@ class Create():
     def run(self, resource_name, filtering_info=None, recoveryplanid=None):
         ### for this in self.nc.keys():
         print(f"### create resource name >> {resource_name}")
-
 #######################################################
-
-        # Recovery Plan 테이블에서 complete flag가 0인 데이터를 tmp 테이블로 옮깁니다.
-        transfer_query = "INSERT INTO recovery.tmp SELECT * FROM recovery.recoveryplan WHERE completeflag = 0;"
-        self.cur.execute(transfer_query)
+        # # Recovery Plan 테이블에서 complete flag가 0인 데이터를 tmp 테이블로 옮깁니다.
+        # transfer_query = "INSERT INTO recovery.tmp SELECT * FROM recovery.recoveryplan WHERE completeflag = 0;"
+        # self.cur.execute(transfer_query)
     
-        # 이동된 데이터 처리
-        process_query = "SELECT * FROM recovery.tmp;"
-        self.cur.execute(process_query)
-        tmp_data = self.cur.fetchall()
-        print(tmp_data)
-
+        # # 이동된 데이터 처리
+        # process_query = "SELECT * FROM recovery.tmp;"
+        # self.cur.execute(process_query)
+        # tmp_data = self.cur.fetchall()
+        # print(tmp_data)
 ######################################################
-
         recovery_list = []
-
         sent_flag = False
         if resource_name == 'recoveryplan':
-
+            order_table = naverCloud.get_ordered_table_list()
             if recoveryplanid == None:
-                raise Exception("[ERR] recoveryplanid is not defined")
-                pass
+                raise Exception("[ERR] recoveryplanid is not defined")        
+            current_recoveryplan_query = f"SELECT * FROM recovery.recoveryplan WHERE completeflag=false AND id={recoveryplanid};"
+            self.cur.execute(current_recoveryplan_query)
+            current_recoveryplan = self.cur.fetchall()
+            sorted_current_recovey_plan = current_recoveryplan.sorted(key=lambda x: order_table.index(x[2]))
             
-            recoveryplan_query = f"SELECT * FROM {self.recovery_schema}.recoveryplan WHERE completeflag=false AND id={recoveryplanid};"
+            for i in range(len(current_recoveryplan)):
+                recoveryplanid = current_recoveryplan[i][0]
+                delete_current_recoveryplan_query = f"DELETE FROM recovery.recoveryplan WHERE completeflag=false AND id={recoveryplanid};"
+                self.cur.execute(delete_current_recoveryplan_query)
+
+            for i in range(len(insert_sorted_recoveryplan_query)):
+                recoveryplanid = sorted_current_recovey_plan[i][0]
+                insert_sorted_recoveryplan_query = f"INSERT INTO recovery.recoveryplan SELECT * FROM recovery.recoveryplan WHERE completeflag=false AND id={recoveryplanid};"
+                self.cur.execute(insert_sorted_recoveryplan_query)
+            
+            recoveryplan_query = f"SELECT * FROM recovery.recoveryplan WHERE completeflag=false AND id={recoveryplanid};"
             #일치하는 결과 없으면 에러 처리 필요
             print(">>>",recoveryplan_query)
             self.cur.execute(recoveryplan_query)
