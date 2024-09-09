@@ -312,7 +312,7 @@ def create_vpc():
 
     # print(db_source, '\n', api_target)
     cv = createVPC.Create(db_source, api_target)
-    cv.run()
+    cv.run("recoveryplan")
 
     return 'success'
 
