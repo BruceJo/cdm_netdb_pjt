@@ -473,7 +473,7 @@ def include_keys(): #전체 키
         ### step.3 https://api-gov.ncloud-docs.com/docs/home에서 본인 api의 요청 파라미터를 작성
         # 단, regionCode와 responseFormatType는 제외한다
         'loginkey' : [], #free
-        'serverinstance' : ['serverProductCode','serverImageProductCode','vpcNo','subnetNo','networkInterfaceNoList'], #pay
+        'serverinstance' : ['serverProductCode','serverImageProductCode','vpcNo','subnetNo', 'networkInterfaceNoList'], #pay
         'memberserverimageinstance' : ['memberServerImageInstanceNo', ''], #pay
         'routetable' : ['vpcNo', 'routeTableName', 'supportedSubnetTypeCode', 'routeTableDescription'], 
         'blockstorageinstance' : ['zoneCode', 'blockStorageName', 'blockStorageDiskDetailTypeCode', 'blockStorageVolumeTypeCode', 

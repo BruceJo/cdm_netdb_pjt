@@ -162,7 +162,7 @@ class Create():
                                 dict1.update({k3: v3})
                         else:
                             acg_list = []
-                            acg_list = nic_list
+                            acg_list = acg_list_str
                             for acg in acg_list:
                                 k3 = f'networkInterfaceList.{cnt + 1}.accessControlGroupNoList.{acg_cnt + 1}'
                                 v3 = f'{acg}'
@@ -500,8 +500,7 @@ class Create():
                     self.create(r)
 
                     if resource_name == 'recoveryplan':
-                        print("flag 1 this is")
-                        
+
                         # sourcekey 가져오기
                         tmp_res_query = "SELECT sourcekey FROM recovery.recoveryplan WHERE id = %s;"
                         self.cur.execute(tmp_res_query, (recoveryplanid,))
@@ -509,14 +508,15 @@ class Create():
 
                         # URL 설정
                         self.table_name = resourcetype_in_db
-                        self.set_url(resourcetype_in_db, "read")
+                        print("resourcetype_in_db", resourcetype_in_db)
+                        tmp_res_2 = resourcetype_in_db[0][0]
+                        self.set_url(tmp_res_2, "read")
 
                         # API 결과 가져오기
                         api_res = self.pretty_dict(self.read_db())
                         print('5. api result\n', api_res, '\n')
 
-                        if sent_flag:
-                            sent_flag = False
+                        if sent_flag == False:
                             print('5.1. Send information into recovery result table.')
 
                             # recoveryplan 업데이트 및 결과 테이블에 삽입
@@ -530,10 +530,10 @@ class Create():
 
                             # API 응답에서 특정 값을 추출
                             loaded_res = json.loads(api_res)
-                            if this == 'vpc':
+                            if tmp_res_2 == 'vpc':
                                 this_no = loaded_res['getVpcListResponse']['vpcList'][0]['vpcNo']
                                 this_code = loaded_res['getVpcListResponse']['vpcList'][0]['vpcStatus']['code']
-                            elif this == 'serverinstance':
+                            elif tmp_res_2 == 'serverinstance':
                                 before_this = 'serverInstance'
                                 this_no = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][
                                     f'{before_this}No']
@@ -551,6 +551,8 @@ class Create():
                             """
                             self.cur.execute(insert_query, (x[0][0], x[0][1], y[0], tmp_res, current_timestamp, y[1], api_res))
                             self.conn.commit()
+                            sent_flag = True
+
 
                         # DB 연결 닫기
                         self.conn.close()
