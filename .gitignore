@@ -190,5 +190,4 @@ pyrightconfig.json
 
 # configuration file
 *.conf
-conf/
 conf/app.conf

@@ -1,0 +1,28 @@
+[CYCLIC-SYNC]
+every = 5m
+period = 5m
+schemaRetentionPolicy = 2
+
+[API-SOURCE-NAVER-CLOUD]
+accessKey = {accessKey}
+secretKey = {secretKey}
+ncloudUrl = https://ncloud.apigw.gov-ntruss.com
+billingApiUrl = https://billingapi.apigw.gov-ntruss.com
+
+[API-TARGET-NAVER-CLOUD]
+accessKey = {accessKey2}
+secretKey = {secretKey2}
+ncloudUrl = https://ncloud.apigw.gov-ntruss.com
+billingApiUrl = https://billingapi.apigw.gov-ntruss.com
+
+[DATABASE-INFO]
+dbName = {dbName}
+schemaName = {schemaName}
+schemaPath = ../schema/naverCloudSchema.sql
+detailSchemaName = {detailSchemaName}
+recoverySchemaPath = ../schema/recoveryDbSchema.sql
+detailSchemaPath = ../schema/detailDbSchema.sql
+target = {tgIP}
+host = {hostIP}
+port = {dbPort}
+user = {userName}
