@@ -10,8 +10,6 @@ __pycache__/
 # pkl
 *.pkl
 
-# configuration file
-*.conf
 
 # Distribution / packaging
 .Python
@@ -189,3 +187,6 @@ pyrightconfig.json
 # Ignore all local history of files
 .history
 .ionide
+
+# configuration file
+*.conf
