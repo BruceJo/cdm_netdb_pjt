@@ -252,178 +252,6 @@ class Create():
         else:
             return dict1
 
-    # def run(self, resource_name, filtering_info=None, recoveryplanid=None):
-#         ### for this in self.nc.keys():
-#         print(f"### create resource name >> {resource_name}")
-#         # resource_name = "recoveryplan"
-# #######################################################
-#         # # Recovery Plan 테이블에서 complete flag가 0인 데이터를 tmp 테이블로 옮깁니다.
-#         # transfer_query = "INSERT INTO recovery.tmp SELECT * FROM recovery.recoveryplan WHERE completeflag = 0;"
-#         # self.cur.execute(transfer_query)
-    
-#         # # 이동된 데이터 처리
-#         # process_query = "SELECT * FROM recovery.tmp;"
-#         # self.cur.execute(process_query)
-#         # tmp_data = self.cur.fetchall()
-#         # print(tmp_data)
-# ######################################################
-#         recovery_list = []
-#         sent_flag = False
-#         # if resource_name == 'recoveryplan':
-#         #     order_table = naverCloud.get_ordered_table_list()
-#         #     get_recoveryplanid_query = f"SELECT id FROM recovery.recoveryplan WHERE completeflag=false"
-#         #     self.cur.execute(get_recoveryplanid_query)
-#         #     recoveryplanid = self.cur.fetchall()
-#         #     recoveryplanid = recoveryplanid[0][0]
-#         #     print("recoveryplan id is ", recoveryplanid)
-#         #     if recoveryplanid == None:
-#         #         raise Exception("[ERR] recoveryplanid is not defined")        
-#         #     current_recoveryplan_query = f"SELECT * FROM recovery.recoveryplan WHERE completeflag=false AND id={recoveryplanid};"
-#         #     self.cur.execute(current_recoveryplan_query)
-#         #     current_recoveryplan = self.cur.fetchall()
-#         #     sorted_current_recovery_plan = sorted(
-#         #         current_recoveryplan, key=lambda x: order_table.get(x[2], float('inf'))
-#         #     )
-#         #     for i in range(len(current_recoveryplan)):
-#         #         recoveryplanid = current_recoveryplan[i][0]
-#         #         delete_current_recoveryplan_query = f"DELETE FROM recovery.recoveryplan WHERE completeflag=false AND id={recoveryplanid};"
-#         #         self.cur.execute(delete_current_recoveryplan_query)
-
-#         #     for i in range(len(sorted_current_recovery_plan)):
-#         #         recoveryplanid = sorted_current_recovery_plan[i][0]
-#         #         insert_sorted_recoveryplan_query = f"INSERT INTO recovery.recoveryplan SELECT * FROM recovery.recoveryplan WHERE completeflag=false AND id={recoveryplanid};"
-#         #         self.cur.execute(insert_sorted_recoveryplan_query)
-            
-#         #     recoveryplan_query = f"SELECT * FROM recovery.recoveryplan WHERE completeflag=false AND id={recoveryplanid};"
-#         #     #일치하는 결과 없으면 에러 처리 필요
-#         #     print(">>>",recoveryplan_query)
-#         #     self.cur.execute(recoveryplan_query)
-#         #     recoveryplan_table = self.cur.fetchall()
-#         #     tmp = list(recoveryplan_table[0])
-#         #     print(tmp)
-#         #     tmp = tmp[2] # resource type
-#         #     recovery_list.append(tmp)
-#         #     sent_flag = True
-#         # for i in range(len(current_recoveryplan)):
-#         #     recoveryplanid = current_recoveryplan[i][0]
-#         #     # completeflag를 true로 업데이트하는 쿼리
-#         #     update_completeflag_query = f"""
-#         #     UPDATE recovery.recoveryplan 
-#         #     SET completeflag=true 
-#         #     WHERE completeflag=false 
-#         #     AND id={recoveryplanid};
-#         #     """
-#         #     self.cur.execute(update_completeflag_query)            
-#         # else:
-#         #     recovery_list.append(resource_name)
-#         if resource_name == 'recoveryplan':
-#             order_table = naverCloud.get_ordered_table_list()
-
-#             # completeflag가 false인 모든 데이터를 가져옴
-#             get_recoveryplans_query = "SELECT * FROM recovery.recoveryplan WHERE completeflag=false"
-#             self.cur.execute(get_recoveryplans_query)
-#             current_recoveryplans = self.cur.fetchall()
-
-#             # recoveryplan 데이터가 없을 경우 예외 처리
-#             if not current_recoveryplans:
-#                 raise Exception("[ERR] No recoveryplan data found")
-
-#             # 데이터를 정렬 (order_table의 순서에 맞게 정렬)
-#             sorted_recovery_plans = sorted(
-#                 current_recoveryplans, key=lambda x: order_table.get(x[2], float('inf'))
-#             )
-
-#             # 정렬된 데이터를 처리 (처리 로직을 여기에서 수행)
-#             for recovery_plan in sorted_recovery_plans:
-#                 recoveryplanid = recovery_plan[0]
-#                 print(f"Processing recoveryplan id: {recoveryplanid}")
-
-#             # completeflag를 true로 업데이트 (정렬된 후 모든 recoveryplan 처리 완료 후에)
-#             for recovery_plan in sorted_recovery_plans:
-#                 recoveryplanid = recovery_plan[0]
-#                 update_completeflag_query = f"""
-#                 UPDATE recovery.recoveryplan 
-#                 SET completeflag=true 
-#                 WHERE completeflag=false 
-#                 AND id={recoveryplanid};
-#                 """
-#                 self.cur.execute(update_completeflag_query)
-
-#             # recovery_list에 마지막으로 처리된 resource_name 추가
-#             recovery_list.append(resource_name)
-
-# ########################################################
-
-#         for this in recovery_list:
-#             print("this is ::: ", this)
-#             if self.cancel_flag and self.cancel_flag.is_set():
-#                 print(f"Recovery process for {resource_name} cancelled during {this} creation.")
-#                 return 'Recovery cancelled'
-
-#             print(f"create resource => {this}")
-#             # if self.is_valiable_table(this):
-#             if 1==1:
-#                 print("process ...")
-#                 # this가 튜플인지 확인하고 필요한 값을 추출
-#                 recoveryplanid = this
-
-#                 # SQL 쿼리 수정, 파라미터 바인딩 사용
-#                 query_body = "SELECT resourcetype FROM recovery.recoveryplan WHERE id = %s;"
-#                 self.cur.execute(query_body, (recoveryplanid,))
-
-#                 # query_body = f"SELECT resourcetype FROM recovery.recoveryplan WHERE id = {this};"
-#                 resourcetype_in_db = self.cur.fetchall()
-#                 self.set_url(resourcetype_in_db, "create")
-#                 row = self.get_table()
-#                 if filtering_info is not None:
-#                     for r in row:
-#                         for key, value in filtering_info.items():
-#                             if key in r:
-#                                 r[key] = value
-#                 for r in row:                    
-#                     if self.cancel_flag and self.cancel_flag.is_set():
-#                         print(f"Recovery process for {resource_name} cancelled during {resourcetype_in_db} creation.")
-#                         return 'Recovery cancelled'
-#                     self.create(r)
-#                     if resource_name == 'recoveryplan':
-#                         print("flag 1 this is")
-#                         tmp_res = f"SELECT sourcekey FROM recovery.recoveryplan ;"
-#                         self.cur.execute(tmp_res)
-#                         tmp_res = list(self.cur.fetchall())[0][0]
-#                         self.table_name = resourcetype_in_db
-#                         self.set_url(resourcetype_in_db, "read")
-#                         api_res = self.pretty_dict(self.read_db())
-#                         print('5. api result\n', api_res, '\n')
-#                         if sent_flag == True:
-#                             sent_flag = False
-#                             print('5.1. Send information into recovery result table.')
-#                             # query = f"UPDATE {self.source_db['schemaName']}.recoveryplan SET completeflag = true WHERE sourcekey = '{tmp_res}';"
-#                             query = f"UPDATE recovery.recoveryplan SET completeflag = true WHERE sourcekey = '{tmp_res}';"
-#                             self.cur.execute(query)
-#                             # query = f"SELECT requestid, resourcetype FROM {self.source_db['schemaName']}.recoveryplan WHERE sourcekey ='{tmp_res}';"
-#                             query = f"SELECT requestid, resourcetype FROM recovery.recoveryplan WHERE sourcekey ='{tmp_res}';"
-#                             self.cur.execute(query)
-#                             x = list(self.cur.fetchall())
-#                             loaded_res = json.loads(api_res)
-#                             if this == 'vpc':
-#                                 this_no = loaded_res['getVpcListResponse']['vpcList'][0][f'{this}No']
-#                                 this_code = loaded_res['getVpcListResponse']['vpcList'][0][f'{this}Status']['code']
-#                             if this == 'serverinstance':
-#                                 before_this = 'serverInstance'
-#                                 this_no = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][
-#                                     f'{before_this}No']
-#                                 this_code = \
-#                                     loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][
-#                                         f'{before_this}Status']['code']
-#                             y = (this_no, this_code)
-#                             import datetime
-#                             current_timestamp = datetime.datetime.now()
-#                             # insert_query = f"INSERT INTO {self.source_db['schemaName']}.recoveryresults (requestid, resourcetype, targetkey, sourcekey, timestamp, status, detail) VALUES ('{x[0][0]}', '{x[0][1]}', '{y[0]}', '{tmp_res}', '{current_timestamp}', '{y[1]}', '{api_res}')"
-#                             insert_query = f"INSERT INTO recovery.recoveryresults (requestid, resourcetype, targetkey, sourcekey, timestamp, status, detail) VALUES ('{x[0][0]}', '{x[0][1]}', '{y[0]}', '{tmp_res}', '{current_timestamp}', '{y[1]}', '{api_res}')"
-#                             self.cur.execute(insert_query)
-#                             self.conn.commit()
-#                             self.conn.close()
-
     def run(self, resource_name, filtering_info=None, recoveryplanid=None):
         print(f"### create resource name >> {resource_name}")
         
@@ -469,7 +297,6 @@ class Create():
         ########################################################
 
         for this in recovery_list:
-            print("this is ::: ", this)
             if self.cancel_flag and self.cancel_flag.is_set():
                 print(f"Recovery process for {resource_name} cancelled during {this} creation.")
                 return 'Recovery cancelled'
@@ -484,7 +311,6 @@ class Create():
                 resourcetype_in_db = self.cur.fetchall()
 
                 # URL 설정
-                # print("resourcetype_in_db", resourcetype_in_db[0][0])
                 self.set_url(resourcetype_in_db[0][0], "create")
                 # 테이블 데이터 가져오기
                 row = self.get_table()
@@ -500,6 +326,12 @@ class Create():
                     if self.cancel_flag and self.cancel_flag.is_set():
                         print(f"Recovery process for {resource_name} cancelled during {resourcetype_in_db} creation.")
                         return 'Recovery cancelled'
+                    if r == 'serverinstance': # serverinstance의 하위 자원 복제
+                        include_rscs = ["vpc", "networkacl", "subnet", "networkinterface"]
+                        for rsc in include_rscs:
+                            self.set_url(rsc, "create")
+                            row_tmp = self.get_table()[0]
+                            self.create(row_tmp)
                     self.create(r)
 
                     if resource_name == 'recoveryplan':
@@ -513,13 +345,6 @@ class Create():
                         self.table_name = resourcetype_in_db
                         print("resourcetype_in_db", resourcetype_in_db)
                         tmp_res_2 = resourcetype_in_db[0][0]
-                        if tmp_res_2 == 'serverinstance': # serverinstance의 하위 자윈 복제
-                            tmp_vpc = 'vpc'
-                            self.set_url(tmp_vpc, "read")
-
-                            tmp_subnet = 'subnet'
-                            self.set_url(tmp_subnet, "read")
-
                         self.set_url(tmp_res_2, "read")
 
                         # API 결과 가져오기
