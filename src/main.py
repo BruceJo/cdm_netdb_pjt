@@ -550,6 +550,7 @@ def set_recovery_info():
     # request format
     # {}, empty json
     req = request.get_json()
+    print(req)
     if 'sourcekey' not in req:
         return 'fail, need key ["sourcekey"]', 400
 
@@ -563,6 +564,7 @@ def set_recovery_info():
 
     recovery_info = {
         'requestid': req.get('requestid', 'localhost'),
+        'requestname' : req.get('requestname', ''),
         'resourcetype': req.get('resourcetype', ''),
         'sourcekey': req['sourcekey'],
         'timestamp': req['timestamp'],

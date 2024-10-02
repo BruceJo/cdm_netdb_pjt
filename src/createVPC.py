@@ -44,7 +44,7 @@ class Create():
         check_bool = lambda x: str(x).lower() if isinstance(x, bool) else str(x)
         where_list = [f"{k}={check_bool(check_str(v))}" for k, v in _where.items()]
         query_body = query_body + " where " + " and ".join(where_list) + ';' if where_list else query_body + ';'
-        # print('query_body', query_body)
+        print('query_body', query_body)
 
         result = self.cc.query_db(query_body)
 
@@ -59,9 +59,12 @@ class Create():
             ### step.4 Source 테이블에서 가져온 정보를 알맞게 변환
             if key == 'blockStorageSnapshotInstanceNo' or key == 'snapshotTypeCode':
                 value = None
+            elif key == 'subnetTypeCode':
+                value = self.get_value('subnettype', 'subnet', **{'subnetno': row_dict['subnetno']})
+                print("!!!!!!!", value)
             elif key == 'targetVpcName':
                 value = self.get_value('vpcname', 'vpc', **{'id': row_dict['targetvpcid']})
-                print(value)
+                # print(value)
             elif key == 'loginKeyName':
                 value = self.get_value('keyname', 'loginkey', **{'id': row_dict['loginkeyid']})
             elif key[-4:] == 'Name':  # 테스트 환경에서 Naver Cloud가 하나뿐이므로, 중복이름인경우 생성이 불가하기에 예외처리
@@ -446,7 +449,7 @@ class Create():
 
             # 정렬된 데이터를 처리 (처리 로직을 여기에서 수행)
             for recovery_plan in sorted_recovery_plans:
-                recoveryplanid = recovery_plan[0]  # 여기서 recoveryplanid가 올바르게 설정됨
+                recoveryplanid = recovery_plan[0]  #recoveryplanid 설정
                 print(f"Processing recoveryplan id: {recoveryplanid}")
 
             # completeflag를 true로 업데이트 (정렬된 후 모든 recoveryplan 처리 완료 후에)
@@ -481,7 +484,7 @@ class Create():
                 resourcetype_in_db = self.cur.fetchall()
 
                 # URL 설정
-                print("resourcetype_in_db", resourcetype_in_db[0][0])
+                # print("resourcetype_in_db", resourcetype_in_db[0][0])
                 self.set_url(resourcetype_in_db[0][0], "create")
                 # 테이블 데이터 가져오기
                 row = self.get_table()
@@ -500,16 +503,23 @@ class Create():
                     self.create(r)
 
                     if resource_name == 'recoveryplan':
-
                         # sourcekey 가져오기
                         tmp_res_query = "SELECT sourcekey FROM recovery.recoveryplan WHERE id = %s;"
                         self.cur.execute(tmp_res_query, (recoveryplanid,))
                         tmp_res = list(self.cur.fetchall())[0][0]
 
+
                         # URL 설정
                         self.table_name = resourcetype_in_db
                         print("resourcetype_in_db", resourcetype_in_db)
                         tmp_res_2 = resourcetype_in_db[0][0]
+                        if tmp_res_2 == 'serverinstance': # serverinstance의 하위 자윈 복제
+                            tmp_vpc = 'vpc'
+                            self.set_url(tmp_vpc, "read")
+
+                            tmp_subnet = 'subnet'
+                            self.set_url(tmp_subnet, "read")
+
                         self.set_url(tmp_res_2, "read")
 
                         # API 결과 가져오기
@@ -533,15 +543,31 @@ class Create():
                             if tmp_res_2 == 'vpc':
                                 this_no = loaded_res['getVpcListResponse']['vpcList'][0]['vpcNo']
                                 this_code = loaded_res['getVpcListResponse']['vpcList'][0]['vpcStatus']['code']
+                                y = (this_no, this_code)
                             elif tmp_res_2 == 'serverinstance':
                                 before_this = 'serverInstance'
                                 this_no = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][
                                     f'{before_this}No']
                                 this_code = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][
                                     f'{before_this}Status']['code']
-
+                                y = (this_no, this_code)
+                            elif tmp_res_2 == 'subnet':
+                                before_this = tmp_res_2
+                                this_no = loaded_res[f'getSubnetListResponse'][f'subnetList'][0][
+                                    f'{before_this}No']
+                                this_code = loaded_res[f'getSubnetListResponse'][f'subnetList'][0][
+                                    f'{before_this}Status']['code']
+                                y = (this_no, this_code)
+                            elif tmp_res_2 == 'networkacl':
+                                before_this = tmp_res_2
+                                this_no = loaded_res[f'getNetworkAclListResponse'][f'networkAclList'][0][
+                                    f'networkAclNo']
+                                this_code = loaded_res[f'getNetworkAclListResponse'][f'networkAclList'][0][
+                                    f'networkAclStatus']['code']
+                                y = (this_no, this_code)
+                            else:
+                                y = (None, None)
                             # 결과 테이블에 데이터 삽입
-                            y = (this_no, this_code)
                             import datetime
                             current_timestamp = datetime.datetime.now()
 
@@ -555,4 +581,4 @@ class Create():
 
 
                         # DB 연결 닫기
-                        self.conn.close()
+                self.conn.close()

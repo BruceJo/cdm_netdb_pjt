@@ -429,7 +429,7 @@ def col_name_mapper():
             'vpcNo' : 'vpcid',
             'loginKeyName' : 'loginkeyid',
             'zoneCode' : 'zoneid',
-            'subnetNo' : 'subnetid',
+            'subnetNo' : 'subnetno',
             'originalServerInstanceNo' : 'originalserverinstanceid',
             'networkAclNo' : 'networkaclid',
             'originalBlockStorageInstanceNo' : 'blockstorageinstanceid',
@@ -492,15 +492,21 @@ def include_keys(): #전체 키
                          "healthCheckCycle", "healthCheckUpThreshold", "healthCheckDownThreshold", "targetNoList.N"],
         'vpc' : ['vpcName','ipv4CidrBlock'], #free
         'placementgroup' : ['placementGroupName', 'placementGroupTypeCode'],
-        'networkacl' : ['vpcNo','networkAclName'],
+        'networkacl' : ['vpcNo'],
         'scheduledactionlist' : ['autoScalingGroupNo','scheduledActionName','minSize','maxSize','desiredCapacity','startTime','endTime','recurrence','timeZone'],
         'networkacldenyallowgroup' : ['vpcNo','networkAclDenyAllowGroupName'],
         'initscript' : ['initScriptName','initScriptContent','osTypeCode','initScriptDescription'],
         'accesscontrolgroup' : ['vpcNo','accessControlGroupName','accessControlGroupDescription'], #free
+        'networkaclrule' : ['networkAclNo','networkAclRuleList.N.protocolTypeCode','networkAclRuleList.N.portRange','networkAclRuleList.N.ipBlock','networkAclRuleList.N.networkAclRuleDescription'], #404 free
         'accesscontrolgrouprule' : ['vpcNo','accessControlGroupNo', 'accessControlGroupRuleList.N.protocolTypeCode','accessControlGroupRuleList.N.portRange','accessControlGroupRuleList.N.ipBlock','accessControlGroupRuleList.N.accessControlGroupSequence','accessControlGroupRuleList.N.accessControlGroupRuleDescription'], #free       
-        #'autoscalinggroup' : ['launchConfigurationNo','autoScalingGroupName','serverNamePrefix','desiredCapacity','defaultCoolDown','healthCheckGracePeriod','healthCheckTypeCode','vpcNo','subnetNo','accessControlGroupNoList','minSize','maxSize'],
+        'subnet' : ['vpcNo', 'zoneCode', 'networkAclNo', 'subnetName', 'subnet', 'subnetTypeCode', 'usageType'], #406 free
+        'route' : ['vpcNo', 'routeTableNo', 'routeList.N.destinationCidrBlock', 'routeList.N.gatewayTypeCode', 'routeList.N.gatewayId', 'routeList.N.routeDescription'], #408 free
+        'scalingpolicy' : ['autoScalingGroupNo','scalingPolicyName','adjustmentTypeCode','adjustmentValue','adjustmentCooldown','scalingPolicyAction','scalingPolicyStatus'], #601 free
         'autoscalinggroup' : ['launchConfigurationNo','vpcNo','subnetNo','accessControlGroupNoList','minSize','maxSize']
+        
     }
+
+        #'autoscalinggroup' : ['launchConfigurationNo','autoScalingGroupName','serverNamePrefix','desiredCapacity','defaultCoolDown','healthCheckGracePeriod','healthCheckTypeCode','vpcNo','subnetNo','accessControlGroupNoList','minSize','maxSize'],
 
 # def include_keys(): # 무료 자원에 대한 키
 #     return {

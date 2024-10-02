@@ -29,6 +29,11 @@ class Read2Insert():
         res = self.cc.request_api(self.api_url, self.sub_url)
         return res
 
+    def reset_db(self):
+        self.cur.execute(f"DROP SCHEMA IF EXISTS {self.destination['schemaName']};")
+        self.cur.execute(f"CREATE SCHEMA {self.destination['schemaName']};")
+        self.conn.commit() 
+
     def insert_db(self, dict1):
         if self.continue_flag:
             self.continue_flag = False
@@ -232,8 +237,7 @@ class Read2Insert():
 
     def run(self):
         self.init_table()
-
-        # this = 'NetworkAclRule'
+        self.reset_db()
         for this in self.nc.keys():
             self.set_url(this, "read")
             with open("insert_query.log", "a") as file:
