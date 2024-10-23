@@ -263,6 +263,7 @@ class Create():
 
             # completeflag가 false인 모든 데이터를 가져옴
             get_recoveryplans_query = "SELECT * FROM recovery.recoveryplan WHERE completeflag=false;"
+            #"SELECT * FROM recovery.recoveryplan WHERE completeflag=false AND planid={job1} or {job2};"
             self.cur.execute(get_recoveryplans_query)
             current_recoveryplans = self.cur.fetchall()
 
@@ -332,7 +333,7 @@ class Create():
                             self.set_url(rsc, "create")
                             row_tmp = self.get_table()[0]
                             self.create(row_tmp)
-                    self.create(r)
+                        self.create(r)
 
                     if resource_name == 'recoveryplan':
                         # sourcekey 가져오기
@@ -371,9 +372,9 @@ class Create():
                             elif tmp_res_2 == 'serverinstance':
                                 before_this = 'serverInstance'
                                 this_no = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][
-                                    f'{before_this}No']
+                                    'serverInstanceNo']
                                 this_code = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][
-                                    f'{before_this}Status']['code']
+                                    'serverInstanceStatus']['code']
                                 y = (this_no, this_code)
                             elif tmp_res_2 == 'subnet':
                                 before_this = tmp_res_2
@@ -390,7 +391,7 @@ class Create():
                                     f'networkAclStatus']['code']
                                 y = (this_no, this_code)
                             else:
-                                y = (None, None)
+                                y = ('0', 'err')
                             # 결과 테이블에 데이터 삽입
                             import datetime
                             current_timestamp = datetime.datetime.now()

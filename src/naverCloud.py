@@ -260,22 +260,36 @@ def set_url(name, action, *choice):
     except:
         table_name = name
         action = action[0]
-        
-    if action == "c":
-        api_url, sub_url = nc[table_name]["api_url"], nc[table_name]["create"]
-    elif action == "r":
-        api_url, sub_url = nc[table_name]["api_url"], nc[table_name]["read"]
-    elif action == "u":
-        api_url, sub_url = nc[table_name]["api_url"], nc[table_name]["update"]
-    elif action == "d":
-        api_url, sub_url = nc[table_name]["api_url"], nc[table_name]["delete"]
+    try:
+        if action == "c":
+            try:
+                api_url, sub_url = nc[table_name]["api_url"], nc[table_name]["create"]
+            except:
+                api_url, sub_url = nc["serverinstance"]["api_url"], nc["serverinstance"]["create"]
+        elif action == "r":
+            try:
+                api_url, sub_url = nc[table_name]["api_url"], nc[table_name]["read"]
+            except:
+                api_url, sub_url = nc["serverinstance"]["api_url"], nc["serverinstance"]["read"]
+        elif action == "u":
+            try:
+                api_url, sub_url = nc[table_name]["api_url"], nc[table_name]["update"]
+            except:
+                api_url, sub_url = nc["serverinstance"]["api_url"], nc["serverinstance"]["update"]
+        elif action == "d":
+            try:
+                api_url, sub_url = nc[table_name]["api_url"], nc[table_name]["delete"]
+            except:
+                api_url, sub_url = nc["serverinstance"]["api_url"], nc["serverinstance"]["delete"]
+        if isinstance(sub_url, list):
+            if choice:
+                sub_url = choice[0]
+            else:
+                raise NameError(sub_url)
+    except:
+        table_name = "serverinstance"
+        api_url, sub_url = nc["serverinstance"]["api_url"], nc["serverinstance"]["read"]
     
-    if isinstance(sub_url, list):
-        if choice:
-            sub_url = choice[0]
-        else:
-            raise NameError(sub_url)
-
     return table_name, api_url, sub_url
 
 ############################################
