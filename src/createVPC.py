@@ -340,11 +340,10 @@ class Create():
                         self.cur.execute(tmp_res_query, (recoveryplanid,))
                         tmp_res = list(self.cur.fetchall())[0][0]
 
-
                         # URL 설정
                         self.table_name = resourcetype_in_db
                         print("resourcetype_in_db", resourcetype_in_db)
-                        tmp_res_2 = resourcetype_in_db[0][0]
+                        tmp_res_2 = resourcetype_in_db
                         self.set_url(tmp_res_2, "read")
 
                         # API 결과 가져오기
