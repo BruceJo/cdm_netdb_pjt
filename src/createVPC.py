@@ -335,8 +335,9 @@ class Create():
                             self.create(row_tmp)
                     try:
                         self.create(r)
-                    except:
-                        pass
+                    except Exception as e:
+                        print(f"[ERR] "+ e)
+                        continue
                     if resource_name == 'recoveryplan':
                         # sourcekey 가져오기
                         tmp_res_query = "SELECT sourcekey FROM recovery.recoveryplan WHERE id = %s;"

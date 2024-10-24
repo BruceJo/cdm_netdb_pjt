@@ -113,11 +113,17 @@ class Functions:
     def query_dbv2(self, q, v):
         conn = self.connect_db()
         cur = conn.cursor(cursor_factory=DictCursor)
-        if v:
-            cur.execute(q, v)
-        else:
-            cur.execute(q)
-        conn.commit()
+        try:
+            if v:
+                cur.execute(q, v)
+                conn.commit()
+            else:
+                cur.execute(q)
+                conn.commit()
+        except Exception as e:
+            cur.close()
+            conn.close()
+            return e
         cur.close()
         conn.close()
 
@@ -1163,45 +1169,21 @@ class Functions:
                 self.send_response(message, 'recoveryinfo')
             except Exception as e:
                 self.handle_exception(code, e)
-        # elif command == 'set':
-            # try:
-            #     recovery_info = data['plan']['raw']
-            #     query = f"""
-            #         INSERT INTO {self.db_database}.recovery.recoveryplan (id, requestid, resourcetype, sourcekey, "timestamp", command, detail, completeflag)
-            #         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            #     """
-            #     values = (
-            #         recovery_info['requestid'], recovery_info['requestname'],recovery_info['resourcetype'], recovery_info['sourcekey'],
-            #         recovery_info['timestamp'],
-            #         recovery_info['command'], recovery_info['detail'], recovery_info['completeflag'])
-            #     print(values)
-                
-            #     self.query_dbv2(query, values)
-            #     message = self.create_response_message(code, "success", "", {})
-            #     self.send_response(message, code)
-            # except Exception as e:
-            #     self.handle_exception(code, e)
-        # 1024
         elif command == 'set':
             try:
+                recovery_info = data['plan']['raw']
                 query = f"""
                     INSERT INTO {self.db_database}.recovery.recoveryplan (id, requestid, resourcetype, sourcekey, "timestamp", command, detail, completeflag)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """
                 values = (
-                    data['plan']['id'],
-                    data['plan']['name'],
-                    'serverinstance',
-                    data['plan']['instance'][0]['uuid'],
-                    str(datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
-                    "CREATE",
-                    f"\"{data['plan']['instance'][0]['name']}\"",
-                    'False'
-                )   
-                # print(values)
+                    recovery_info['requestid'], recovery_info['requestname'],recovery_info['resourcetype'], recovery_info['sourcekey'],
+                    recovery_info['timestamp'],
+                    recovery_info['command'], recovery_info['detail'], recovery_info['completeflag'])
                 self.query_dbv2(query, values)
                 message = self.create_response_message(code, "success", "", {})
                 self.send_response(message, code)
+                # apiclient 통해서 recoveryplan에 저장
             except Exception as e:
                 self.handle_exception(code, e)
 
@@ -1226,110 +1208,15 @@ class Functions:
     def RecoveryJob(self, command, data):
         code = "recoveryjob"
         cmd = command
-        # if command == 'run':
-        #     try:
-        #         print()
-        #         ac = self.api_client
-        #         endpoint = "recovery_vpc"
-        #         # data = data['instance']
-        #         res = ac.send_to_endpoint(endpoint, data)
-        #         message = self.create_response_message(code, "success", "", data)
-        #         self.send_response(message, code)
-        #     except Exception as e:
-        #         self.handle_exception(code, e)
-        # 1024종우수정
         if command == 'run':
             try:
                 print()
-                # ac = self.api_client
-                # endpoint = "recovery_vpc"
+                ac = self.api_client
+                endpoint = "recovery_vpc"
                 # data = data['instance']
-                # res = ac.send_to_endpoint(endpoint, data)
-                try:
-                    ac = self.api_client
-                    res = ac.create_vpc()
-                    test_API_request = self.create_response_message(code, "success", "", data)
-                except Exception as e:
-                    test_API_request = self.create_response_message(code, "fail", str(f"Exception Code: {code}, E: {e}"), {})
-       
-                # test_API_request = "Exception: [ERR] No recoveryplan data found"
-
-                # test_API_request = {
-                #     "createServerInstancesResponse": {
-                #         "requestId": "3b6fdb3a-ea15-4156-acb9-bb1004daecb7",
-                #         "returnCode": "0",
-                #         "returnMessage": "success",
-                #         "serverInstanceList": [
-                #             {
-                #                 "baseBlockStorageDiskDetailType": {
-                #                     "code": "SSD",
-                #                     "codeName": "SSD"
-                #                 },
-                #                 "baseBlockStorageDiskType": {
-                #                     "code": "NET",
-                #                     "codeName": "\ub124\ud2b8\uc6cd \uc2a4\ud1a0\ub9ac\uc9c0"
-                #                 },
-                #                 "cpuCount": 2,
-                #                 "createDate": "2024-10-24T21:30:36+0900",
-                #                 "hypervisorType": {
-                #                     "code": "XEN",
-                #                     "codeName": "XEN"
-                #                 },
-                #                 "initScriptNo": "",
-                #                 "isProtectServerTermination": 'false',
-                #                 "loginKeyName": "k18cd8819c39",
-                #                 "memberServerImageInstanceNo": "",
-                #                 "memorySize": 4294967296,
-                #                 "networkInterfaceNoList": [],
-                #                 "placementGroupName": "",
-                #                 "placementGroupNo": "",
-                #                 "platformType": {
-                #                     "code": "UBS64",
-                #                     "codeName": "Ubuntu Server 64 Bit"
-                #                 },
-                #                 "publicIp": "",
-                #                 "publicIpInstanceNo": "",
-                #                 "regionCode": "KR",
-                #                 "serverDescription": "",
-                #                 "serverImageNo": "1700975",
-                #                 "serverImageProductCode": "SW.VSVR.OS.LNX64.UBNTU.SVR2004.B050",
-                #                 "serverInstanceNo": "100317147",
-                #                 "serverInstanceOperation": {
-                #                     "code": "NULL",
-                #                     "codeName": "\uc11c\ubc84 NULL OP"
-                #                 },
-                #                 "serverInstanceStatus": {
-                #                     "code": "INIT",
-                #                     "codeName": "\uc11c\ubc84 INIT \uc0c1\ud0dc"
-                #                 },
-                #                 "serverInstanceStatusName": "init",
-                #                 "serverInstanceType": {
-                #                     "code": "HICPU",
-                #                     "codeName": "High CPU"
-                #                 },
-                #                 "serverName": "vs192be81c8bb",
-                #                 "serverProductCode": "SVR.VSVR.HICPU.C002.M004.NET.SSD.B050.G002",
-                #                 "serverSpecCode": "c2-g2-s50",
-                #                 "subnetNo": "",
-                #                 "uptime": "2024-10-24T21:30:36+0900",
-                #                 "vpcNo": "",
-                #                 "zoneCode": "KR-1"
-                #             }
-                #         ],
-                #         "totalRows": 1
-                #     }
-                # }
-
-                if isinstance(test_API_request, dict) == False:
-                    fail = test_API_request
-                    message = self.create_response_message(code, "fail", fail, data)
-                    self.send_response(message, code)
-
-                elif test_API_request['createServerInstancesResponse']['returnMessage'] == "success":
-                    message = self.create_response_message(code, "success", "", data)
-                    self.send_response(message, code)
-
-
+                res = ac.send_to_endpoint(endpoint, data)
+                message = self.create_response_message(code, "success", "", data)
+                self.send_response(message, code)
             except Exception as e:
                 self.handle_exception(code, e)
 
