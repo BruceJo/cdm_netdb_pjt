@@ -333,8 +333,10 @@ class Create():
                             self.set_url(rsc, "create")
                             row_tmp = self.get_table()[0]
                             self.create(row_tmp)
+                    try:
                         self.create(r)
-
+                    except:
+                        pass
                     if resource_name == 'recoveryplan':
                         # sourcekey 가져오기
                         tmp_res_query = "SELECT sourcekey FROM recovery.recoveryplan WHERE id = %s;"
@@ -345,7 +347,7 @@ class Create():
                         self.table_name = resourcetype_in_db
                         print("resourcetype_in_db", resourcetype_in_db)
                         tmp_res_2 = resourcetype_in_db
-                        self.set_url(tmp_res_2, "read")
+                        self.set_url(tmp_res_2[0], "read")
 
                         # API 결과 가져오기
                         api_res = self.pretty_dict(self.read_db())
@@ -365,33 +367,40 @@ class Create():
 
                             # API 응답에서 특정 값을 추출
                             loaded_res = json.loads(api_res)
-                            if tmp_res_2 == 'vpc':
+                            if tmp_res_2[0] == 'vpc':
                                 this_no = loaded_res['getVpcListResponse']['vpcList'][0]['vpcNo']
                                 this_code = loaded_res['getVpcListResponse']['vpcList'][0]['vpcStatus']['code']
                                 y = (this_no, this_code)
-                            elif tmp_res_2 == 'serverinstance':
+                            elif tmp_res_2[0] == 'serverinstance' or tmp_res_2[0] == 'serverInstance' or tmp_res_2[0] == 'Serverinstance' or tmp_res_2[0] == 'ServerInstance':
                                 before_this = 'serverInstance'
                                 this_no = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][
                                     'serverInstanceNo']
                                 this_code = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][
                                     'serverInstanceStatus']['code']
                                 y = (this_no, this_code)
-                            elif tmp_res_2 == 'subnet':
-                                before_this = tmp_res_2
+                            elif tmp_res_2[0] == 'subnet':
+                                before_this = tmp_res_2[0]
                                 this_no = loaded_res[f'getSubnetListResponse'][f'subnetList'][0][
                                     f'{before_this}No']
                                 this_code = loaded_res[f'getSubnetListResponse'][f'subnetList'][0][
                                     f'{before_this}Status']['code']
                                 y = (this_no, this_code)
-                            elif tmp_res_2 == 'networkacl':
-                                before_this = tmp_res_2
+                            elif tmp_res_2[0] == 'networkacl':
+                                before_this = tmp_res_2[0]
                                 this_no = loaded_res[f'getNetworkAclListResponse'][f'networkAclList'][0][
                                     f'networkAclNo']
                                 this_code = loaded_res[f'getNetworkAclListResponse'][f'networkAclList'][0][
                                     f'networkAclStatus']['code']
                                 y = (this_no, this_code)
                             else:
-                                y = ('0', 'err')
+                                try:
+                                    this_no = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][
+                                    'serverInstanceNo']
+                                    this_code = loaded_res['getServerInstanceListResponse']['serverInstanceList'][0][
+                                    'serverInstanceStatus']['code']
+                                    y = (this_no, this_code)
+                                except:
+                                    y = ('0', 'err')
                             # 결과 테이블에 데이터 삽입
                             import datetime
                             current_timestamp = datetime.datetime.now()
