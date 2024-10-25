@@ -286,8 +286,16 @@ class Create():
                     if self.cancel_flag and self.cancel_flag.is_set():
                         print(f"Recovery process for {resource_name} cancelled during {this} creation.")
                         return 'Recovery cancelled'
-                        
-                    self.create(r)
+                    if r == 'serverinstance': # serverinstance의 하위 자원 복제
+                        include_rscs = ["vpc", "networkacl", "subnet", "networkinterface"]
+                        for rsc in include_rscs:
+                            self.set_url(rsc, "create")
+                            row_tmp = self.get_table()[0]
+                            self.create(row_tmp)
+                    try:
+                        self.create(r)
+                    except:
+                        pass
                     if resource_name == 'recoveryplan':
                         tmp_res = f"SELECT sourcekey FROM {self.recovery_schema}.recoveryplan ;"
                         self.cur.execute(tmp_res)

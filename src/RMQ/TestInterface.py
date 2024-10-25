@@ -39,7 +39,6 @@ class TestInterface:
 
     def close(self):
         self.connection.close()
-
     def test_resourceinfo(self):
         # ResourceInfo 함수 테스트
         request = create_request("resourceinfo", "get", {})
@@ -99,8 +98,8 @@ def process_request(request):
         else:
             request_command = "get_all"
     elif request_code == "volumeinfo" and request_command == "get":
-        if "instance_volume" in request['request']['parameter']['data'] and "uuid" in request['request']["parameter"]["data"]["instance_volume"][0]["instance"]:#need to fix
-            request_uuid = request['request']["parameter"]["data"]["instance_volume"][0]["instance"]["uuid"] #need to fix
+        if "instance" in request['request']['parameter']['data'] and "uuid" in request['request']["parameter"]["data"]["instance"][0]:#need to fix
+            request_uuid = request['request']["parameter"]["data"]["instance"][0]["uuid"] #need to fix
         else:
             request_command = "get_all"
     elif request_code == "snapshotinfo" and request_command == "get":
@@ -148,21 +147,21 @@ def test_instanceinfo():
     # request = create_request("instanceinfo", "get", {"instance": [{"uuid": "3081226"}]})  # uuid for test
     # test_message(request)
     #
-    # request = create_request("instanceinfo", "get", {})
+    # request = create_request("instanceinfo", "get", {"자원이름 종류, no"})
     # test_message(request)
 
-    request = create_request("instanceinfo", "reboot", {"instance": [
-        {
-            "uuid": '3081226'
-        }
-    ]})
+    # request = create_request("instanceinfo", "reboot", {"instance": [
+    #     {
+    #         "uuid": '3081226'
+    #     }
+    # ]})
     test_message(request)
 
 
 def test_volume():
-    # request = create_request("volumeinfo", "get", {"instance_volume": [{"instance": {"uuid": "3081226"}}]})  # uuid for test
+    # request = create_request("volumeinfo", "get", {"instance": [{"uuid": "3081226"}]})  # uuid for test
     # test_message(request)
-    #
+    # #
     # request = create_request("volumeinfo", "get", {"instance": []})
     # test_message(request)
     tmp_iv = {"instance_volume": [
@@ -188,11 +187,11 @@ def test_volume():
         }
     ]
     }
-    # request = create_request("volumeinfo", "create", tmp_ivs)
+    request = create_request("volumeinfo", "create", tmp_ivs)
+    test_message(request)
+    # request = create_request("volumeinfo", "delete", {"instance_volume": [{"uuid": "3081226"}]})
+    # request = create_request("volumeinfo", "detach", {"instance_volume": [{"uuid": "3081226"}]})
     # test_message(request)
-    # request = create_request("volumeinfo", "delete", {"instance_volume": [{"uuid": "3183443"}]})
-    # request = create_request("volumeinfo", "detach", {"instance_volume": [{"uuid": "3183443"}]})
-
 
 
     attach_req = {"instance_volume": [
@@ -202,7 +201,7 @@ def test_volume():
             "volume":
                 [
                     {
-                        "uuid": "3277145",
+                        "uuid": "3081227",
                         "name": "bst190721905b1",
                         "type": "SSD",
                         "size": 53687091200,
@@ -210,7 +209,7 @@ def test_volume():
                         "snapshot": 'null',
                     },
                     {
-                        "uuid": "3277144",
+                        "uuid": "3278494",
                         "name": "bst1907218dbd7",
                         "type": "SSD",
                         "size": 53687091200,
@@ -227,7 +226,7 @@ def test_volume():
             "volume":
                 [
                     {
-                        "uuid": "3278438",
+                        "uuid": "3081227",
                         "name": "bst190721905b1",
                         "type": "SSD",
                         "size": 53687091200,
@@ -235,7 +234,7 @@ def test_volume():
                         "snapshot": 'null',
                     },
                     {
-                        "uuid": "3278434",
+                        "uuid": "3278494",
                         "name": "bst1907218dbd7",
                         "type": "SSD",
                         "size": 53687091200,
@@ -274,47 +273,50 @@ def test_snapshot():
                     "uuid": ""
                 },
             "volume":
-                {
-                    "uuid": "3081227"
-                }
+                [
+                    {"uuid": "3081227"}
+                ]
         }
     ]
     }
-    # request = create_request("snapshotinfo", "create", tmp_iv)
+    request = create_request("snapshotinfo", "create", tmp_iv)
+    # request = create_request("snapshotinfo", "get", tmp_iv)
 
-    tmp_iv = {"instance_volume": [
-        {
-            "instance":
-                {
-                    "uuid": ""
-                },
-            "volume":
-                {
-                    "uuid": "3288597"
-                }
-        }
-    ]
-    }
+    # tmp_iv = {"instance_volume": [
+    #     {
+    #         "instance":
+    #             {
+    #                 "uuid": ""
+    #             },
+    #         "volume":
+    #             {
+    #                 "uuid": "3278542"
+    #             }
+    #     }
+    # ]
+    # }
+    # request = create_request("snapshotinfo", "get", tmp_iv)
 
-    tmp_iv = {"instance_volume": [
-        {
-            "snapshot":
-                {
-                    "uuid": "3278542"
-                }
-        }
-    ]
-    }
+    # tmp_iv = {"instance_volume": [
+    #     {
+    #         "snapshot":
+    #             {
+    #                 "uuid": "3081227"
+    #             }
+    #     }
+    # ]
+    # }
     #3288569
-    request = create_request("snapshotinfo", "delete", tmp_iv)
+    # request = create_request("snapshotinfo", "get", tmp_iv)
+    # request = create_request("snapshotinfo", "delete", tmp_iv)
     test_message(request)
 
 
 
 
 def test_resourceinfo():
-    request = create_request("resourceinfo", "get", {})
-    # request = create_request("resourceinfo", "get", {"instance": {"uuid": ["1947812"]}})
+    # request = create_request("resourceinfo", "get", {})
+    request = create_request("resourceinfo", "get", {"instance": {"uuid": ["1947812"]}})
 
     message_update = {
         "request": {
@@ -357,8 +359,8 @@ def test_resourceinfo():
     #         "new_value": "new_name"
     #     }
     # ]})
-    test_message(request)
-    # test_message(message_update)
+    # test_message(request)
+    test_message(message_update)
 
 def generate_recovery_info(requestid, requestname, resourcetype, sourcekey, command, detail=None, completeflag=False):
     recovery_info = {
@@ -384,31 +386,40 @@ def test_recoveryinfo():
     # request = create_request("recoveryinfo", "get", {})
     # test_message(request)
     # test_message(request)
-    recovery_info = generate_recovery_info(
-        requestid=11,
-        requestname="dr_name",
-        resourcetype='serverinstance',
-        sourcekey='3051792',  # target-contoller key
-        command='CREATE',
-        detail=None,
-        completeflag=False
-    )
-    # p = {"plan": {
-    #     "id": 1,
-    #     "name": "target-A"
-    # }}
+    # recovery_info = generate_recovery_info(
+    #     requestid="13",
+    #     requestname="dr_name",
+    #     resourcetype='serverinstance',
+    #     sourcekey='3051792',  # target-contoller key
+    #     command='CREATE',
+    #     detail=None,
+    #     completeflag=False
+    # )
+    p = {
+        "plan": {
+        "id": 2,
+        "name": "target-A",
+        "instance" : [
+            {
+            "uuid" : "3081226",
+            "name" : "servername"
+            }
+        ]
+    }
+    }
     # request = create_request("recoveryinfo", "get", data=p)
     # test_message(request)
     # request = create_request("recoveryinfo", "status", data=p)
-    request = create_request("recoveryinfo", "status", {})
+    # request = create_request("recoveryinfo", "status", {})
     # request = create_request("recoveryinfo", "delete",  data=p)
     # request = create_request("recoveryinfo", "set", recovery_info)
+    request = create_request("recoveryinfo", "set", data=p)
     test_message(request)
 
 
 #
-#     request = create_request("resourceinfo", "get", {"instance": {"uuid": ["1910516"]}})
-#     test_message(request)
+    # request = create_request("resourceinfo", "get", {"instance": {"uuid": ["3051792"], "name": "dr_name"}})
+    # test_message(request)
 #
     # request = create_request("resourceinfo", "set", {"instance": instance_data})
     # test_message(request)
@@ -442,17 +453,19 @@ def test_recoveryinfo():
             }
         }
     }
+    # print(message_update)
     # test_message(message_update)
 
 def test_recoveryjob():
     req_code = 'recoveryjob'
     p = {"plan": {
-        "id": 1,
-        "name": "target-A"
+        "id": 2,
+        "name": "target-A",
+        "job_id" : 100
     }}
 
-    # request = create_request(req_code, "run", p)
-    request = create_request(req_code, "stop", p)
+    request = create_request(req_code, "run", p)
+    # request = create_request(req_code, "stop", p)
     # request = create_request(req_code, "pause", p)
     # request = create_request(req_code, "stop", p)
     # request = create_request(req_code, "rollback", p)
@@ -475,8 +488,8 @@ if __name__ == "__main__":
     # test_interface = TestInterface()
     # test_interface.api_client.create_recovery()
     # test_interface.test_resourceinfo()
-    # test_recoveryjob()
     test_recoveryjob()
+    # test_recoveryjob()
 
 
     print("")
