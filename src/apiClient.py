@@ -3,7 +3,7 @@ import json
 
 
 class ApiClient:
-    def __init__(self, config):
+    def __init__(self):
         config = {
             'ip': 'localhost',
             'api_source': {
