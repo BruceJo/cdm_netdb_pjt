@@ -70,7 +70,7 @@ if __name__ == '__main__':
         },
         'dbSource': {
             'dbName': 'cdm_fix',
-            'schemaName': 'test241023t',
+            'schemaName': 'test240925t',
             'host': '175.45.214.45',
             'port': '26257',
             'user': 'root'

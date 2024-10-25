@@ -1250,8 +1250,6 @@ class Functions:
                     res = ac.create_vpc()
                     test_API_request = self.create_response_message(code, "success", "", data)
                 except Exception as e:
-                    ac = self.api_client
-                    res = ac.create_vpc()
                     test_API_request = self.create_response_message(code, "fail", str(f"Exception Code: {code}, E: {e}"), {})
        
                 # test_API_request = "Exception: [ERR] No recoveryplan data found"

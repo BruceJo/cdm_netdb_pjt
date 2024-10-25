@@ -18,10 +18,10 @@ class ApiClient:
             },
             'dbSource': {
                 'dbName': 'cdm_fix',
-                  'schemaName': 'test',
+                'schemaName': 'test240925t',
                 'host': '175.45.214.45',
                 'port': '26257',
-                 'user': 'root'
+                'user': 'root'
             }
         }
         self.base_url = f"http://{config['ip']}:9999"
