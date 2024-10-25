@@ -9,7 +9,7 @@ import requests
 class ApiClient:
     def __init__(self):
         config = {
-            'ip': '10.255.93.237',
+            'ip': 'localhost',
             'api_source': {
                 'accessKey': 'mYUP1ZqESUOpjyOokWC8',
                 'secretKey': '31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM',
@@ -24,8 +24,7 @@ class ApiClient:
                  'user': 'root'
             }
         }
-        # self.base_url = f"http://{config['ip']}:9999"
-        self.base_url = f"http://10.255.93.237:9999"
+        self.base_url = f"http://{config['ip']}:9999"
         self.api_source = config['api_source']
         self.database = config['dbSource']
         self.headers = {
@@ -181,7 +180,7 @@ class ApiClient:
 if __name__ == '__main__':
     #src
     config1 = {
-        'ip': '10.255.93.237',
+        'ip': 'localhost',
         'api_source': {
             'accessKey': 'mYUP1ZqESUOpjyOokWC8',
             'secretKey': '31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM',
@@ -190,7 +189,7 @@ if __name__ == '__main__':
         },
         'dbSource': {
             'dbName': 'cdm_fix',
-            'schemaName': 'test241023t',
+            'schemaName': 'test',
             'host': '175.45.214.45',
             'port': '26257',
             'user': 'root'
@@ -198,7 +197,7 @@ if __name__ == '__main__':
     }
     #tgt
     config2 = {
-        'ip': '10.255.93.237',
+        'ip': '175.45.221.223',
         'api_source': {
             'accessKey': 'mYUP1ZqESUOpjyOokWC8',
             'secretKey': '31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM',
@@ -207,7 +206,7 @@ if __name__ == '__main__':
         },
         'dbSource': {
             'dbName': 'cdm_fix',
-            'schemaName': 'test241023t',
+            'schemaName': 'test',
             'host': '175.45.221.223',
             'port': '26257',
             'user': 'root'
