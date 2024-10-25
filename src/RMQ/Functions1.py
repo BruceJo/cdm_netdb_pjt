@@ -1240,15 +1240,10 @@ class Functions:
         # 1024종우수정
         if command == 'run':
             try:
-                print()
-                # ac = self.api_client
-                # endpoint = "recovery_vpc"
-                # data = data['instance']
-                # res = ac.send_to_endpoint(endpoint, data)
                 try:
-                    ac = self.api_client
-                    res = ac.create_vpc()
-                    test_API_request = self.create_response_message(code, "success", "", data)
+                    apiclientinrun = self.api_client
+                    res = apiclientinrun.create_vpc()
+                    test_API_request = self.create_response_message(code, "success", ":", data)
                 except Exception as e:
                     test_API_request = self.create_response_message(code, "fail", str(f"Exception Code: {code}, E: {e}"), {})
        
