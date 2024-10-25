@@ -18,6 +18,7 @@ class Functions:
         self.db_database = "cdm_fix"
         self.db_user = "root"
         self.resource_db_schema = "rs_1717130387059"  # 스키마 이름 추가
+        # self.resource_db_schema = "rs_1720136819613"
         # self.resource_db_schema = "yuna"  # 스키마 이름 추가
         self.detail_db_schema = "detail"  # 스키마 이름 추가
         self.recovery_db_schema = "recovery"  # 스키마 이름 추가
@@ -465,14 +466,57 @@ class Functions:
             except Exception as e:
                 self.handle_exception(code, e)
 
-        elif command == 'get':
+        # elif command == 'get':
+        #     try:
+        #         print(">>>>", data)
+        #         uuid = data['instance'][0]['uuid']
+        #         print(">>>>",uuid)
+        #         instances = data['instance']
+        #         instance_uuids = [instance['uuid'] for instance in data['instance']]
+        #         placeholders = ', '.join(['%s'] * len(instance_uuids))
+        #         # print(self.resource_db_schema)
+        #         self.resource_db_schema = "rs_1725883178685"    # 테스트용
+        #         query = f'SELECT * FROM {self.resource_db_schema}.blockstorageinstance WHERE serverinstanceno IN ({placeholders});'
+        #         print(query)
+        #         rows = self.execute_query(query, instance_uuids)
+        #         if not rows:
+        #             message = self.create_response_message(code, "fail", "data not found", {})
+        #             self.send_response(message, code)
+        #             return
+        #         result_json = self.parse_query_result(rows)
+
+        #         final_result = []
+        #         for item in result_json:
+        #             volume = {
+        #                 "instance": {
+        #                     "uuid": item['serverinstanceno']
+        #                 },
+        #                 "volume": [
+        #                     {
+        #                         "uuid": item['blockstorageinstanceno'],
+        #                         "name": item['blockstoragename'],
+        #                         "type": item['blockstoragediskdetailtype'],
+        #                         "size": item['blockstoragesize'],
+        #                         "status": item['blockstorageinstancestatusname'],
+        #                         "raw": {
+        #                             "blockstorageinstance": {"blockstorageinstanceno": item['blockstorageinstanceno']}}
+        #                     }
+        #                 ]
+        #             }
+        #             final_result.append(volume)
+
+        #         message = self.create_response_message(code, "success", "", {"instance_volume": final_result})
+        #         self.send_response(message, code)
+
+        #     except Exception as e:
+        #         self.handle_exception(code, e)
+        elif command == 'get': # 0920 종우수정
             try:
                 print(">>>>", data)
-                uuid = data['instance_volume'][0]['instance']['uuid']
-                print(">>>>",uuid)
-                instances = data['instance_volume']
-                instance_uuids = [instance['instance']['uuid'] for instance in instances]
+                instances = data['instance']
+                instance_uuids = [instance['uuid'] for instance in instances]
                 placeholders = ', '.join(['%s'] * len(instance_uuids))
+                self.resource_db_schema = "rs_1725883178685"  # 테스트용
                 query = f'SELECT * FROM {self.resource_db_schema}.blockstorageinstance WHERE serverinstanceno IN ({placeholders});'
                 print(query)
                 rows = self.execute_query(query, instance_uuids)
@@ -482,33 +526,106 @@ class Functions:
                     return
                 result_json = self.parse_query_result(rows)
 
-                final_result = []
+                # 딕셔너리로 instance uuid별로 볼륨 합치기
+                instance_volume_dict = {}
                 for item in result_json:
+                    instance_uuid = item['serverinstanceno']
                     volume = {
-                        "instance": {
-                            "uuid": item['serverinstanceno']
-                        },
-                        "volume": [
-                            {
-                                "uuid": item['blockstorageinstanceno'],
-                                "name": item['blockstoragename'],
-                                "type": item['blockstoragediskdetailtype'],
-                                "size": item['blockstoragesize'],
-                                "status": item['blockstorageinstancestatusname'],
-                                "raw": {
-                                    "blockstorageinstance": {"blockstorageinstanceno": item['blockstorageinstanceno']}}
-                            }
-                        ]
+                        "uuid": item['blockstorageinstanceno'],
+                        "name": item['blockstoragename'],
+                        "type": item['blockstoragediskdetailtype'],
+                        "size": item['blockstoragesize'],
+                        "status": item['blockstorageinstancestatusname'],
+                        "raw": {
+                            "blockstorageinstance": {"blockstorageinstanceno": item['blockstorageinstanceno']}
+                        }
                     }
-                    final_result.append(volume)
 
-                message = self.create_response_message(code, "success", "", {"raw": final_result})
+                    if instance_uuid not in instance_volume_dict:
+                        # 새로운 instance uuid를 발견하면 새로 추가
+                        instance_volume_dict[instance_uuid] = {
+                            "uuid": instance_uuid,
+                            "volume": []
+                        }
+
+                    # 해당 instance uuid에 볼륨 추가
+                    instance_volume_dict[instance_uuid]["volume"].append(volume)
+
+                # 결과를 리스트로 변환
+                final_result = list(instance_volume_dict.values())
+
+                message = self.create_response_message(code, "success", "", {"instance": final_result})
                 self.send_response(message, code)
 
             except Exception as e:
                 self.handle_exception(code, e)
 
 
+        # elif command in ['create', 'delete', 'detach', 'attach', 'create_snapshot_volume']:
+        #     try:
+        #         api_client = self.api_client
+        #         m = {
+        #             "request": {
+        #                 "code": code,
+        #                 "parameter": {
+        #                     "command": command,
+        #                     "data": data
+        #                 }
+        #             }
+        #         }
+        #         res = api_client.modify_volume(m)
+        #         print(">>>>",res)
+        #         res_dict = json.loads(res)
+
+        #         response_key = next((key for key in res_dict.keys() if key.endswith('Response')), None)
+        #         if response_key:
+        #             storage_list = res_dict[response_key]['blockStorageInstanceList']
+        #         elif 'blockStorageSnapshotInstanceList' in res_dict[response_key]:
+        #             storage_list = res_dict[response_key]['blockStorageSnapshotInstanceList']
+        #         else:
+        #             raise ValueError("Unexpected API response format")
+
+        #         instance_volumes = []
+        #         for refine_dict in storage_list:
+        #             # 추출된 정보를 딕셔너리에 저장
+        #             structured_data = {
+        #                 "serverinstanceno": refine_dict.get('serverInstanceNo'),
+        #                 "blockstorageinstanceno": refine_dict.get('blockStorageInstanceNo') or refine_dict.get(
+        #                     'blockStorageSnapshotInstanceNo'),
+        #                 "blockstoragesnapshotinstanceno": refine_dict.get('blockStorageSnapshotInstanceNo'),
+        #                 "originalblockstorageinstanceno": refine_dict.get('originalBlockStorageInstanceNo')
+        #             }
+
+        #             # 볼륨 정보 구성
+        #             volume_info = {
+        #                 "uuid": structured_data["blockstorageinstanceno"],
+        #                 "name": refine_dict.get('blockStorageName') or refine_dict.get('blockStorageSnapshotName'),
+        #                 "type": refine_dict.get('blockStorageDiskDetailType', {}).get('codeName'),
+        #                 "size": refine_dict.get('blockStorageSize') or refine_dict.get(
+        #                     'blockStorageSnapshotVolumeSize'),
+        #                 "status": refine_dict.get('blockStorageInstanceStatusName') or refine_dict.get(
+        #                     'blockStorageSnapshotInstanceStatusName'),
+        #                 "snapshot": None if command != 'create_snapshot_volume' else structured_data[
+        #                     "blockstoragesnapshotinstanceno"],
+        #                 "raw": refine_dict
+        #             }
+
+        #             instance_volumes.append({
+        #                 "instance": {
+        #                     "uuid": structured_data["serverinstanceno"]
+        #                 },
+        #                 "volume": volume_info
+        #             })
+
+        #         message = self.create_response_message(code, "success", "", {
+        #             "instance_volume": instance_volumes
+        #         })
+        #         self.send_response(message, code)
+
+        #     except Exception as e:
+        #         self.handle_exception(code, e)
+
+        # 0923 종우수정
         elif command in ['create', 'delete', 'detach', 'attach', 'create_snapshot_volume']:
             try:
                 api_client = self.api_client
@@ -522,7 +639,7 @@ class Functions:
                     }
                 }
                 res = api_client.modify_volume(m)
-                print(">>>>",res)
+                print(">>>>", res)
                 res_dict = json.loads(res)
 
                 response_key = next((key for key in res_dict.keys() if key.endswith('Response')), None)
@@ -544,26 +661,29 @@ class Functions:
                         "originalblockstorageinstanceno": refine_dict.get('originalBlockStorageInstanceNo')
                     }
 
-                    # 볼륨 정보 구성
-                    volume_info = {
+                    # 볼륨 정보 구성 (리스트로 변경)
+                    volume_info = [{
                         "uuid": structured_data["blockstorageinstanceno"],
                         "name": refine_dict.get('blockStorageName') or refine_dict.get('blockStorageSnapshotName'),
                         "type": refine_dict.get('blockStorageDiskDetailType', {}).get('codeName'),
-                        "size": refine_dict.get('blockStorageSize') or refine_dict.get(
-                            'blockStorageSnapshotVolumeSize'),
-                        "status": refine_dict.get('blockStorageInstanceStatusName') or refine_dict.get(
-                            'blockStorageSnapshotInstanceStatusName'),
-                        "snapshot": None if command != 'create_snapshot_volume' else structured_data[
-                            "blockstoragesnapshotinstanceno"],
+                        "size": refine_dict.get('blockStorageSize') or refine_dict.get('blockStorageSnapshotVolumeSize'),
+                        "status": refine_dict.get('blockStorageInstanceStatusName') or refine_dict.get('blockStorageSnapshotInstanceStatusName'),
+                        "snapshot": [] if command != 'create_snapshot_volume' else [structured_data["blockstoragesnapshotinstanceno"]],
                         "raw": refine_dict
-                    }
+                    }]
 
-                    instance_volumes.append({
-                        "instance": {
-                            "uuid": structured_data["serverinstanceno"]
-                        },
-                        "volume": volume_info
-                    })
+                    # 기존 instance를 찾고 볼륨을 추가하는 부분
+                    existing_instance = next((item for item in instance_volumes if item["instance"]["uuid"] == structured_data["serverinstanceno"]), None)
+                    if existing_instance:
+                        existing_instance["volume"].extend(volume_info)
+                    else:
+                        # 새로운 instance를 추가
+                        instance_volumes.append({
+                            "instance": {
+                                "uuid": structured_data["serverinstanceno"]
+                            },
+                            "volume": volume_info
+                        })
 
                 message = self.create_response_message(code, "success", "", {
                     "instance_volume": instance_volumes
@@ -572,6 +692,7 @@ class Functions:
 
             except Exception as e:
                 self.handle_exception(code, e)
+
 
     def VolumeSnapshot(self, command, data):
         print(f"volume snapshot > {command} {data}")
@@ -749,10 +870,12 @@ class Functions:
                         }
                     }
                 }
+                print(m)
                 res = api_client.modify_volume(m)
                 res_dict = json.loads(res)
 
                 response_key = next((key for key in res_dict.keys() if key.endswith('Response')), None)
+                # print(response_key)
                 if response_key:
                     if 'blockStorageInstanceList' in res_dict[response_key]:
                         storage_list = res_dict[response_key]['blockStorageInstanceList']
@@ -766,6 +889,7 @@ class Functions:
                 instance_volumes = []
                 for refine_dict in storage_list:
                     # 추출된 정보를 딕셔너리에 저장
+                    # print(refine_dict)
                     structured_data = {
                         "serverinstanceno": refine_dict.get('serverInstanceNo'),
                         "blockstorageinstanceno": refine_dict.get('blockStorageInstanceNo') or refine_dict.get(
@@ -934,14 +1058,31 @@ class Functions:
 
                 pdict = {}
                 rlist = []
+
+                # Retrieve the targetkey from the data['plan'] field(0910수정)
+                target_k = data['plan']['instance'][0]['uuid']
+                target_key = []
+                for result in result_res:
+                    target_key.append(result['targetkey'])
+
                 for plan in plan_res:
                     source_key = plan['sourcekey']
+                    # print(source_key)
+                    # print(target_key)
+                    #(0910수정)
+                    if target_k in target_key:
+                        tmp_query = f'''SELECT serverinstanceno, servername 
+                                        FROM {self.detail_db_schema}.serverinstance 
+                                        WHERE serverinstanceno = '{source_key}'
+                                    '''
+                        tmp_q_res = self.execute_query_des(tmp_query)
+                        tmp_res = []
 
-                    tmp_query = f'''SELECT serverinstanceno, servername FROM {self.detail_db_schema}.serverinstance 
-                    WHERE serverinstanceno = '{source_key}'
-                    '''
-                    tmp_q_res = self.execute_query_des(tmp_query)
-                    tmp_res = []
+                    # tmp_query = f'''SELECT serverinstanceno, servername FROM {self.detail_db_schema}.serverinstance 
+                    # WHERE serverinstanceno = '{source_key}'
+                    # '''
+                    # tmp_q_res = self.execute_query_des(tmp_query)
+                    # tmp_res = []
                     for tq in tmp_q_res:
                         tmp_m = {
                             "uuid": tq['serverinstanceno'],
@@ -949,17 +1090,37 @@ class Functions:
                         }
                         tmp_res.append(tmp_m)
 
+                    result_entry = next((res for res in result_res if res['sourcekey'] == source_key), None)
+                    if result_entry:
+                        status_value = result_entry.get('status', '')
+                        raw_value = result_entry.get('detail', '{}')
+                    else:
+                        status_value = ""
+                        raw_value = {}
+
                     m = {
                         "id": plan['id'],
                         "name": plan['requestid'],
                         "instance": tmp_res
                     }
+                    m1 = {
+                    "status": status_value,
+                    "raw": raw_value
+                    }
+                    # 0903 수정
+                    # if 'plan' in data:
+                    #     if plan['id'] == data['plan'].get('id'):
+                    #         pdict[f"plan {plan['id']}"] = m  # 각 계획을 고유 키로 저장
+                    # else:
+                    #     pdict[f"plan {plan['id']}"] = m  # 각 계획을 고유 키로 저장
 
                     if 'plan' in data:
                         if plan['id'] == data['plan'].get('id'):
-                            pdict[f"plan {plan['id']}"] = m  # 각 계획을 고유 키로 저장
+                            pdict[f"plan"] = m  # 각 계획을 고유 키로 저장
+                            pdict["recovery"] = m1
                     else:
-                        pdict[f"plan {plan['id']}"] = m  # 각 계획을 고유 키로 저장
+                        pdict[f"plan"] = m  # 각 계획을 고유 키로 저장
+                        pdict["recovery"] = m1
 
                 message = self.create_response_message(code, "success", "", pdict)
                 self.send_response(message, code)
@@ -1002,17 +1163,42 @@ class Functions:
                 self.send_response(message, 'recoveryinfo')
             except Exception as e:
                 self.handle_exception(code, e)
+        # elif command == 'set':
+            # try:
+            #     recovery_info = data['plan']['raw']
+            #     query = f"""
+            #         INSERT INTO {self.db_database}.recovery.recoveryplan (id, requestid, resourcetype, sourcekey, "timestamp", command, detail, completeflag)
+            #         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            #     """
+            #     values = (
+            #         recovery_info['requestid'], recovery_info['requestname'],recovery_info['resourcetype'], recovery_info['sourcekey'],
+            #         recovery_info['timestamp'],
+            #         recovery_info['command'], recovery_info['detail'], recovery_info['completeflag'])
+            #     print(values)
+                
+            #     self.query_dbv2(query, values)
+            #     message = self.create_response_message(code, "success", "", {})
+            #     self.send_response(message, code)
+            # except Exception as e:
+            #     self.handle_exception(code, e)
+        # 1024
         elif command == 'set':
             try:
-                recovery_info = data['plan']['raw']
                 query = f"""
                     INSERT INTO {self.db_database}.recovery.recoveryplan (id, requestid, resourcetype, sourcekey, "timestamp", command, detail, completeflag)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """
                 values = (
-                    recovery_info['requestid'], recovery_info['requestname'],recovery_info['resourcetype'], recovery_info['sourcekey'],
-                    recovery_info['timestamp'],
-                    recovery_info['command'], recovery_info['detail'], recovery_info['completeflag'])
+                    data['plan']['id'],
+                    data['plan']['name'],
+                    'serverinstance',
+                    data['plan']['instance'][0]['uuid'],
+                    str(datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
+                    "CREATE",
+                    f"\"{data['plan']['instance'][0]['name']}\"",
+                    'False'
+                )   
+                # print(values)
                 self.query_dbv2(query, values)
                 message = self.create_response_message(code, "success", "", {})
                 self.send_response(message, code)
@@ -1040,15 +1226,110 @@ class Functions:
     def RecoveryJob(self, command, data):
         code = "recoveryjob"
         cmd = command
+        # if command == 'run':
+        #     try:
+        #         print()
+        #         ac = self.api_client
+        #         endpoint = "recovery_vpc"
+        #         # data = data['instance']
+        #         res = ac.send_to_endpoint(endpoint, data)
+        #         message = self.create_response_message(code, "success", "", data)
+        #         self.send_response(message, code)
+        #     except Exception as e:
+        #         self.handle_exception(code, e)
+        # 1024종우수정
         if command == 'run':
             try:
                 print()
-                ac = self.api_client
-                endpoint = "recovery_vpc"
+                # ac = self.api_client
+                # endpoint = "recovery_vpc"
                 # data = data['instance']
-                res = ac.send_to_endpoint(endpoint, data)
-                message = self.create_response_message(code, "success", "", data)
-                self.send_response(message, code)
+                # res = ac.send_to_endpoint(endpoint, data)
+                try:
+                    ac = self.api_client
+                    res = ac.create_vpc()
+                    test_API_request = self.create_response_message(code, "success", "", data)
+                except Exception as e:
+                    test_API_request = self.create_response_message(code, "fail", str(f"Exception Code: {code}, E: {e}"), {})
+       
+                # test_API_request = "Exception: [ERR] No recoveryplan data found"
+
+                # test_API_request = {
+                #     "createServerInstancesResponse": {
+                #         "requestId": "3b6fdb3a-ea15-4156-acb9-bb1004daecb7",
+                #         "returnCode": "0",
+                #         "returnMessage": "success",
+                #         "serverInstanceList": [
+                #             {
+                #                 "baseBlockStorageDiskDetailType": {
+                #                     "code": "SSD",
+                #                     "codeName": "SSD"
+                #                 },
+                #                 "baseBlockStorageDiskType": {
+                #                     "code": "NET",
+                #                     "codeName": "\ub124\ud2b8\uc6cd \uc2a4\ud1a0\ub9ac\uc9c0"
+                #                 },
+                #                 "cpuCount": 2,
+                #                 "createDate": "2024-10-24T21:30:36+0900",
+                #                 "hypervisorType": {
+                #                     "code": "XEN",
+                #                     "codeName": "XEN"
+                #                 },
+                #                 "initScriptNo": "",
+                #                 "isProtectServerTermination": 'false',
+                #                 "loginKeyName": "k18cd8819c39",
+                #                 "memberServerImageInstanceNo": "",
+                #                 "memorySize": 4294967296,
+                #                 "networkInterfaceNoList": [],
+                #                 "placementGroupName": "",
+                #                 "placementGroupNo": "",
+                #                 "platformType": {
+                #                     "code": "UBS64",
+                #                     "codeName": "Ubuntu Server 64 Bit"
+                #                 },
+                #                 "publicIp": "",
+                #                 "publicIpInstanceNo": "",
+                #                 "regionCode": "KR",
+                #                 "serverDescription": "",
+                #                 "serverImageNo": "1700975",
+                #                 "serverImageProductCode": "SW.VSVR.OS.LNX64.UBNTU.SVR2004.B050",
+                #                 "serverInstanceNo": "100317147",
+                #                 "serverInstanceOperation": {
+                #                     "code": "NULL",
+                #                     "codeName": "\uc11c\ubc84 NULL OP"
+                #                 },
+                #                 "serverInstanceStatus": {
+                #                     "code": "INIT",
+                #                     "codeName": "\uc11c\ubc84 INIT \uc0c1\ud0dc"
+                #                 },
+                #                 "serverInstanceStatusName": "init",
+                #                 "serverInstanceType": {
+                #                     "code": "HICPU",
+                #                     "codeName": "High CPU"
+                #                 },
+                #                 "serverName": "vs192be81c8bb",
+                #                 "serverProductCode": "SVR.VSVR.HICPU.C002.M004.NET.SSD.B050.G002",
+                #                 "serverSpecCode": "c2-g2-s50",
+                #                 "subnetNo": "",
+                #                 "uptime": "2024-10-24T21:30:36+0900",
+                #                 "vpcNo": "",
+                #                 "zoneCode": "KR-1"
+                #             }
+                #         ],
+                #         "totalRows": 1
+                #     }
+                # }
+
+                if isinstance(test_API_request, dict) == False:
+                    fail = test_API_request
+                    message = self.create_response_message(code, "fail", fail, data)
+                    self.send_response(message, code)
+
+                elif test_API_request['createServerInstancesResponse']['returnMessage'] == "success":
+                    message = self.create_response_message(code, "success", "", data)
+                    self.send_response(message, code)
+
+
             except Exception as e:
                 self.handle_exception(code, e)
 
