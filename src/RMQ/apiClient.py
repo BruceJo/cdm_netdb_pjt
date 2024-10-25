@@ -157,7 +157,22 @@ class ApiClient:
         print("full_url is ::", full_url)
         response = requests.get(full_url, headers=http_header)
         return response
-
+    
+    def create_vpc(self):
+        data = {
+            "apiSource": self.api_source,
+            "dbSource": {
+                "dbName": self.database["dbName"],
+                "schemaName": self.database["schemaName"],
+                "schemaPath": "../schema/naverCloudSchema.sql",
+                "host": self.database["host"],
+                "port": self.database["port"],
+                "user": self.database["user"]
+            }
+        }
+        payload = json.dumps(data)
+        response = requests.post(f"{self.base_url}/create_vpc", data=payload, headers=self.headers)
+        return response.text
 
 
 
