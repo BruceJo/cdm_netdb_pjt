@@ -386,23 +386,23 @@ def test_recoveryinfo():
     # request = create_request("recoveryinfo", "get", {})
     # test_message(request)
     # test_message(request)
-    # recovery_info = generate_recovery_info(
-    #     requestid="13",
-    #     requestname="dr_name",
-    #     resourcetype='serverinstance',
-    #     sourcekey='3051792',  # target-contoller key
-    #     command='CREATE',
-    #     detail=None,
-    #     completeflag=False
-    # )
+    recovery_info = generate_recovery_info(
+        requestid="13",
+        requestname="dr_name",
+        resourcetype='serverinstance',
+        sourcekey='3051792',  # target-contoller key
+        command='CREATE',
+        detail=None,
+        completeflag=False
+    )
     p = {
         "plan": {
-        "id": 2,
+        "id": 1,
         "name": "target-A",
         "instance" : [
             {
-            "uuid" : "3081226",
-            "name" : "servername"
+            "uuid" : "100108100",
+            "name" : "dr_name"
             }
         ]
     }
@@ -413,8 +413,7 @@ def test_recoveryinfo():
     # request = create_request("recoveryinfo", "status", {})
     # request = create_request("recoveryinfo", "delete",  data=p)
     # request = create_request("recoveryinfo", "set", recovery_info)
-    request = create_request("recoveryinfo", "set", data=p)
-    test_message(request)
+    # test_message(request)
 
 
 #
@@ -453,20 +452,19 @@ def test_recoveryinfo():
             }
         }
     }
-    # print(message_update)
-    # test_message(message_update)
+    print(message_update)
+    test_message(message_update)
 
 def test_recoveryjob():
     req_code = 'recoveryjob'
     p = {"plan": {
-        "id": 2,
-        "name": "target-A",
-        "job_id" : 100
+        "id": 1,
+        "name": "target-A"
     }}
 
-    request = create_request(req_code, "run", p)
+    # request = create_request(req_code, "run", p)
     # request = create_request(req_code, "stop", p)
-    # request = create_request(req_code, "pause", p)
+    request = create_request(req_code, "pause", p)
     # request = create_request(req_code, "stop", p)
     # request = create_request(req_code, "rollback", p)
 
@@ -484,11 +482,11 @@ if __name__ == "__main__":
     # test_snapshot()
     # test_recoveryinfo()
     # print("테스트 완료 test_snapshot\n\n")
-    # test_resourceinfo()
+    test_resourceinfo()
     # test_interface = TestInterface()
     # test_interface.api_client.create_recovery()
     # test_interface.test_resourceinfo()
-    test_recoveryjob()
+    # test_recoveryjob()
     # test_recoveryjob()
 
 
