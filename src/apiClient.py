@@ -57,7 +57,26 @@ class ApiClient:
         response = requests.post(f"{self.base_url}/read2insert", data=payload, headers=self.headers)
         return response.text
 
+    def create_vpc(self):
+        if self.api_source is None or self.database is None:
+            return "API source or database configuration is missing."
 
+        data = {
+            "apiSource": self.api_source,
+            "dbSource": {
+                "dbName": self.database["dbName"],
+                "schemaName": self.database["schemaName"],
+                "schemaPath": "../schema/naverCloudSchema.sql",
+                "host": self.database["host"],
+                "port": self.database["port"],
+                "user": self.database["user"]
+            }
+        }
+        
+        payload = json.dumps(data)
+        response = requests.post(f"{self.base_url}/create_vpc", data=payload, headers=self.headers)
+        return response.text
+    
 if __name__ == '__main__':
     # src
     config1 = {
