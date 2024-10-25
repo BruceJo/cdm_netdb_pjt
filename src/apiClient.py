@@ -70,7 +70,7 @@ if __name__ == '__main__':
         },
         'dbSource': {
             'dbName': 'cdm_fix',
-            'schemaName': 'lhb_test_0526_5',
+            'schemaName': 'test241023t',
             'host': '175.45.214.45',
             'port': '26257',
             'user': 'root'
@@ -88,7 +88,7 @@ if __name__ == '__main__':
         'dbSource': {
             'dbName': 'cdm_fix',
             'schemaName': 'lhb_test_0526_1',
-            'host': '175.45.221.223',
+            'host': '175.45.214.45',
             'port': '26257',
             'user': 'root'
         }

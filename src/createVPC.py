@@ -336,7 +336,7 @@ class Create():
                     try:
                         self.create(r)
                     except Exception as e:
-                        print(f"[ERR] "+ e)
+                        print(f"[ERR] ", e)
                         continue
                     if resource_name == 'recoveryplan':
                         # sourcekey 가져오기

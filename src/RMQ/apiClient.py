@@ -159,6 +159,9 @@ class ApiClient:
         return response
     
     def create_vpc(self):
+        if self.api_source is None or self.database is None:
+            return "API source or database configuration is missing."
+
         data = {
             "apiSource": self.api_source,
             "dbSource": {
@@ -170,6 +173,7 @@ class ApiClient:
                 "user": self.database["user"]
             }
         }
+        
         payload = json.dumps(data)
         response = requests.post(f"{self.base_url}/create_vpc", data=payload, headers=self.headers)
         return response.text
@@ -180,7 +184,7 @@ class ApiClient:
 if __name__ == '__main__':
     #src
     config1 = {
-        'ip': 'localhost',
+        'ip': 'localhost', # API Server IPaddr
         'api_source': {
             'accessKey': 'mYUP1ZqESUOpjyOokWC8',
             'secretKey': '31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM',
@@ -188,8 +192,8 @@ if __name__ == '__main__':
             'billingApiUrl': 'https://billingapi.apigw.gov-ntruss.com'
         },
         'dbSource': {
-            'dbName': 'cdm_fix',
-            'schemaName': 'test',
+            'dbName': 'cdm_fix', # API Server IPaddr
+            'schemaName': 'test240925t',
             'host': '175.45.214.45',
             'port': '26257',
             'user': 'root'
@@ -197,17 +201,17 @@ if __name__ == '__main__':
     }
     #tgt
     config2 = {
-        'ip': '175.45.221.223',
+        'ip': 'localhost',
         'api_source': {
-            'accessKey': 'mYUP1ZqESUOpjyOokWC8',
-            'secretKey': '31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM',
+            'accessKey': '9AB413B39F22F35B57BD',
+            'secretKey': 'E2B9D2670DCB51B93A595E75D21140771105C1E0',
             'ncloudUrl': 'https://ncloud.apigw.gov-ntruss.com',
             'billingApiUrl': 'https://billingapi.apigw.gov-ntruss.com'
         },
         'dbSource': {
             'dbName': 'cdm_fix',
-            'schemaName': 'test',
-            'host': '175.45.221.223',
+            'schemaName': 'test240925t',
+            'host': '175.45.214.45',
             'port': '26257',
             'user': 'root'
         }
