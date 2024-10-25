@@ -4,6 +4,22 @@ import json
 
 class ApiClient:
     def __init__(self, config):
+        config = {
+            'ip': 'localhost',
+            'api_source': {
+                'accessKey': 'mYUP1ZqESUOpjyOokWC8',
+                'secretKey': '31scunD8FAtSTqU92X2DYFsi1UaiEbQ5qrTxi2aM',
+                'ncloudUrl': 'https://ncloud.apigw.gov-ntruss.com',
+                'billingApiUrl': 'https://billingapi.apigw.gov-ntruss.com'
+            },
+            'dbSource': {
+                'dbName': 'cdm_fix',
+                'schemaName': 'test240925t',
+                'host': '175.45.214.45',
+                'port': '26257',
+                'user': 'root'
+            }
+        }        
         self.base_url = f"http://{config['ip']}:9999"
         self.api_source = config['api_source']
         self.database = config['dbSource']
@@ -106,7 +122,7 @@ if __name__ == '__main__':
         },
         'dbSource': {
             'dbName': 'cdm_fix',
-            'schemaName': 'lhb_test_0526_1',
+            'schemaName': 'test240925t',
             'host': '175.45.214.45',
             'port': '26257',
             'user': 'root'
