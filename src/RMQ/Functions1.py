@@ -6,7 +6,7 @@ import json
 from psycopg2.extras import DictCursor
 import psycopg2
 from datetime import datetime
-import apiClient
+import apiClient_RMQ as apiClient
 import re
 import pprint
 
