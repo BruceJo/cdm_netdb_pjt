@@ -52,7 +52,11 @@ class Create():
 
     def create(self, row_dict):
         print('1. row_dict\n', row_dict, '\n')
-        print('2. include_keys\n', self.include_keys[self.table_name], '\n')
+        try:
+            print('2. include_keys\n', self.include_keys[self.table_name], '\n')
+        except:
+            self.table_name = 'serverinstance'
+            print('2. include_keys\n', self.include_keys[self.table_name], '\n')
 
         dict1 = {}
         for key in self.include_keys[self.table_name]:
@@ -257,7 +261,6 @@ class Create():
         
         recovery_list = []
         sent_flag = False
-
         if resource_name == 'recoveryplan':
             order_table = naverCloud.get_ordered_table_list()
 
@@ -266,10 +269,10 @@ class Create():
             #"SELECT * FROM recovery.recoveryplan WHERE completeflag=false AND planid={job1} or {job2};"
             self.cur.execute(get_recoveryplans_query)
             current_recoveryplans = self.cur.fetchall()
-
+            print(current_recoveryplans)
             # recoveryplan 데이터가 없을 경우 예외 처리
-            if not current_recoveryplans:
-                raise Exception("[ERR] No recoveryplan data found")
+            # if not current_recoveryplans:
+            #     raise Exception("[ERR] No recoveryplan data found")
 
             # 데이터를 정렬 (order_table의 순서에 맞게 정렬)
             sorted_recovery_plans = sorted(
@@ -280,17 +283,6 @@ class Create():
             for recovery_plan in sorted_recovery_plans:
                 recoveryplanid = recovery_plan[0]  #recoveryplanid 설정
                 print(f"Processing recoveryplan id: {recoveryplanid}")
-
-            # completeflag를 true로 업데이트 (정렬된 후 모든 recoveryplan 처리 완료 후에)
-            for recovery_plan in sorted_recovery_plans:
-                recoveryplanid = recovery_plan[0]
-                update_completeflag_query = f"""
-                UPDATE recovery.recoveryplan 
-                SET completeflag=true 
-                WHERE completeflag=false 
-                AND id={recoveryplanid};
-                """
-                self.cur.execute(update_completeflag_query)
 
             # recovery_list에 마지막으로 처리된 resource_name 추가
             recovery_list.append(resource_name)
@@ -336,7 +328,9 @@ class Create():
                     try:
                         self.create(r)
                     except Exception as e:
-                        print(f"[ERR] ", e)
+                        self.create(r)
+                        print("[ERR] ", e, " But created")
+                        # print(f"[ERR] ", e)
                         continue
                     if resource_name == 'recoveryplan':
                         # sourcekey 가져오기
@@ -413,7 +407,16 @@ class Create():
                             self.cur.execute(insert_query, (x[0][0], x[0][1], y[0], tmp_res, current_timestamp, y[1], api_res))
                             self.conn.commit()
                             sent_flag = True
-
+            # completeflag를 true로 업데이트 (정렬된 후 모든 recoveryplan 처리 완료 후에)
+            for recovery_plan in sorted_recovery_plans:
+                recoveryplanid = recovery_plan[0]
+                update_completeflag_query = f"""
+                UPDATE recovery.recoveryplan 
+                SET completeflag=true 
+                WHERE completeflag=false 
+                AND id={recoveryplanid};
+                """
+                self.cur.execute(update_completeflag_query)
 
                         # DB 연결 닫기
                 self.conn.close()

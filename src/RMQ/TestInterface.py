@@ -3,7 +3,7 @@ import json
 import uuid
 from Functions1 import Functions
 from datetime import datetime
-import apiClient
+import apiClient_RMQ as apiClient
 
 class TestInterface:
     def __init__(self):
@@ -397,8 +397,8 @@ def test_recoveryinfo():
     # )
     p = {
         "plan": {
-        "id": 2,
-        "name": "target-A",
+        "id": 300,
+        "name": "test241028",
         "instance" : [
             {
             "uuid" : "3081226",
@@ -459,8 +459,8 @@ def test_recoveryinfo():
 def test_recoveryjob():
     req_code = 'recoveryjob'
     p = {"plan": {
-        "id": 2,
-        "name": "target-A",
+        "id": 300,
+        "name": "test241028",
         "job_id" : 100
     }}
 
@@ -484,10 +484,6 @@ if __name__ == "__main__":
     # test_snapshot()
     # test_recoveryinfo()
     # print("테스트 완료 test_snapshot\n\n")
-    # test_resourceinfo()
-    # test_interface = TestInterface()
-    # test_interface.api_client.create_recovery()
-    # test_interface.test_resourceinfo()
     test_recoveryjob()
     # test_recoveryjob()
 
