@@ -35,7 +35,9 @@ if __name__ == '__main__':
     api = read_conf()['API-SOURCE-NAVER-CLOUD'].copy()
     ri = rv2.Read2Insert(api, db_source)
     try:
+        print('cyclicSub - Read2Insert')
         ri.run()
+        print('cyclicSub - Read2Insert Finish')
     except:
         #★ RMQ 비동기 전달 -> NaverStop ★
         ...
