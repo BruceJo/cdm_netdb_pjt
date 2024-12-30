@@ -19,9 +19,8 @@ class Create():
         cur = conn.cursor()
         with open(self.destination["schemaPath"], 'r', encoding='UTF8') as file:
             sql = file.read()
-        
-        sql = sql.replace('CREATE TABLE IF NOT EXISTS', f'CREATE TABLE IF NOT EXISTS "{self.destination["schemaName"]}".')
-        sql = sql.replace('CREATE SEQUENCE IF NOT EXISTS ', f'CREATE SEQUENCE IF NOT EXISTS "{self.destination["schemaName"]}".')
+            sql = sql.replace('CREATE TABLE IF NOT EXISTS', f'CREATE TABLE IF NOT EXISTS "{self.destination["schemaName"]}".')
+            sql = sql.replace('CREATE SEQUENCE IF NOT EXISTS ', f'CREATE SEQUENCE IF NOT EXISTS "{self.destination["schemaName"]}".')
         cur.execute(f'set schema {self.destination["schemaName"]};')
         cur.execute(sql)
         cur.close()

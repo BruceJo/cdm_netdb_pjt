@@ -30,7 +30,7 @@ class Read2Insert():
         return res
 
     def reset_db(self):
-        self.cur.execute(f"DROP SCHEMA IF EXISTS {self.destination['schemaName']};")
+        self.cur.execute(f"DROP SCHEMA IF EXISTS {self.destination['schemaName']} CASCADE;")
         self.cur.execute(f"CREATE SCHEMA {self.destination['schemaName']};")
         self.conn.commit() 
 
@@ -237,7 +237,7 @@ class Read2Insert():
 
     def run(self):
         self.init_table()
-        self.reset_db()
+        # self.reset_db()
         for this in self.nc.keys():
             self.set_url(this, "read")
             with open("insert_query.log", "a") as file:

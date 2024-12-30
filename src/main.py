@@ -73,11 +73,13 @@ def existence_db(db_source):
 
 
 def create_resource_schema(source, schema_name):
-    source['schemaName'] = schema_name
-    cock_create = createSchema.Create(source)
-    cock_create.create_schema()
-    cock_create.create_table()
-
+    try:
+        source['schemaName'] = schema_name
+        cock_create = createSchema.Create(source)
+        cock_create.create_schema()
+        cock_create.create_table()
+    except:
+        print("Create Resource Schema Err!")
 
 def create_detail_schema(source, schema_name):
     source = source.copy()
@@ -187,25 +189,44 @@ def sync_cluster():
     global RESOURCE_SCHEMA
     start_time = str(int(time.time() * 1000))
     resource_schema_name = "rs_" + start_time
+ 
+    # update config file
+    gcf.Config(config_path).updateConfig('DATABASE-INFO', 'schemaName', resource_schema_name)
+    RESOURCE_SCHEMA = resource_schema_name
 
     if is_subproc_run('run'):
         return {"warning": "Work already in progress."}, 200
     else:
         db_source = read_conf()['DATABASE-INFO'].copy()
         existence_db(db_source)
-        create_resource_schema(db_source, resource_schema_name)
         db_source['schemaName'] = resource_schema_name
-
         api = read_conf()['API-SOURCE-NAVER-CLOUD'].copy()
-        ri = rv2.Read2Insert(api, db_source)
-        try:
-            ri.run()
-        except:
-            return {"error": "insert error."}, 500
 
-        RESOURCE_SCHEMA = resource_schema_name
-        # update config file
-        gcf.Config(config_path).updateConfig('DATABASE-INFO', 'schemaName', resource_schema_name)
+        conn = cda.Connect(db = db_source).connect_cockroachdb()
+        conn.autocommit = True
+        cur = conn.cursor()
+        cur.execute(f"use cdm_fix;")
+        # createSchema.Create(db_source).create_schema()
+        with open(db_source['schemaPath'], 'r', encoding='UTF8') as file:
+            sql = file.read()
+        sql = sql.replace('DROP SEQUENCE IF EXISTS ', f'DROP SEQUENCE IF EXISTS {resource_schema_name}.')
+        sql = sql.replace('DROP TABLE IF EXISTS ', f'DROP TABLE IF EXISTS {resource_schema_name}.')
+        sql = sql.replace('CREATE TABLE IF NOT EXISTS ', f'CREATE TABLE IF NOT EXISTS {resource_schema_name}.')
+        sql = sql.replace('CREATE SEQUENCE IF NOT EXISTS ', f'CREATE SEQUENCE IF NOT EXISTS {resource_schema_name}.')
+        cur.execute(f'set schema {resource_schema_name};')
+        print(sql)
+        cur.execute(sql)
+
+        # create_resource_schema(db_source, resource_schema_name)
+        ri = rv2.Read2Insert(api, db_source)
+        ri.run()
+        print("5. ")
+        # try:
+        #     ri = rv2.Read2Insert(api, db_source)
+        #     ri.run()
+        # except:
+        #     print("*****")
+            # return {"error": "insert error."}, 500
 
         # wakeup subprocess = if not exist status then status_path : N/A -> init
         set_subproc_status()

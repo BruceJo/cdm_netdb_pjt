@@ -320,6 +320,7 @@ CREATE TABLE IF NOT EXISTS vpc (
 	vpcname VARCHAR(255) NOT NULL,
 	ipv4cidrblock VARCHAR(255) NOT NULL,
 	vpcstatus VARCHAR(255) NOT NULL,
+	vpctype VARCHAR(255) NOT NULL,
 	createdate TIMESTAMP NOT NULL,
 	CONSTRAINT vpc_pkey PRIMARY KEY (id ASC),
     CONSTRAINT vpc_ukey UNIQUE (regionid, vpcno),
@@ -387,13 +388,14 @@ CREATE TABLE IF NOT EXISTS blockstorageinstance (
 	isreturnprotection BOOL NOT NULL,
 	CONSTRAINT blockstorageinstance_pkey PRIMARY KEY (id ASC),
     CONSTRAINT blockstorageinstance_ukey UNIQUE (regionid, zoneid, blockstorageinstanceno),
+	CONSTRAINT blockstorageinstance_ukey2 UNIQUE (blockstorageinstanceno),
 	CONSTRAINT blockstorageinstance_zoneid_fkey FOREIGN KEY (zoneid) REFERENCES zone(id),
 	CONSTRAINT blockstorageinstance_regionid_fkey FOREIGN KEY (regionid) REFERENCES region(id)
 );
 
 CREATE TABLE IF NOT EXISTS blockstoragesnapshotinstance (
 	id INTEGER NOT NULL DEFAULT NEXTVAL('blockstoragesnapshotinstance_seq'),
-	blockstorageinstanceid INT8 NOT NULL,
+	blockstorageinstanceid VARCHAR(255) NOT NULL,
 	blockstoragesnapshotinstanceno VARCHAR(255) NOT NULL,
 	blockstoragesnapshotname VARCHAR(255) NOT NULL,
 	blockstoragesnapshotvolumesize INT8 NOT NULL,
@@ -408,7 +410,7 @@ CREATE TABLE IF NOT EXISTS blockstoragesnapshotinstance (
 	snapshotchaindepth INT8 NOT NULL,
 	CONSTRAINT blockstoragesnapshotinstance_pkey PRIMARY KEY (id ASC),
     CONSTRAINT blockstoragesnapshotinstance_ukey UNIQUE (blockstorageinstanceid, blockstoragesnapshotinstanceno),
-	CONSTRAINT blockstoragesnapshotinstance_blockstoragenstanceid_fkey FOREIGN KEY (blockstorageinstanceid) REFERENCES blockstorageinstance(id)
+	CONSTRAINT blockstoragesnapshotinstance_blockstoragenstanceid_fkey FOREIGN KEY (blockstorageinstanceid) REFERENCES blockstorageinstance(blockstorageinstanceno)
 );
 
 CREATE TABLE IF NOT EXISTS loadbalancerinstance (
@@ -631,7 +633,7 @@ CREATE TABLE IF NOT EXISTS natgatewayinstance (
 
 CREATE TABLE IF NOT EXISTS networkinterface (
 	id INTEGER NOT NULL DEFAULT NEXTVAL('networkinterface_seq'),
-	subnetid INT8 NOT NULL,
+	subnetno INT8 NOT NULL,
 	networkinterfaceno VARCHAR(255) NOT NULL,
 	networkinterfacename VARCHAR(255) NOT NULL,
 	deleteontermination BOOL NOT NULL,
@@ -646,8 +648,8 @@ CREATE TABLE IF NOT EXISTS networkinterface (
 	networkinterfacedescription VARCHAR(255) NULL,
 	secondaryiplist JSONB NULL,						-- LIST 구조는 JSONB 형식으로 INSERT
 	CONSTRAINT networkinterface_pkey PRIMARY KEY (id ASC),
-    CONSTRAINT networkinterface_ukey UNIQUE (subnetid, networkinterfaceno),
-	CONSTRAINT networkinterface_subnetid_fkey FOREIGN KEY (subnetid) REFERENCES subnet(id)
+    CONSTRAINT networkinterface_ukey UNIQUE (subnetno, networkinterfaceno),
+	CONSTRAINT networkinterface_subnetid_fkey FOREIGN KEY (subnetno) REFERENCES subnet(id)
 );
 
 
@@ -703,7 +705,7 @@ CREATE TABLE IF NOT EXISTS serverinstance (
 	zoneid INT8 NOT NULL,
 	regionid INT8 NOT NULL,
 	vpcid INT8 NOT NULL,
-	subnetid INT8 NOT NULL,
+	subnetno INT8 NOT NULL,
 	serverinstanceno VARCHAR(255) NOT NULL,
 	servername VARCHAR(255) NOT NULL,
 	serverdescription VARCHAR(255) NULL,
@@ -730,12 +732,12 @@ CREATE TABLE IF NOT EXISTS serverinstance (
 	memberserverimageinstanceno VARCHAR(255) NULL,
 	blockdevicepartitionlist JSONB NULL,	-- LIST 구조는 JSONB 형식으로 INSERT
 	CONSTRAINT serverinstance_pkey PRIMARY KEY (id ASC),
-    CONSTRAINT serverinstance_ukey UNIQUE (serverproductcodeid, zoneid, regionid, vpcid, subnetid, serverinstanceno),
+    CONSTRAINT serverinstance_ukey UNIQUE (serverproductcodeid, zoneid, regionid, vpcid, subnetno, serverinstanceno),
 	CONSTRAINT serverinstance_serverproductcodeid_fkey FOREIGN KEY (serverproductcodeid) REFERENCES product(id),
 	CONSTRAINT serverinstance_zoneid_fkey FOREIGN KEY (zoneid) REFERENCES zone(id),
 	CONSTRAINT serverinstance_regionid_fkey FOREIGN KEY (regionid) REFERENCES region(id),
 	CONSTRAINT serverinstance_vpcid_fkey FOREIGN KEY (vpcid) REFERENCES vpc(id),
-	CONSTRAINT serverinstance_subnetid_fkey FOREIGN KEY (subnetid) REFERENCES subnet(id)
+	CONSTRAINT serverinstance_subnetno_fkey FOREIGN KEY (subnetno) REFERENCES subnet(id)
 );
 
 CREATE TABLE IF NOT EXISTS activitylog (
@@ -759,7 +761,7 @@ CREATE TABLE IF NOT EXISTS activitylog (
 	CONSTRAINT activitylog_autoscalinggroupid_fkey FOREIGN KEY (autoscalinggroupid) REFERENCES autoscalinggroup(id)
   );
   
-CREATE TABLE targetgroup (
+CREATE TABLE IF NOT EXISTS targetgroup (
 	id INTEGER NOT NULL DEFAULT NEXTVAL ('targetgroup_seq'),
     targetGroupNo VARCHAR(255) NOT NULL,
     targetGroupName VARCHAR(255) NOT NULL,

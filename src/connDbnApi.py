@@ -123,6 +123,8 @@ class Connect():
         cur = conn.cursor()
 
         cur.execute(f"use {self.db_name};")
+        # print(self.db_name)
+        # print("qqqqqq", q)
         cur.execute(q)
         rows = cur.fetchall()
         cols = [column[0] for column in cur.description]
@@ -133,7 +135,7 @@ class Connect():
         
         cur.close()
         conn.close()
-
+        # print("resp::::   ", response)
         return response
 
     def query_dbv(self, q, v):
